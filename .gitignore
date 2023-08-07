@@ -1,0 +1,21 @@
+# Gradle
+/**/.gradle/
+/**/build/
+!/**/src/**/build/
+
+# Fabric Loom
+/**/run/
+!/**/src/**/run/
+
+# Eclipse + VSCode
+# Fun fact: VSCode Java Extension is actually Eclipse JDT
+/**/.settings/
+/**/.project
+/**/.classpath
+/**/.factorypath
+/**/.apt_generated/
+/**/bin/
+!/**/src/**/bin/
+
+# We still keep .launch files because Fabric Loom doesn't want to generate
+# launch configurations in subprojects.

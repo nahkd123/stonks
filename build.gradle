@@ -1,0 +1,60 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'com.diffplug.spotless' version '6.20.0'
+    id 'maven-publish'
+}
+
+println "Stonks2 - Version ${rootProject.stonks_version}"
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'eclipse'
+    apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'maven-publish'
+
+    eclipse {
+        project.name = "Stonks2 - ${Character.toUpperCase(project.name.charAt(0))}${project.name.substring(1)}"
+    }
+
+    version = rootProject.stonks_version
+    group = rootProject.maven_group
+
+    base {
+        archivesName = "stonks-${project.name}"
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url = 'https://jitpack.io/' }
+    }
+
+    java {
+        withSourcesJar()
+
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    spotless {
+        java {
+            eclipse().configFile("${rootProject.projectDir}/stonks2-eclipse-formatter.xml")
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = rootProject.maven_group
+                artifactId = "stonks-${project.name}"
+                version = "${rootProject.stonks_version}"
+                from components.java
+            }
+        }
+
+        repositories {
+            mavenLocal()
+        }
+    }
+}

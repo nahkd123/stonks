@@ -1,0 +1,29 @@
+// Stonks2 Configuration for Fabric
+
+// Service
+useService stonks.fabric.service.IntegratedStonksService
+    // Because this is integrated service, you have to specify all products
+    // If you are using remote service, you don't have to specify products here
+    category sample_category
+        name Sample Category
+        product sample_item
+            name Exam Paper
+            construction item minecraft:paper{ \
+                display: { \
+                    Name: '{"text": "Exam Paper", "color": "red"}', \
+                    Lore: [ \
+                        '[{"text": "Your grade: ", "color": "gray", "italic": false}, {"text": "A+", "color": "red", "italic": false}]' \
+                    ] \
+                } \
+            }
+        product diamond
+            name Diamond
+            construction item minecraft:diamond
+
+// Adapters
+useAdapter stonks.fabric.adapter.provided.ItemsAdapter
+
+// You need to include economy adapter by yourself
+// If the adapter have options, you can specify options like this:
+// useAdapter com.example.StonksAdapter
+//     optionName optionValue

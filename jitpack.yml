@@ -1,0 +1,5 @@
+# Java 8 won't work with Fabric Loom so I have to use this file.
+# Man it's 2023 why can't they just use OpenJDK 17 or higher?
+
+jdk:
+- openjdk17

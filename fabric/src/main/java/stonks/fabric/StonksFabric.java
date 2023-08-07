@@ -1,0 +1,166 @@
+package stonks.fabric;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nahara.modkit.annotations.v1.EntryPoint;
+import nahara.modkit.annotations.v1.Mod;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import stonks.core.config.Config;
+import stonks.core.product.Product;
+import stonks.core.service.LocalStonksService;
+import stonks.core.service.memory.StonksMemoryService;
+import stonks.fabric.adapter.StonksFabricAdapter;
+import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.adapter.provided.CommonEconomyAdapter;
+import stonks.fabric.adapter.provided.ItemsAdapter;
+import stonks.fabric.adapter.provided.ScoreboardEconomyAdapter;
+import stonks.fabric.adapter.provided.ScoreboardUnitAdapter;
+import stonks.fabric.command.MarketCommand;
+import stonks.fabric.command.StonksCommand;
+import stonks.fabric.provider.StonksProvider;
+import stonks.fabric.provider.StonksProvidersRegistry;
+import stonks.fabric.service.IntegratedStonksService;
+import stonks.fabric.service.StonksServiceProvider;
+
+@Mod(
+	modid = StonksFabric.MODID,
+	name = "Stonks2",
+	version = "2.0.0", // TODO use string template
+	description = "Stonks2 for Fabric",
+	authors = "nahkd123",
+	license = "MIT")
+public class StonksFabric {
+	public static final String MODID = "stonks";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
+
+	@EntryPoint
+	public static void init() {
+		LOGGER.info("Stonks2 is now initializing...");
+		LOGGER.info("Configuration directory is '{}'", getConfigDir());
+		LOGGER.info("Main configuration file is '{}'", getMainConfigFile());
+
+		// Register configurable stuffs
+		IntegratedStonksService.register();
+
+		ItemsAdapter.register();
+		ScoreboardUnitAdapter.register();
+
+		ScoreboardEconomyAdapter.register();
+		CommonEconomyAdapter.register();
+
+		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+			StonksServiceProvider service = $ -> new StonksMemoryService();
+			var adapters = new ArrayList<StonksFabricAdapterProvider>();
+
+			for (var child : getMainConfig().getChildren()) {
+				if (child.getKey().equals("useService")) {
+					var altService = StonksProvidersRegistry.getServiceProvider(child);
+					if (altService != null) service = altService;
+					continue;
+				}
+
+				if (child.getKey().equals("useAdapter")) {
+					var newAdapter = StonksProvidersRegistry.getAdapterProvider(child);
+					if (newAdapter != null) adapters.add(newAdapter);
+					continue;
+				}
+			}
+
+			LOGGER.info("Loading Stonks...");
+			((StonksProvider) server).startStonks(
+				service,
+				adapters);
+		});
+
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+			if (getServiceProvider(server).getStonksService() instanceof LocalStonksService local) {
+				LOGGER.info("Saving data for local service...");
+				local.saveServiceData();
+			}
+		});
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(StonksCommand.ROOT);
+			dispatcher.register(MarketCommand.ROOT);
+		});
+	}
+
+	public static StonksProvider getServiceProvider(MinecraftServer server) {
+		return (StonksProvider) server;
+	}
+
+	public static StonksProvider getServiceProvider(ServerPlayerEntity player) {
+		return getServiceProvider(player.getServer());
+	}
+
+	public static ItemStack getDisplayStack(StonksFabricAdapter adapter, Product product) {
+		var out = adapter.createDisplayStack(product);
+
+		if (out == null) {
+			out = new ItemStack(Items.BARRIER);
+			out.setCustomName(Text.literal(product.getProductName() + " (Invaild display)")
+				.styled(s -> s.withColor(Formatting.RED)));
+		}
+
+		return out;
+	}
+
+	public static Path getConfigDir() {
+		var dir = FabricLoader.getInstance().getConfigDir().resolve(MODID);
+		if (Files.notExists(dir)) {
+			try {
+				Files.createDirectories(dir);
+				return dir;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		return dir;
+	}
+
+	public static Path getMainConfigFile() {
+		return Optional.ofNullable(getConfigDir())
+			.map(v -> v.resolve("config"))
+			.orElse(null);
+	}
+
+	public static Config getMainConfig() {
+		var pathToConfig = getMainConfigFile();
+		if (pathToConfig == null) {
+			LOGGER.error("Unable to obtain path to configuration file");
+			return new Config();
+		}
+
+		if (Files.notExists(pathToConfig)) {
+			LOGGER.warn("Configuration file not found! Creating new configuration file...");
+			var clsLoader = StonksFabric.class.getClassLoader();
+
+			try (var inStream = clsLoader.getResourceAsStream("default-config")) {
+				Files.copy(inStream, pathToConfig);
+			} catch (IOException e) {
+				e.printStackTrace();
+				LOGGER.error("Failed to create configuration file, skipping");
+				return new Config();
+			}
+		}
+
+		return Config.fromPath(pathToConfig);
+	}
+}

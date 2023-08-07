@@ -1,0 +1,25 @@
+plugins {
+    id 'fabric-loom' version '1.3-SNAPSHOT'
+    id 'com.diffplug.eclipse.apt' version '3.42.2'
+}
+
+repositories {
+    maven { url = 'https://maven.nucleoid.xyz' }
+}
+
+eclipse {
+    synchronizationTasks 'eclipseFactorypath'
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
+    mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
+    modApi "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+    implementation annotationProcessor('com.github.nahkd123.nahara-modkit:nahara-modkit-annotations-v1:main-SNAPSHOT')
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_version"
+    modImplementation include("eu.pb4:sgui:$rootProject.sgui_version")
+    modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")
+    api include(project(':core'))
+    api include('com.github.nahkd123.nahara-toolkit:nahara-common-tasks:main-SNAPSHOT')
+}

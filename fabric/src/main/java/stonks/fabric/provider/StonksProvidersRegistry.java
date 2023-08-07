@@ -1,0 +1,46 @@
+package stonks.fabric.provider;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import stonks.core.config.ConfigElement;
+import stonks.core.service.StonksService;
+import stonks.fabric.StonksFabric;
+import stonks.fabric.adapter.StonksFabricAdapter;
+import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.service.StonksServiceProvider;
+
+public class StonksProvidersRegistry {
+	private static Map<String, ConfigurableProvider<StonksService>> services = new HashMap<>();
+	private static Map<String, ConfigurableProvider<StonksFabricAdapter>> adapters = new HashMap<>();
+
+	public static StonksServiceProvider getServiceProvider(ConfigElement config) {
+		var provider = services.get(config.getValue().trim());
+		if (provider == null) {
+			StonksFabric.LOGGER.warn("Unknown service provider: {}", config.getValue().trim());
+			return null;
+		}
+
+		return server -> provider.configure(server, config);
+	}
+
+	public static StonksFabricAdapterProvider getAdapterProvider(ConfigElement config) {
+		var provider = adapters.get(config.getValue().trim());
+		if (provider == null) {
+			StonksFabric.LOGGER.warn("Unknown adapter provider: {}", config.getValue().trim());
+			return null;
+		}
+
+		return server -> provider.configure(server, config);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends StonksService> void registerService(Class<T> serviceClass, ConfigurableProvider<T> provider) {
+		services.put(serviceClass.getCanonicalName(), (ConfigurableProvider<StonksService>) provider);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends StonksFabricAdapter> void registerAdapter(Class<T> serviceClass, ConfigurableProvider<T> provider) {
+		adapters.put(serviceClass.getCanonicalName(), (ConfigurableProvider<StonksFabricAdapter>) provider);
+	}
+}

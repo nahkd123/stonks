@@ -1,0 +1,52 @@
+// Stonks for Fabric: Configuration file
+// Source code:    https://github.com/nahkd123/stonks
+// Issues tracker: https://github.com/nahkd123/stonks/issues
+// Documentations: https://github.com/nahkd123/stonks/wiki
+
+// Service
+// You can only have 1 active service for each server
+useService stonks.fabric.service.IntegratedStonksService
+    // Because this is integrated service, you have to specify all products
+    // If you are using remote service, you don't have to specify products here
+    category foods
+        name Foods
+        product apple
+            name Apple
+            construction item minecraft:apple
+        product carrot
+            name Carrot
+            construction item minecraft:carrot
+        product potato
+            name Potato
+            construction item minecraft:potato
+        product baked_potato
+            name Baked Potato
+            construction item minecraft:baked_potato
+        product steak
+            name Steak
+            construction item minecraft:cooked_beef
+        product cooked_porkchop
+            name Cooked Porkchop
+            construction item minecraft:cooked_porkchop
+    category specials
+        name Special Items
+        product special_paper
+            name Special Paper
+            construction item minecraft:paper{ \
+                display: { \
+                    Name: '{"text": "Special Paper", "color": "red", "italic": false}', \
+                    Lore: [ \
+                        '{"text": "Edit this in /config/stonks/config!", "color": "aqua", "italic": false}' \
+                    ] \
+                } \
+            }
+
+// Adapters
+useAdapter stonks.fabric.adapter.provided.ItemsAdapter
+
+// You need to include economy adapter by yourself.
+// See wiki for more info.
+//
+// If the adapter have options, you can specify options like this:
+// useAdapter com.example.StonksAdapter
+//     optionName optionValue

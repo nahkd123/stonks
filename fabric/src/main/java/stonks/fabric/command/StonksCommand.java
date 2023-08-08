@@ -33,12 +33,13 @@ public class StonksCommand {
 
 	public static LiteralArgumentBuilder<ServerCommandSource> subcommand$about() {
 		var meta = FabricLoader.getInstance().getModContainer(StonksFabric.MODID).get().getMetadata();
+		var bulletPoint = Text.literal(" - ").styled(s -> s.withColor(Formatting.GRAY));
 
 		return literal("about").executes(ctx -> {
 			var src = ctx.getSource();
 			src.sendMessage(Text.empty());
 			src.sendMessage(Text.literal(" Stonks2").styled(s -> s.withColor(Formatting.AQUA))
-				.append(Text.literal(" for "))
+				.append(Text.literal(" for ").styled(s -> s.withColor(Formatting.GRAY)))
 				.append(Text.literal("Fabric").styled(s -> s.withColor(Formatting.YELLOW))));
 			src.sendMessage(Text.literal(" Version ").styled(s -> s.withColor(Formatting.GRAY))
 				.append(Text.literal(meta.getVersion().getFriendlyString()).styled(s -> s.withColor(Formatting.AQUA))));
@@ -48,21 +49,21 @@ public class StonksCommand {
 				.append(makeLinkBtn("Wiki", Formatting.YELLOW, "https://github.com/nahkd123/stonks/wiki")));
 			src.sendMessage(Text.empty());
 			src.sendMessage(Text.literal(" Special thanks:"));
-			src.sendMessage(Text.literal(" - ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append("The Fabric Project ")
+			src.sendMessage(Text.empty()
+				.styled(s -> s.withColor(Formatting.WHITE))
+				.append(bulletPoint).append("The Fabric Project ")
 				.append(makeLinkBtn("Homepage", Formatting.YELLOW, "https://fabricmc.net/"))
 				.append(makeLinkBtn("GitHub", Formatting.WHITE, "https://github.com/fabricMC")));
-			src.sendMessage(Text.literal(" - ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append("Patbox ")
+			src.sendMessage(Text.empty()
+				.styled(s -> s.withColor(Formatting.WHITE))
+				.append(bulletPoint).append("Patbox ")
 				.append(makeLinkBtn("Homepage", Formatting.YELLOW, "https://pb4.eu/"))
 				.append(makeLinkBtn("sgui", Formatting.AQUA, "https://github.com/Patbox/sgui"))
 				.append(makeLinkBtn("Common Economy API", Formatting.AQUA,
 					"https://github.com/Patbox/common-economy-api")));
-			src.sendMessage(Text.literal(" - ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append("You! Thanks for using my mod!"));
+			src.sendMessage(Text.empty()
+				.styled(s -> s.withColor(Formatting.WHITE))
+				.append(bulletPoint).append("You! Thanks for using my mod!"));
 			src.sendMessage(Text.empty());
 			return 1;
 		});
@@ -75,7 +76,7 @@ public class StonksCommand {
 				.withColor(color)
 				.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
 				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(url)))))
-			.append("]");
+			.append("] ");
 	}
 
 	public static LiteralArgumentBuilder<ServerCommandSource> subcommand$category() {

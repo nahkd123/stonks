@@ -81,16 +81,12 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		var inv = player.getInventory();
 		var giveStack = refStack.copyWithCount(amount);
+		if (!giveStack.hasNbt() || giveStack.getNbt().isEmpty()) giveStack.setNbt(null); // Fix stacking issue
 
 		if (!inv.insertStack(giveStack)) {
-			var leftovers = giveStack.getCount();
-
-			while (leftovers > 0) {
-				var stackSize = Math.min(leftovers, refStack.getMaxCount());
-				var dropStack = refStack.copyWithCount(stackSize);
-				player.dropItem(dropStack, true);
-				leftovers -= stackSize;
-			}
+			var e = player.dropItem(giveStack, false);
+			e.resetPickupDelay();
+			e.setOwner(player.getUuid());
 		}
 
 		return true;

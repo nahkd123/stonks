@@ -26,5 +26,5 @@ jobs:
         arguments: build
     - uses: actions/upload-artifact@v3
       with:
-        name: Fabric Mod Artifact
+        name: Fabric Artifacts
         path: fabric/build/libs/

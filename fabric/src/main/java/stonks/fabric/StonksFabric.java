@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import nahara.common.configurations.Config;
 import nahara.modkit.annotations.v1.EntryPoint;
 import nahara.modkit.annotations.v1.Mod;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -20,7 +21,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import stonks.core.config.Config;
 import stonks.core.product.Product;
 import stonks.core.service.LocalStonksService;
 import stonks.core.service.memory.StonksMemoryService;
@@ -161,6 +161,11 @@ public class StonksFabric {
 			}
 		}
 
-		return Config.fromPath(pathToConfig);
+		try {
+			return Config.parseConfig(pathToConfig);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new Config();
+		}
 	}
 }

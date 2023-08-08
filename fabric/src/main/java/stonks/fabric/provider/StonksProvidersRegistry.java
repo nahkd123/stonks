@@ -3,7 +3,7 @@ package stonks.fabric.provider;
 import java.util.HashMap;
 import java.util.Map;
 
-import stonks.core.config.ConfigElement;
+import nahara.common.configurations.Config;
 import stonks.core.service.StonksService;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.adapter.StonksFabricAdapter;
@@ -11,23 +11,24 @@ import stonks.fabric.adapter.StonksFabricAdapterProvider;
 import stonks.fabric.service.StonksServiceProvider;
 
 public class StonksProvidersRegistry {
+	private static final String NOT_SPECIFIED = "<Not specified>";
 	private static Map<String, ConfigurableProvider<StonksService>> services = new HashMap<>();
 	private static Map<String, ConfigurableProvider<StonksFabricAdapter>> adapters = new HashMap<>();
 
-	public static StonksServiceProvider getServiceProvider(ConfigElement config) {
-		var provider = services.get(config.getValue().trim());
+	public static StonksServiceProvider getServiceProvider(Config config) {
+		var provider = config.getValue().map(v -> services.get(v.trim())).orElse(null);
 		if (provider == null) {
-			StonksFabric.LOGGER.warn("Unknown service provider: {}", config.getValue().trim());
+			StonksFabric.LOGGER.warn("Unknown service provider: {}", config.getValue().orElse(NOT_SPECIFIED));
 			return null;
 		}
 
 		return server -> provider.configure(server, config);
 	}
 
-	public static StonksFabricAdapterProvider getAdapterProvider(ConfigElement config) {
-		var provider = adapters.get(config.getValue().trim());
+	public static StonksFabricAdapterProvider getAdapterProvider(Config config) {
+		var provider = config.getValue().map(v -> adapters.get(v.trim())).orElse(null);
 		if (provider == null) {
-			StonksFabric.LOGGER.warn("Unknown adapter provider: {}", config.getValue().trim());
+			StonksFabric.LOGGER.warn("Unknown adapter provider: {}", config.getValue().orElse(NOT_SPECIFIED));
 			return null;
 		}
 

@@ -22,4 +22,5 @@ dependencies {
     modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")
     api include(project(':core'))
     api include('com.github.nahkd123.nahara-toolkit:nahara-common-tasks:main-SNAPSHOT')
+    api include('com.github.nahkd123.nahara-toolkit:nahara-common-configurations:main-SNAPSHOT')
 }

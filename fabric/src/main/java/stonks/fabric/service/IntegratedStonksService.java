@@ -75,15 +75,15 @@ public class IntegratedStonksService extends StonksMemoryService {
 			var service = new IntegratedStonksService(server);
 
 			for (var child : config.getChildren()) if (child.getKey().equals("category")) {
-				var categoryId = child.getValue();
-				var categoryName = child.firstChild("name").map(v -> v.getValue()).orElse(categoryId);
+				var categoryId = child.getValue().get();
+				var categoryName = child.firstChild("name").flatMap(v -> v.getValue()).orElse(categoryId);
 				var category = new MemoryCategory(categoryId, categoryName);
 				service.getModifiableCategories().add(category);
 
 				for (var child1 : child.getChildren()) if (child1.getKey().equals("product")) {
-					var productId = child1.getValue();
-					var productName = child1.firstChild("name").map(v -> v.getValue()).orElse(productId);
-					var productConstruction = child1.firstChild("construction").map(v -> v.getValue()).orElse(null);
+					var productId = child1.getValue().get();
+					var productName = child1.firstChild("name").flatMap(v -> v.getValue()).orElse(productId);
+					var productConstruction = child1.firstChild("construction").flatMap(v -> v.getValue()).orElse(null);
 					var product = new MemoryProduct(category, productId, productName, productConstruction);
 					category.getModifiableMockProducts().add(product);
 				}

@@ -1,9 +1,9 @@
 package stonks.fabric.provider;
 
+import nahara.common.configurations.Config;
 import net.minecraft.server.MinecraftServer;
-import stonks.core.config.ConfigElement;
 
 @FunctionalInterface
 public interface ConfigurableProvider<T> {
-	public T configure(MinecraftServer server, ConfigElement config);
+	public T configure(MinecraftServer server, Config config);
 }

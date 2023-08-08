@@ -67,8 +67,8 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 
 	public static void register() {
 		StonksProvidersRegistry.registerAdapter(ScoreboardEconomyAdapter.class, (server, config) -> {
-			var objectiveName = config.firstChild("objective").map(v -> v.getValue()).orElse("balance");
-			var decimals = config.firstChild("decimals").map(v -> Integer.parseInt(v.getValue())).orElse(2);
+			var objectiveName = config.firstChild("objective").flatMap(v -> v.getValue()).orElse("balance");
+			var decimals = config.firstChild("decimals").flatMap(v -> v.getValue(Integer::parseInt)).orElse(2);
 			return new ScoreboardEconomyAdapter(server.getScoreboard(), objectiveName, decimals);
 		});
 	}

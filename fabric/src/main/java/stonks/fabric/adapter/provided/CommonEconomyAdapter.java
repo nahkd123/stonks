@@ -52,10 +52,9 @@ public class CommonEconomyAdapter implements StonksFabricAdapter {
 	public static void register() {
 		StonksProvidersRegistry.registerAdapter(CommonEconomyAdapter.class, (server, config) -> {
 			var id = config.firstChild("id")
-				.map(v -> new Identifier(v.getValue()))
+				.map(v -> new Identifier(v.getValue().get()))
 				.orElse(new Identifier(StonksFabric.MODID, "default_account"));
-			var decimals = config.firstChild("decimals").map(v -> Integer.parseInt(v.getValue())).orElse(0);
-
+			var decimals = config.firstChild("decimals").flatMap(v -> v.getValue(Integer::parseInt)).orElse(0);
 			return new CommonEconomyAdapter(id, decimals);
 		});
 	}

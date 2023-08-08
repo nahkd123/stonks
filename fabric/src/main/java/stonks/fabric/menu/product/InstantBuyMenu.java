@@ -90,7 +90,8 @@ public class InstantBuyMenu extends StackedMenu {
 
 				StonksFabricHelper.instantOffer(getPlayer(), product, OfferType.BUY, amount, moneyToSpend);
 				if (type.shift) {
-					new InstantBuyMenu(getPrevious(), player, product, balance, amount).open();
+					new InstantBuyMenu(getPrevious(), player, product, originalPricePerUnit, instantPricePerUnit)
+						.open();
 				} else {
 					close();
 				}

@@ -35,6 +35,7 @@ import stonks.fabric.command.StonksCommand;
 import stonks.fabric.provider.StonksProvider;
 import stonks.fabric.provider.StonksProvidersRegistry;
 import stonks.fabric.service.IntegratedStonksService;
+import stonks.fabric.service.IntegratedUnstableStonksService;
 import stonks.fabric.service.StonksServiceProvider;
 
 @Mod(
@@ -56,6 +57,7 @@ public class StonksFabric {
 
 		// Register configurable stuffs
 		IntegratedStonksService.register();
+		IntegratedUnstableStonksService.register();
 
 		ItemsAdapter.register();
 		ScoreboardUnitAdapter.register();

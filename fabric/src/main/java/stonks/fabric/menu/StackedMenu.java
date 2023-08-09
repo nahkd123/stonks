@@ -1,16 +1,14 @@
 package stonks.fabric.menu;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import stonks.fabric.misc.TasksHandler;
+import stonks.fabric.provider.StonksProvider;
 
 public abstract class StackedMenu extends SimpleGui {
 	private StackedMenu previous;
-	private int ticks = 0;
+	private TasksHandler guiTasksHandler;
 
 	public StackedMenu(StackedMenu previous, ScreenHandlerType<?> type, ServerPlayerEntity player, boolean manipulatePlayerSlots) {
 		super(type, player, manipulatePlayerSlots);
@@ -32,17 +30,20 @@ public abstract class StackedMenu extends SimpleGui {
 
 	@Override
 	public void onTick() {
-		ticks++;
+		getGuiTasksHandler().tick();
 	}
 
-	public int getTicks() { return ticks; }
-
-	public void placeLoadingSpinner(int slot) {
-		var spinner = new String[] { ":..", ".:.", "..:", ".:." };
-		var i = getTicks() / 5;
-
-		setSlot(slot, new GuiElementBuilder(Items.CLOCK)
-			.setName(Text.literal("Please wait " + spinner[i % spinner.length])
-				.styled(s -> s.withColor(Formatting.GRAY))));
+	/**
+	 * <p>
+	 * A local {@link TasksHandler} that's bound to this menu. Does not call
+	 * callbacks if the menu is closed. If you want to handle tasks outside the
+	 * bound of menus, consider using {@link StonksProvider#getTasksHandler()}.
+	 * </p>
+	 * 
+	 * @return GUI tasks handler.
+	 */
+	public TasksHandler getGuiTasksHandler() {
+		if (guiTasksHandler == null) guiTasksHandler = new TasksHandler();
+		return guiTasksHandler;
 	}
 }

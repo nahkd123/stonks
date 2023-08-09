@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import nahara.common.tasks.Task;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,17 +17,19 @@ import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
+import stonks.fabric.menu.handling.WaitableGuiElement;
 
 public class ViewOffersMenu extends StackedMenu {
 	private Cached<List<Offer>> offersCache;
-	private List<Offer> offers;
-	private Task<Void> updateTask;
-	private boolean offersPlaced = false;
+	private boolean isUpdating = false;
+	private boolean isInitialized = false;
 
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
 		setTitle(Text.literal("Market > Offers"));
 		offersCache = StonksFabric.getServiceProvider(player).getStonksCache().getOffers(player.getUuid());
+
+		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
 	}
 
 	@Override
@@ -41,29 +42,23 @@ public class ViewOffersMenu extends StackedMenu {
 	public void onTick() {
 		super.onTick();
 
-		if (offersCache.shouldUpdate() && updateTask == null) {
-			offers = null;
-			offersPlaced = false;
-			for (int i = 0; i < getWidth() * (getHeight() - 1); i++) { clearSlot(getWidth() + i); }
-			var task = offersCache.get();
+		if (!isInitialized || (isUpdating == false && offersCache.shouldUpdate())) {
+			isInitialized = true;
+			isUpdating = true;
 
-			if (task.get().isPresent()) {
-				offers = task.get().get().getSuccess();
-				updateTask = null;
-			} else {
-				updateTask = task.afterThatDo(offers -> {
-					this.offers = offers;
-					this.updateTask = null;
-				});
-			}
-		}
+			getGuiTasksHandler().handle(offersCache.get(), (offers, error) -> {
+				if (error != null) {
+					setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
+						.setName(Text.literal("An error occured").styled(s -> s.withColor(Formatting.RED)))
+						.addLoreLine(Text.literal("Retrying in few seconds, please wait...")
+							.styled(s -> s.withColor(Formatting.GRAY)))
+						.asStack());
+					return;
+				}
 
-		if (offers == null) {
-			if (!offersCache.shouldUpdate()) offers = offersCache.get().get().get().getSuccess();
-			else placeLoadingSpinner((getHeight() / 2) * getWidth() + getWidth() / 2);
-		} else if (!offersPlaced) {
-			placeOffers(offers);
-			offersPlaced = true;
+				placeOffers(offers);
+				isUpdating = false;
+			});
 		}
 	}
 
@@ -77,7 +72,11 @@ public class ViewOffersMenu extends StackedMenu {
 		}
 
 		for (int i = 0; i < getWidth() * (getHeight() - 1); i++) {
-			if (i >= offers.size()) return;
+			if (i >= offers.size()) {
+				clearSlot(getWidth() + i);
+				continue;
+			}
+
 			var offer = offers.get(i);
 			setSlot(getWidth() + i, createOfferButton(player, offer)
 				.addLoreLine(Text.empty())

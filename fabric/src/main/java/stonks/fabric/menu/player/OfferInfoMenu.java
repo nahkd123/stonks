@@ -62,26 +62,35 @@ public class OfferInfoMenu extends StackedMenu {
 
 				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
+				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Text.literal("Claiming...").styled(s -> s.withColor(Formatting.GRAY))));
 
 				var previousUnits = offer.getClaimedUnits();
-				service
-					.claimOffer(offer)
-					.afterThatDo(newOffer -> {
-						var newUnits = newOffer.getClaimedUnits();
-						var delta = newUnits - previousUnits;
+				handler.handle(service.claimOffer(offer), (newOffer, error) -> {
+					if (error != null) {
+						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
+							.setName(Text.literal("Claim failed!").styled(s -> s.withColor(Formatting.RED))));
+						else getPlayer().sendMessage(Text.literal("An error occured. Claim failed!")
+							.styled(s -> s.withColor(Formatting.RED)), true);
 
-						if (offer.getType() == OfferType.BUY) {
-							adapter.addUnitsTo(getPlayer(), offer.getProduct(), delta);
-						} else {
-							adapter.accountDeposit(getPlayer(), delta * offer.getPricePerUnit());
-						}
+						error.printStackTrace();
+						return;
+					}
 
-						new OfferInfoMenu(getPrevious(), getPlayer(), newOffer).open();
-						getPlayer().playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1f, 1f);
-					});
+					var newUnits = newOffer.getClaimedUnits();
+					var delta = newUnits - previousUnits;
+
+					if (offer.getType() == OfferType.BUY) {
+						adapter.addUnitsTo(getPlayer(), offer.getProduct(), delta);
+					} else {
+						adapter.accountDeposit(getPlayer(), delta * offer.getPricePerUnit());
+					}
+
+					new OfferInfoMenu(getPrevious(), getPlayer(), newOffer).open();
+					getPlayer().playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1f, 1f);
+				});
 			});
 	}
 
@@ -95,39 +104,47 @@ public class OfferInfoMenu extends StackedMenu {
 			.setCallback((index, type, action, gui) -> {
 				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
+				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Text.literal("Cancelling...").styled(s -> s.withColor(Formatting.GRAY))));
 
 				var previousClaimedUnits = offer.getClaimedUnits();
+				handler.handle(service.cancelOffer(offer), (newOffer, error) -> {
+					if (error != null) {
+						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
+							.setName(Text.literal("Cancel failed!").styled(s -> s.withColor(Formatting.RED))));
+						else getPlayer().sendMessage(Text.literal("An error occured. Cancel failed!")
+							.styled(s -> s.withColor(Formatting.RED)), true);
 
-				service
-					.cancelOffer(offer)
-					.afterThatDo(newOffer -> {
-						var totalUnits = newOffer.getTotalUnits();
-						int refundUnits;
-						double refundMoney;
-						var ppu = newOffer.getPricePerUnit();
+						error.printStackTrace();
+						return;
+					}
 
-						if (offer.getType() == OfferType.BUY) {
-							refundUnits = newOffer.getFilledUnits() - previousClaimedUnits;
-							refundMoney = (totalUnits - newOffer.getFilledUnits()) * ppu;
-						} else {
-							refundUnits = totalUnits - newOffer.getFilledUnits();
-							refundMoney = (newOffer.getFilledUnits() - previousClaimedUnits) * ppu;
-						}
+					var totalUnits = newOffer.getTotalUnits();
+					int refundUnits;
+					double refundMoney;
+					var ppu = newOffer.getPricePerUnit();
 
-						adapter.addUnitsTo(getPlayer(), newOffer.getProduct(), refundUnits);
-						adapter.accountDeposit(getPlayer(), refundMoney);
+					if (offer.getType() == OfferType.BUY) {
+						refundUnits = newOffer.getFilledUnits() - previousClaimedUnits;
+						refundMoney = (totalUnits - newOffer.getFilledUnits()) * ppu;
+					} else {
+						refundUnits = totalUnits - newOffer.getFilledUnits();
+						refundMoney = (newOffer.getFilledUnits() - previousClaimedUnits) * ppu;
+					}
 
-						close();
-						getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
-						getPlayer().sendMessage(Text.literal("Offer cancelled! Refunded ")
-							.append(Text.literal(Integer.toString(refundUnits))
-								.styled(s -> s.withColor(Formatting.AQUA)))
-							.append("x " + newOffer.getProduct().getProductName() + " and ")
-							.append(StonksFabricUtils.currencyText(Optional.of(refundMoney), true)), true);
-					});
+					adapter.addUnitsTo(getPlayer(), newOffer.getProduct(), refundUnits);
+					adapter.accountDeposit(getPlayer(), refundMoney);
+
+					close();
+					getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
+					getPlayer().sendMessage(Text.literal("Offer cancelled! Refunded ")
+						.append(Text.literal(Integer.toString(refundUnits))
+							.styled(s -> s.withColor(Formatting.AQUA)))
+						.append("x " + newOffer.getProduct().getProductName() + " and ")
+						.append(StonksFabricUtils.currencyText(Optional.of(refundMoney), true)), true);
+				});
 			});
 	}
 }

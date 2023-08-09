@@ -3,30 +3,61 @@ package stonks.fabric.menu;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import nahara.common.tasks.Task;
+import eu.pb4.sgui.api.gui.SlotGuiInterface;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.core.caching.StonksServiceCache;
+import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricUtils;
+import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
 
 public class MarketMainMenu extends StackedMenu {
-	private Task<List<Category>> queryTask;
-	private boolean categoriesPlaced = false;
 	private int selectedCategoryIndex = 0;
-	private boolean disableCategorySwitching = false;
 
 	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
 		setTitle(Text.literal("Market"));
-		queryTask = StonksFabric.getServiceProvider(player).getStonksCache().getAllCategories();
+
+		for (int i = 0; i < getHeight() - 1; i++) {
+			var slot = (i + 1) * getWidth();
+			setSlot(slot, WaitableGuiElement.ANIMATED_LOADING);
+		}
+
+		var cx = (getWidth() - 2) / 2;
+		var cy = (getHeight() - 1) / 2;
+		setSlot(2 + cx + (1 + cy) * getWidth(), WaitableGuiElement.ANIMATED_LOADING);
+
+		getGuiTasksHandler().handle(StonksFabric.getServiceProvider(player).getStonksCache().getAllCategories(),
+			(categories, error) -> {
+				if (error != null) {
+					var icon = new GuiElementBuilder(Items.BARRIER)
+						.setName(Text.literal("An error occured").styled(s -> s.withColor(Formatting.RED)))
+						.addLoreLine(Text.literal("Failed to get categories list")
+							.styled(s -> s.withColor(Formatting.GRAY)));
+
+					for (int i = 0; i < getHeight() - 1; i++) {
+						var slot = (i + 1) * getWidth();
+						setSlot(slot, icon);
+					}
+
+					setSlot(2 + cx + (1 + cy) * getWidth(), icon);
+					error.printStackTrace();
+					return;
+				}
+
+				refresh(categories);
+			});
 	}
 
 	@Override
@@ -41,28 +72,9 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(4, MenuIcons.VIEW_SELF_OFFERS);
 	}
 
-	@Override
-	public void onTick() {
-		super.onTick();
-
-		if (queryTask.get().isEmpty()) {
-			for (int i = 0; i < getHeight() - 1; i++) {
-				var slot = (i + 1) * getWidth();
-				placeLoadingSpinner(slot);
-			}
-
-			var cx = (getWidth() - 2) / 2;
-			var cy = (getHeight() - 1) / 2;
-			placeLoadingSpinner(2 + cx + (1 + cy) * getWidth());
-		} else if (!categoriesPlaced) {
-			refresh();
-			categoriesPlaced = true;
-		}
-	}
-
-	private void refresh() {
-		placeCategories(queryTask.get().get().getSuccess());
-		placeCategory(queryTask.get().get().getSuccess().get(selectedCategoryIndex));
+	private void refresh(List<Category> categories) {
+		placeCategories(categories);
+		placeCategory(categories.get(selectedCategoryIndex));
 	}
 
 	private void placeCategories(List<Category> categories) {
@@ -79,9 +91,8 @@ public class MarketMainMenu extends StackedMenu {
 					.addLoreLine(Text.literal(selected ? "Selected" : "Click to open")
 						.styled(s -> s.withColor(Formatting.GRAY)))
 					.setCallback((index, type, action, gui) -> {
-						if (selected || disableCategorySwitching) return;
 						selectedCategoryIndex = i2;
-						refresh();
+						refresh(categories);
 					});
 
 				if (selected) a.glow();
@@ -114,41 +125,42 @@ public class MarketMainMenu extends StackedMenu {
 			.getServiceProvider(getPlayer())
 			.getStonksAdapter(), product);
 
-		var overview = cache.getOverview(product).get();
-		var loading = overview.get().isEmpty();
-		var loadingText = Text.literal("Loading...").styled(s -> s.withColor(Formatting.GRAY));
+		setSlot(slot, new WaitableGuiElement<>(cache.getOverview(product).get()) {
+			@Override
+			public ItemStack createStackWhenLoaded(ProductMarketOverview overview, Throwable error) {
+				if (error != null) return new GuiElementBuilder(Items.BARRIER)
+					.setName(Text.literal("An error occured!").styled(s -> s.withColor(Formatting.RED)))
+					// TODO use message from UserException
+					.addLoreLine(Text.literal("Failed to query quick price details")
+						.styled(s -> s.withColor(Formatting.GRAY)))
+					.asStack();
 
-		var instantBuyPrice = overview.get()
-			.flatMap(v -> v.getSuccess().getSellOffers().compute())
-			.map(v -> v.min()); // TODO should we use avg price?
-		var instantSellPrice = overview.get()
-			.flatMap(v -> v.getSuccess().getBuyOffers().compute())
-			.map(v -> v.min());
+				// TODO should we use avg price?
+				var instantBuyPrice = overview.getSellOffers().compute().map(v -> v.min());
+				var instantSellPrice = overview.getBuyOffers().compute().map(v -> v.min());
 
-		setSlot(slot, GuiElementBuilder.from(dispStack)
-			.setLore(new ArrayList<>()) // Clear all lore
-			.addLoreLine(Text.literal(category.getCategoryName())
-				.styled(s -> s.withItalic(false).withColor(Formatting.DARK_GRAY)))
-			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Instant Buy: ")
-				.styled(s -> s.withItalic(false).withColor(Formatting.GRAY))
-				.append(loading
-					? loadingText
-					: StonksFabricUtils.currencyText(instantBuyPrice, true)))
-			.addLoreLine(Text.literal("Instant Sell: ")
-				.styled(s -> s.withItalic(false).withColor(Formatting.GRAY))
-				.append(loading
-					? loadingText
-					: StonksFabricUtils.currencyText(instantSellPrice, true)))
-			.setCallback((index, type, action, gui) -> new ProductMenu(this, player, product).open()));
+				return GuiElementBuilder.from(dispStack)
+					.setLore(new ArrayList<>()) // Clear all lore
+					.addLoreLine(Text.literal(category.getCategoryName())
+						.styled(s -> s.withItalic(false).withColor(Formatting.DARK_GRAY)))
+					.addLoreLine(Text.empty())
+					.addLoreLine(Text.literal("Instant Buy: ")
+						.styled(s -> s.withColor(Formatting.GRAY))
+						.append(StonksFabricUtils.currencyText(instantBuyPrice, true)))
+					.addLoreLine(Text.literal("Instant Sell: ")
+						.styled(s -> s.withColor(Formatting.GRAY))
+						.append(StonksFabricUtils.currencyText(instantSellPrice, true)))
+					.addLoreLine(Text.empty())
+					.addLoreLine(Text.literal("Click").styled(s -> s.withColor(Formatting.YELLOW))
+						.append(" to open product info").styled(s -> s.withColor(Formatting.GRAY)))
+					.asStack();
+			}
 
-		if (overview.get().isEmpty()) {
-			disableCategorySwitching = true;
-
-			overview.afterThatDo($ -> {
-				disableCategorySwitching = false;
-				placeItem(slot, cache, category, product);
-			});
-		}
+			@Override
+			public void onSlotClick(int index, ClickType type, SlotActionType action, SlotGuiInterface gui, ProductMarketOverview success, Throwable error) {
+				if (error != null) return;
+				new ProductMenu(MarketMainMenu.this, getPlayer(), product).open();
+			}
+		});
 	}
 }

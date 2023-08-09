@@ -14,6 +14,7 @@ import nahara.modkit.annotations.v1.EntryPoint;
 import nahara.modkit.annotations.v1.Mod;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -94,6 +95,10 @@ public class StonksFabric {
 				LOGGER.info("Saving data for local service...");
 				local.saveServiceData();
 			}
+		});
+
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			((StonksProvider) server).getTasksHandler().tick();
 		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

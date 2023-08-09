@@ -7,6 +7,7 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
 
 public interface StonksProvider {
@@ -39,6 +40,16 @@ public interface StonksProvider {
 	 * @return The adapter.
 	 */
 	public StonksFabricAdapter getStonksAdapter();
+
+	/**
+	 * <p>
+	 * Obtain the tasks handler, which can be used to handle tasks that might throw
+	 * {@link Throwable}.
+	 * </p>
+	 * 
+	 * @return The tasks handler.
+	 */
+	public TasksHandler getTasksHandler();
 
 	public void startStonks(StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters);
 }

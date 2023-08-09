@@ -29,7 +29,16 @@ public class InstantBuyMenu extends StackedMenu {
 		this.instantPricePerUnit = instantPricePerUnit;
 
 		setTitle(Text.literal("Market > " + product.getProductName() + " > Buy offer"));
+		placeBuyButtons();
+	}
 
+	public Product getProduct() { return product; }
+
+	public double getOriginalPricePerUnit() { return originalPricePerUnit; }
+
+	public double getInstantPricePerUnit() { return instantPricePerUnit; }
+
+	public void placeBuyButtons() {
 		var balance = StonksFabric.getServiceProvider(player).getStonksAdapter().accountBalance(player);
 		setSlot(19, createInstantBuyButton(balance, 1, Items.GOLD_NUGGET));
 		setSlot(20, createInstantBuyButton(balance, 16, Items.GOLD_INGOT));
@@ -45,11 +54,17 @@ public class InstantBuyMenu extends StackedMenu {
 			.setCallback((index, type, action, gui) -> new OfferInstantBuyAmountInput(player, this).open()));
 	}
 
-	public Product getProduct() { return product; }
-
-	public double getOriginalPricePerUnit() { return originalPricePerUnit; }
-
-	public double getInstantPricePerUnit() { return instantPricePerUnit; }
+	public void blockBuyButtons() {
+		var blockIcon = new GuiElementBuilder(Items.BARRIER)
+			.setName(Text.literal("Can't buy now").styled(s -> s.withColor(Formatting.RED)))
+			.addLoreLine(Text.literal("Buying product...").styled(s -> s.withColor(Formatting.GRAY)));
+		setSlot(19, blockIcon);
+		setSlot(20, blockIcon);
+		setSlot(21, blockIcon);
+		setSlot(22, blockIcon);
+		setSlot(23, blockIcon);
+		setSlot(25, blockIcon);
+	}
 
 	public GuiElementBuilder createInstantBuyButton(double balance, int amount, Item icon) {
 		var moneyToSpend = amount * instantPricePerUnit;
@@ -88,12 +103,19 @@ public class InstantBuyMenu extends StackedMenu {
 					return;
 				}
 
-				StonksFabricHelper.instantOffer(getPlayer(), product, OfferType.BUY, amount, moneyToSpend);
-				if (type.shift) {
-					new InstantBuyMenu(getPrevious(), player, product, originalPricePerUnit, instantPricePerUnit)
-						.open();
-				} else {
-					close();
+				var task = StonksFabricHelper.instantOffer(getPlayer(), product, OfferType.BUY, amount, moneyToSpend);
+				if (!type.shift) close();
+				else {
+					blockBuyButtons();
+					getGuiTasksHandler().handle(task, ($void, error) -> {
+						if (error != null) {
+							close();
+							error.printStackTrace();
+							return;
+						}
+
+						placeBuyButtons();
+					});
 				}
 			});
 	}

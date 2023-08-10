@@ -44,6 +44,9 @@ public class ViewOffersMenu extends StackedMenu {
 	private Cached<List<Offer>> offersCache;
 	private boolean isUpdating = false;
 	private boolean isInitialized = false;
+	private List<Offer> loadedOffers;
+	private int page = 0;
+	private int maxPages = 1;
 
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
@@ -57,6 +60,24 @@ public class ViewOffersMenu extends StackedMenu {
 	protected void placeButtons() {
 		super.placeButtons();
 		setSlot(4, MenuIcons.MAIN_MENU);
+		setSlot(2, new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
+			.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
+			.setCallback((index, type, action, gui) -> {
+				if (page <= 0 || isUpdating) return;
+				page--;
+				placeOffers(loadedOffers);
+				placeButtons();
+			}));
+		setSlot(6, new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
+			.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
+			.setCallback((index, type, action, gui) -> {
+				if (page >= (maxPages - 1) || isUpdating) return;
+				page++;
+				placeOffers(loadedOffers);
+				placeButtons();
+			}));
 	}
 
 	@Override
@@ -68,7 +89,10 @@ public class ViewOffersMenu extends StackedMenu {
 			isUpdating = true;
 
 			getGuiTasksHandler().handle(offersCache.get(), (offers, error) -> {
+				isUpdating = false;
+
 				if (error != null) {
+					loadedOffers = null;
 					setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
 						.setName(Text.literal("An error occured").styled(s -> s.withColor(Formatting.RED)))
 						.addLoreLine(Text.literal("Retrying in few seconds, please wait...")
@@ -77,13 +101,18 @@ public class ViewOffersMenu extends StackedMenu {
 					return;
 				}
 
+				loadedOffers = offers;
+				maxPages = Math.max((offers.size() / getOffersPerPage()) + 1, 1);
 				placeOffers(offers);
-				isUpdating = false;
+				placeButtons();
 			});
 		}
 	}
 
+	public int getOffersPerPage() { return getWidth() * (getHeight() - 1); }
+
 	public void placeOffers(List<Offer> offers) {
+		if (offers == null) return;
 		if (offers.size() == 0) {
 			setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
 				.setName(Text.literal("No offers!").styled(s -> s.withColor(Formatting.RED)))
@@ -92,13 +121,14 @@ public class ViewOffersMenu extends StackedMenu {
 			return;
 		}
 
-		for (int i = 0; i < getWidth() * (getHeight() - 1); i++) {
-			if (i >= offers.size()) {
-				clearSlot(getWidth() + i);
+		for (int i = 0; i < getOffersPerPage(); i++) {
+			var offerIndex = getOffersPerPage() * page + i;
+			if (offerIndex >= offers.size()) {
+				clearSlot(getWidth() + offerIndex);
 				continue;
 			}
 
-			var offer = offers.get(i);
+			var offer = offers.get(offerIndex);
 			setSlot(getWidth() + i, createOfferButton(player, offer)
 				.addLoreLine(Text.empty())
 				.addLoreLine(Text.literal("Click to open").styled(s -> s.withColor(Formatting.GRAY)))

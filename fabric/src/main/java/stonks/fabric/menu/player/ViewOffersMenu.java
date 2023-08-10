@@ -60,24 +60,28 @@ public class ViewOffersMenu extends StackedMenu {
 	protected void placeButtons() {
 		super.placeButtons();
 		setSlot(4, MenuIcons.MAIN_MENU);
-		setSlot(2, new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
-			.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
-			.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
-			.setCallback((index, type, action, gui) -> {
-				if (page <= 0 || isUpdating) return;
-				page--;
-				placeOffers(loadedOffers);
-				placeButtons();
-			}));
-		setSlot(6, new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
-			.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
-			.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
-			.setCallback((index, type, action, gui) -> {
-				if (page >= (maxPages - 1) || isUpdating) return;
-				page++;
-				placeOffers(loadedOffers);
-				placeButtons();
-			}));
+		setSlot(2, page <= 0
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
+				.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
+				.setCallback((index, type, action, gui) -> {
+					if (page <= 0 || isUpdating) return;
+					page--;
+					placeOffers(loadedOffers);
+					placeButtons();
+				}));
+		setSlot(6, page >= (maxPages - 1)
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
+				.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
+				.setCallback((index, type, action, gui) -> {
+					if (page >= (maxPages - 1) || isUpdating) return;
+					page++;
+					placeOffers(loadedOffers);
+					placeButtons();
+				}));
 	}
 
 	@Override
@@ -124,7 +128,7 @@ public class ViewOffersMenu extends StackedMenu {
 		for (int i = 0; i < getOffersPerPage(); i++) {
 			var offerIndex = getOffersPerPage() * page + i;
 			if (offerIndex >= offers.size()) {
-				clearSlot(getWidth() + offerIndex);
+				clearSlot(getWidth() + i);
 				continue;
 			}
 

@@ -16,6 +16,15 @@ key value
 // You can have multiple key-value pairs with same key and different values
 key yet another value
 
+// Value can be extended to multiple lines by putting "\" at the end of each
+// line. Really useful when writing NBT data.
+nbtData { \
+    display: { \
+        Name: '{"text": "Cursed Paper", "color": "#FF0000", "font": "minecraft:alt"}', \
+        Lore: [] \
+    } \
+}
+
 // This is nested key
 // "name" and "author" belongs to "section"
 section my_section_id

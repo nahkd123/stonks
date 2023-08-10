@@ -44,7 +44,11 @@ import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
 
 public class MarketMainMenu extends StackedMenu {
+	private static final int CATEGORIES_PER_PAGE = 5;
+	private static final int PRODUCTS_PER_PAGE = 7 * 5;
 	private int selectedCategoryIndex = 0;
+	private int categoriesPage = 0, categoriesMaxPages = 1;
+	private int productsPage = 0, productsMaxPage = 1;
 
 	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
@@ -54,6 +58,8 @@ public class MarketMainMenu extends StackedMenu {
 			var slot = (i + 1) * getWidth();
 			setSlot(slot, WaitableGuiElement.ANIMATED_LOADING);
 		}
+
+		placePagesNavigations(null);
 
 		var cx = (getWidth() - 2) / 2;
 		var cy = (getHeight() - 1) / 2;
@@ -77,7 +83,9 @@ public class MarketMainMenu extends StackedMenu {
 					return;
 				}
 
+				categoriesMaxPages = Math.max((int) Math.ceil(categories.size() / (double) CATEGORIES_PER_PAGE), 1);
 				refresh(categories);
+				placePagesNavigations(categories);
 			});
 	}
 
@@ -93,6 +101,60 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(4, MenuIcons.VIEW_SELF_OFFERS);
 	}
 
+	protected void placePagesNavigations(List<Category> categories) {
+		// Categories
+		setSlot(10, categories == null || categoriesPage <= 0
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.RED_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage, 64), 1))
+				.setName(Text.literal("Scroll Up").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current page: " + (categoriesPage + 1) + "/" + categoriesMaxPages)
+					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setCallback((index, type, action, gui) -> {
+					if (categoriesPage <= 0 || categories == null) return;
+					categoriesPage--;
+					refresh(categories);
+					placePagesNavigations(categories);
+				}));
+		setSlot(46, categories == null || categoriesPage >= (categoriesMaxPages - 1)
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage + 2, 64), 1))
+				.setName(Text.literal("Scroll Down").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current page: " + (categoriesPage + 1) + "/" + categoriesMaxPages)
+					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setCallback((index, type, action, gui) -> {
+					if (categoriesPage >= (categoriesMaxPages - 1) || categories == null) return;
+					categoriesPage++;
+					refresh(categories);
+					placePagesNavigations(categories);
+				}));
+
+		// Products
+		setSlot(2, categories == null || productsPage <= 0
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage, 64), 1))
+				.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current page: " + (productsPage + 1) + "/" + productsMaxPage)
+					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setCallback((index, type, action, gui) -> {
+					if (productsPage <= 0 || categories == null) return;
+					productsPage--;
+					refresh(categories);
+					placePagesNavigations(categories);
+				}));
+		setSlot(6, categories == null || productsPage >= (productsMaxPage - 1)
+			? MenuIcons.BORDER
+			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage + 2, 64), 1))
+				.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
+				.addLoreLine(Text.literal("Current page: " + (productsPage + 1) + "/" + productsMaxPage)
+					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setCallback((index, type, action, gui) -> {
+					if (productsPage >= (productsMaxPage - 1) || categories == null) return;
+					productsPage++;
+					refresh(categories);
+					placePagesNavigations(categories);
+				}));
+	}
+
 	private void refresh(List<Category> categories) {
 		placeCategories(categories);
 		placeCategory(categories.get(selectedCategoryIndex));
@@ -100,24 +162,27 @@ public class MarketMainMenu extends StackedMenu {
 
 	private void placeCategories(List<Category> categories) {
 		for (int i = 0; i < getHeight() - 1; i++) {
-			var i2 = i;
+			var currentCategoryIndex = categoriesPage * CATEGORIES_PER_PAGE + i;
 			var slot = (i + 1) * getWidth();
-			if (i >= categories.size()) clearSlot(slot);
+			if (currentCategoryIndex >= categories.size()) clearSlot(slot);
 			else {
-				var category = categories.get(i);
-				var selected = i == selectedCategoryIndex;
+				var category = categories.get(currentCategoryIndex);
+				var selected = currentCategoryIndex == selectedCategoryIndex;
 
 				var a = new GuiElementBuilder(Items.PAPER)
 					.setName(Text.literal(category.getCategoryName()).styled(s -> s.withColor(Formatting.AQUA)))
 					.addLoreLine(Text.literal(selected ? "Selected" : "Click to open")
 						.styled(s -> s.withColor(Formatting.GRAY)))
 					.setCallback((index, type, action, gui) -> {
-						selectedCategoryIndex = i2;
+						selectedCategoryIndex = currentCategoryIndex;
+						productsPage = 0;
+						productsMaxPage = Math
+							.max((int) Math.ceil(category.getProducts().size() / (double) PRODUCTS_PER_PAGE), 1);
 						refresh(categories);
+						placePagesNavigations(categories);
 					});
 
 				if (selected) a.glow();
-
 				setSlot(slot, a);
 			}
 		}
@@ -129,19 +194,20 @@ public class MarketMainMenu extends StackedMenu {
 		for (int y = 0; y < getHeight() - 1; y++) {
 			for (int x = 0; x < getWidth() - 2; x++) {
 				var slot = (2 + x) + (1 + y) * getWidth();
-				var i = x + y * (getWidth() - 2);
+				var productIndex = x + y * (getWidth() - 2);
+				productIndex += PRODUCTS_PER_PAGE * productsPage;
 
-				if (i >= category.getProducts().size()) {
+				if (productIndex >= category.getProducts().size()) {
 					clearSlot(slot);
 				} else {
-					var product = category.getProducts().get(i);
-					placeItem(slot, cache, category, product);
+					var product = category.getProducts().get(productIndex);
+					placeProduct(slot, cache, category, product);
 				}
 			}
 		}
 	}
 
-	private void placeItem(int slot, StonksServiceCache cache, Category category, Product product) {
+	private void placeProduct(int slot, StonksServiceCache cache, Category category, Product product) {
 		var dispStack = StonksFabric.getDisplayStack(StonksFabric
 			.getServiceProvider(getPlayer())
 			.getStonksAdapter(), product);

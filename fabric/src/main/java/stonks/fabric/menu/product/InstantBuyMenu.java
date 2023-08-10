@@ -127,6 +127,11 @@ public class InstantBuyMenu extends StackedMenu {
 				var task = StonksFabricHelper.instantOffer(getPlayer(), product, OfferType.BUY, amount, moneyToSpend);
 				if (!type.shift) close();
 				else {
+					if (task.get().isPresent()) {
+						placeBuyButtons();
+						return;
+					}
+
 					blockBuyButtons();
 					getGuiTasksHandler().handle(task, ($void, error) -> {
 						if (error != null) {

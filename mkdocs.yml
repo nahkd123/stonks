@@ -1,4 +1,5 @@
 site_name: Stonks Documentations
+site_url: https://nahkd123.github.io/stonks/
 theme:
   name: material
   palette:

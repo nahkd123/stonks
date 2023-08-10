@@ -54,33 +54,39 @@ public class ViewOffersMenu extends StackedMenu {
 		offersCache = StonksFabric.getServiceProvider(player).getStonksCache().getOffers(player.getUuid());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
+		placePagesNavigations();
 	}
 
 	@Override
 	protected void placeButtons() {
 		super.placeButtons();
 		setSlot(4, MenuIcons.MAIN_MENU);
+	}
+
+	protected void placePagesNavigations() {
 		setSlot(2, page <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
 				.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
-				.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
+				.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages)
+					.styled(s -> s.withColor(Formatting.GRAY)))
 				.setCallback((index, type, action, gui) -> {
 					if (page <= 0 || isUpdating) return;
 					page--;
 					placeOffers(loadedOffers);
-					placeButtons();
+					placePagesNavigations();
 				}));
 		setSlot(6, page >= (maxPages - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
-				.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
+				.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY))
+					.styled(s -> s.withColor(Formatting.GRAY)))
 				.addLoreLine(Text.literal("Current Page: " + (page + 1) + "/" + maxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (page >= (maxPages - 1) || isUpdating) return;
 					page++;
 					placeOffers(loadedOffers);
-					placeButtons();
+					placePagesNavigations();
 				}));
 	}
 
@@ -108,7 +114,7 @@ public class ViewOffersMenu extends StackedMenu {
 				loadedOffers = offers;
 				maxPages = Math.max((offers.size() / getOffersPerPage()) + 1, 1);
 				placeOffers(offers);
-				placeButtons();
+				placePagesNavigations();
 			});
 		}
 	}

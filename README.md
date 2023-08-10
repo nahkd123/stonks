@@ -16,8 +16,7 @@ You can grab development builds from [Actions](https://github.com/nahkd123/stonk
 No releases have been rolled out so far, but if there is a release, you can check out [Releases page](https://github.com/nahkd123/stonks/releases).
 
 ## Documentations
-- [Wiki](https://github.com/nahkd123/stonks/wiki)
-- [Developer's documentations](https://github.com/nahkd123/stonks/tree/main/1.20.x/docs)
+For documentations, please [see here](https://nahkd123.github.io/stonks/).
 
 ## Contributing
 All contributions are welcomed! This includes code, documentations, finding bugs and even helping other people using Stonks! 

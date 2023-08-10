@@ -50,7 +50,7 @@ Each server can only have 1 running Stonks service, which must be configured man
         // You can configure your service by adding nested entries under "useService"
     ```
 
-For a list of services see [here](../References/Services/IntegratedStonksService.md).
+For a list of services, see [References/Services](../References/Services/IntegratedStonksService.md).
 
 ### Registering adapters
 Unlike services, you can register multiple adapters inside your configuration file. Adapters are used to convert Stonks products into equivalents in your server and vice versa.
@@ -61,3 +61,5 @@ Unlike services, you can register multiple adapters inside your configuration fi
         // Some services may requires you to configure something
         // You can configure your service by adding nested entries under "useAdapter"
     ```
+
+For a list of adapters, see [References/Adapters](../References/Adapters/CommonEconomyAdapter.md).

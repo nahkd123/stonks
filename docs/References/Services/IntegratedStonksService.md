@@ -51,7 +51,7 @@ Construction data are used to tell adapters how to convert Stonks product into i
 For example: An adapter accepts `essence essence_id` construction data and tells Stonks how much essences player have, along with converting add/remove products operations into add/remove essences, respectively.
 
 !!! note
-    3rd party mods/plugins can register their own adapters to Stonks. If you are a developer, see Developer's Documentations to learn how to register your adapters.
+    3rd party mods/plugins can register their own adapters to Stonks. If you are a developer, see [this](<../../Developer's Documentations/Stonks for Fabric/Adapter Providers.md>) to learn how to register your adapters.
 
 ## Market data file
 Market data file can be found inside your world save:

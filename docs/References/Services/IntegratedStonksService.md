@@ -1,4 +1,6 @@
 # `IntegratedStonksService`
+This service stores all market data locally (in your world folder to be precise).
+
 === "Fabric"
     ```naharaconfig
     useService stonks.fabric.service.IntegratedStonksService
@@ -50,3 +52,10 @@ For example: An adapter accepts `essence essence_id` construction data and tells
 
 !!! note
     3rd party mods/plugins can register their own adapters to Stonks. If you are a developer, see Developer's Documentations to learn how to register your adapters.
+
+## Market data file
+Market data file can be found inside your world save:
+- For server: `world/stonks.bin`
+- For client: `.minecraft/saves/<World Name>/stonks.bin`
+
+You can inspect market data using ImHex with [Stonks `.hexpat`](https://github.com/nahkd123/stonks/blob/main/1.20.x/tools/stonks-offer-data.hexpat) pattern.

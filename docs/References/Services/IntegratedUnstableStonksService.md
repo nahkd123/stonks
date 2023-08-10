@@ -1,4 +1,6 @@
 # `IntegratedUnstableStonksService`
+This service is used to test stability of Stonks front-ends (such as Stonks for Fabric and Stonks for Bukkit).
+
 === "Fabric"
     ```naharaconfig
     useService stonks.fabric.service.IntegratedUnstableStonksService

@@ -112,7 +112,7 @@ public class ViewOffersMenu extends StackedMenu {
 				}
 
 				loadedOffers = offers;
-				maxPages = Math.max((offers.size() / getOffersPerPage()) + 1, 1);
+				maxPages = Math.max(offers.size() / getOffersPerPage(), 1);
 				placeOffers(offers);
 				placePagesNavigations();
 			});

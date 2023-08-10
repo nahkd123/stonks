@@ -99,6 +99,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
 		var refStack = convert(product);
 		if (refStack == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
+		if (amount == 0) return true;
 
 		var inv = player.getInventory();
 		var giveStack = refStack.copyWithCount(amount);
@@ -117,6 +118,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
 		var refStack = convert(product);
 		if (refStack == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
+		if (amount == 0) return true;
 
 		var inv = player.getInventory();
 

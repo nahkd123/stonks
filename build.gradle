@@ -40,6 +40,7 @@ subprojects {
     spotless {
         java {
             eclipse().configFile("${rootProject.projectDir}/stonks2-eclipse-formatter.xml")
+            licenseHeaderFile("${rootProject.projectDir}/HEADER").updateYearWithLatest(true)
         }
     }
 

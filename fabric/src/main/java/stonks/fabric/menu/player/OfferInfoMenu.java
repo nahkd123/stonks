@@ -21,8 +21,6 @@
  */
 package stonks.fabric.menu.player;
 
-import java.util.Optional;
-
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -30,12 +28,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.menu.MenuIcons;
+import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 
 public class OfferInfoMenu extends StackedMenu {
@@ -44,7 +41,7 @@ public class OfferInfoMenu extends StackedMenu {
 	public OfferInfoMenu(StackedMenu previous, ServerPlayerEntity player, Offer offer) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		this.offer = offer;
-		setTitle(Text.literal("Market > Offers > " + offer.getProduct().getProductName()));
+		setTitle(MenuText.menus$offerInfo(offer));
 
 		setSlot(7, ViewOffersMenu.createOfferButton(player, offer));
 
@@ -64,20 +61,15 @@ public class OfferInfoMenu extends StackedMenu {
 		var unitsToClaim = offer.getAvailableToClaim();
 
 		return new GuiElementBuilder(canClaim ? Items.GOLD_INGOT : Items.BARRIER)
-			.setName(Text.literal("Claim offer").styled(s -> s.withColor(Formatting.YELLOW)))
+			.setName(MenuText.menus$offerInfo$claimOffer)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("You have ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(switch (offer.getType()) {
-				case BUY -> Text.literal(unitsToClaim + " units").styled(s -> s.withColor(Formatting.AQUA));
-				case SELL -> StonksFabricUtils.currencyText(Optional.of(unitsToClaim * offer.getPricePerUnit()), true);
-				})
-				.append(" to claim"))
+			.addLoreLine(offer.getType() == OfferType.BUY
+				? MenuText.menus$offerInfo$claimOffer$units(unitsToClaim)
+				: MenuText.menus$offerInfo$claimOffer$money(unitsToClaim, offer))
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal(canClaim
-				? "Click to claim all"
-				: "Can't claim")
-				.styled(s -> s.withColor(canClaim ? Formatting.GRAY : Formatting.RED)))
+			.addLoreLine(canClaim
+				? MenuText.menus$offerInfo$claimOffer$clickToClaim
+				: MenuText.menus$offerInfo$claimOffer$noClaim)
 			.setCallback((index, type, action, gui) -> {
 				if (!canClaim) return;
 
@@ -86,16 +78,14 @@ public class OfferInfoMenu extends StackedMenu {
 				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
-					.setName(Text.literal("Claiming...").styled(s -> s.withColor(Formatting.GRAY))));
+					.setName(MenuText.menus$offerInfo$claimOffer$claiming));
 
 				var previousUnits = offer.getClaimedUnits();
 				handler.handle(service.claimOffer(offer), (newOffer, error) -> {
 					if (error != null) {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
-							.setName(Text.literal("Claim failed!").styled(s -> s.withColor(Formatting.RED))));
-						else getPlayer().sendMessage(Text.literal("An error occured. Claim failed!")
-							.styled(s -> s.withColor(Formatting.RED)), true);
-
+							.setName(MenuText.menus$offerInfo$claimOffer$claimFailed));
+						else getPlayer().sendMessage(MenuText.messages$offerClaimFailed, true);
 						error.printStackTrace();
 						return;
 					}
@@ -117,27 +107,24 @@ public class OfferInfoMenu extends StackedMenu {
 
 	public GuiElementBuilder createCancelButton() {
 		return new GuiElementBuilder(Items.RED_TERRACOTTA)
-			.setName(Text.literal("Cancel offer").styled(s -> s.withColor(Formatting.YELLOW)))
-			.addLoreLine(Text.literal("Pending items/money will be").styled(s -> s.withColor(Formatting.GRAY)))
-			.addLoreLine(Text.literal("refunded.").styled(s -> s.withColor(Formatting.GRAY)))
+			.setName(MenuText.menus$offerInfo$cancelOffer)
+			.addLoreLine(MenuText.menus$offerInfo$cancelOffer$0)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Click to cancel").styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(MenuText.menus$offerInfo$cancelOffer$clickToCancel)
 			.setCallback((index, type, action, gui) -> {
 				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
 				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
-					.setName(Text.literal("Cancelling...").styled(s -> s.withColor(Formatting.GRAY))));
+					.setName(MenuText.menus$offerInfo$cancelOffer$cancelling));
 
 				var previousClaimedUnits = offer.getClaimedUnits();
 				handler.handle(service.cancelOffer(offer), (newOffer, error) -> {
 					if (error != null) {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
-							.setName(Text.literal("Cancel failed!").styled(s -> s.withColor(Formatting.RED))));
-						else getPlayer().sendMessage(Text.literal("An error occured. Cancel failed!")
-							.styled(s -> s.withColor(Formatting.RED)), true);
-
+							.setName(MenuText.menus$offerInfo$cancelOffer$cancelFailed));
+						else getPlayer().sendMessage(MenuText.messages$offerCancelFailed, true);
 						error.printStackTrace();
 						return;
 					}
@@ -160,11 +147,7 @@ public class OfferInfoMenu extends StackedMenu {
 
 					close();
 					getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
-					getPlayer().sendMessage(Text.literal("Offer cancelled! Refunded ")
-						.append(Text.literal(Integer.toString(refundUnits))
-							.styled(s -> s.withColor(Formatting.AQUA)))
-						.append("x " + newOffer.getProduct().getProductName() + " and ")
-						.append(StonksFabricUtils.currencyText(Optional.of(refundMoney), true)), true);
+					getPlayer().sendMessage(MenuText.menus$offerCancelled(newOffer, refundUnits, refundMoney), true);
 				});
 			});
 	}

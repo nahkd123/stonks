@@ -27,7 +27,9 @@ import java.util.Optional;
 
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import stonks.core.market.ComputedOffersList;
 import stonks.core.market.Offer;
+import stonks.core.product.Product;
 import stonks.fabric.StonksFabricUtils;
 
 // @formatter:off
@@ -93,6 +95,20 @@ public class MenuText {
 	public static final Text menus$offerInfo$cancelOffer$clickToCancel = Text.translatableWithFallback("stonks.menu.offerInfo.cancelOffer.clickToCancel", "\u00a77Click to cancel");
 	public static final Text menus$offerInfo$cancelOffer$cancelling = Text.translatableWithFallback("stonks.menu.offerInfo.cancelOffer.cancelling", "\u00a77Cancelling...");
 	public static final Text menus$offerInfo$cancelOffer$cancelFailed = Text.translatableWithFallback("stonks.menu.offerInfo.cancelOffer.cancelFailed", "\u00a7cCancel failed!");
+
+	public static Text menus$productInfo(Product product) { return Text.translatableWithFallback("stonks.menu.productInfo", "Market > %s", product.getProductName()); }
+	public static Text menus$productInfo$instantBuy(Optional<ComputedOffersList> computed) { return Text.translatableWithFallback("stonks.menu.productInfo.instantBuy", "\u00a7eInstant buy \u00a76(\u00a7eAvg. %s\u00a76)", StonksFabricUtils.currencyText(computed.map(v -> v.average()), false)); }
+	public static Text menus$productInfo$instantSell(Optional<ComputedOffersList> computed) { return Text.translatableWithFallback("stonks.menu.productInfo.instantSell", "\u00a7eInstant sell \u00a76(\u00a7eAvg. %s\u00a76)", StonksFabricUtils.currencyText(computed.map(v -> v.average()), false)); }
+	public static Text menus$productInfo$topOfferedPrice(Optional<Double> topPrice) { return Text.translatableWithFallback("stonks.menu.productInfo.topOfferedPrice", "\u00a77Top Offered Price: %s", StonksFabricUtils.currencyText(topPrice, true)); }
+	public static Text menus$productInfo$avgOfferedPrice(Optional<ComputedOffersList> computed) { return Text.translatableWithFallback("stonks.menu.productInfo.avgOfferedPrice", "\u00a77Average Offered Price: %s", StonksFabricUtils.currencyText(computed.map(v -> v.average()), true)); }
+	public static final Text menus$productInfo$noOffers = Text.translatableWithFallback("stonks.menu.productInfo.noOffers", "\u00a7cNo offers!");
+	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("messages.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
+	public static final Text menus$productInfo$clickToInstantBuy = Text.translatableWithFallback("stonks.menu.productInfo.clickToInstantBuy", "\u00a77Click to setup instant buy");
+	public static final Text menus$productInfo$clickToInstantSell = Text.translatableWithFallback("stonks.menu.productInfo.clickToInstantSell", "\u00a77Click to sell all");
+	public static final Text menus$productInfo$buyOffer = Text.translatableWithFallback("stonks.menu.productInfo.buyOffer", "\u00a7eCreate buy offer");
+	public static final Text menus$productInfo$sellOffer = Text.translatableWithFallback("stonks.menu.productInfo.sellOffer", "\u00a7eCreate sell offer");
+	public static final Text menus$productInfo$makeOffer = Text.translatableWithFallback("stonks.menu.productInfo.makeOffer", "\u00a77Click to make offer");
+	public static final Text menus$productInfo$makeOffer$noOffers = Text.translatableWithFallback("stonks.menu.productInfo.makeOffer.noOffers", "\u00a77Click to become the first person to get rich");
 
 	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.messages.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
 	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.messages.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");

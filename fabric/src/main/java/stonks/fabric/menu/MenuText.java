@@ -102,7 +102,6 @@ public class MenuText {
 	public static Text menus$productInfo$topOfferedPrice(Optional<Double> topPrice) { return Text.translatableWithFallback("stonks.menu.productInfo.topOfferedPrice", "\u00a77Top Offered Price: %s", StonksFabricUtils.currencyText(topPrice, true)); }
 	public static Text menus$productInfo$avgOfferedPrice(Optional<ComputedOffersList> computed) { return Text.translatableWithFallback("stonks.menu.productInfo.avgOfferedPrice", "\u00a77Average Offered Price: %s", StonksFabricUtils.currencyText(computed.map(v -> v.average()), true)); }
 	public static final Text menus$productInfo$noOffers = Text.translatableWithFallback("stonks.menu.productInfo.noOffers", "\u00a7cNo offers!");
-	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("messages.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
 	public static final Text menus$productInfo$clickToInstantBuy = Text.translatableWithFallback("stonks.menu.productInfo.clickToInstantBuy", "\u00a77Click to setup instant buy");
 	public static final Text menus$productInfo$clickToInstantSell = Text.translatableWithFallback("stonks.menu.productInfo.clickToInstantSell", "\u00a77Click to sell all");
 	public static final Text menus$productInfo$buyOffer = Text.translatableWithFallback("stonks.menu.productInfo.buyOffer", "\u00a7eCreate buy offer");
@@ -110,13 +109,35 @@ public class MenuText {
 	public static final Text menus$productInfo$makeOffer = Text.translatableWithFallback("stonks.menu.productInfo.makeOffer", "\u00a77Click to make offer");
 	public static final Text menus$productInfo$makeOffer$noOffers = Text.translatableWithFallback("stonks.menu.productInfo.makeOffer.noOffers", "\u00a77Click to become the first person to get rich");
 
+	public static Text menus$instantBuy(Product product) { return Text.translatableWithFallback("stonks.menu.instantBuy", "Market > %s > Instant buy", product.getProductName()); }
+	public static final Text menus$instantBuy$customAmount = Text.translatableWithFallback("stonks.menu.instantBuy.customAmount", "\u00a7eCustom amount");
+	public static final Text menus$instantBuy$customAmount$0 = Text.translatableWithFallback("stonks.menu.instantBuy.customAmount.0", "\u00a77Click to specify amount");
+	public static Text menus$instantBuy$fixedAmount(int amount) { return Text.translatableWithFallback("stonks.menu.instantBuy.fixedAmount", "\u00a7eInstant buy x%s", Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.YELLOW))); }
+	public static Text menus$instantBuy$averagePrice(int amount, double originalPricePerUnit) { return Text.translatableWithFallback("stonks.menu.instantBuy.averagePrice", "\u00a77Average price: %s", StonksFabricUtils.currencyText(Optional.of(amount * originalPricePerUnit), true)); }
+	public static Text menus$instantBuy$minimumBalance(double moneyToSpend) { return Text.translatableWithFallback("stonks.menu.instantBuy.minimumBalance", "\u00a77Minimum balance: %s", StonksFabricUtils.currencyText(Optional.of(moneyToSpend), true)); }
+	public static final Text menus$instantBuy$0 = Text.translatableWithFallback("stonks.menu.instantBuy.0", "\u00a78Having minimum balance is required to");
+	public static final Text menus$instantBuy$1 = Text.translatableWithFallback("stonks.menu.instantBuy.1", "\u00a78avoid your buy request from failing.");
+	public static final Text menus$instantBuy$holdShift = Text.translatableWithFallback("stonks.menu.instantBuy.holdShift", "\u00a77Hold Shift to keep this menu opened");
+	public static final Text menus$instantBuy$clickToBuy = Text.translatableWithFallback("stonks.menu.instantBuy.clickToBuy", "\u00a77Click to instantly buy");
+	public static final Text menus$instantBuy$noBuy = Text.translatableWithFallback("stonks.menu.instantBuy.noBuy", "\u00a7cCan't instant buy");
+	public static final Text menus$instantBuy$buying = Text.translatableWithFallback("stonks.menu.instantBuy.buying", "\u00a7cCan't buy now");
+	public static final Text menus$instantBuy$buying$0 = Text.translatableWithFallback("stonks.menu.instantBuy.buying.0", "\u00a77Buying product...");
+	public static final Text menus$instantBuy$confirm = Text.translatableWithFallback("stonks.menu.instantBuy.confirm", "\u00a7eConfirm instant buy");
+	public static Text menus$instantBuy$confirm$0(int amount, Product product) {
+		return Text.translatableWithFallback("stonks.menu.instantBuy.confirm.0", "\u00a77%s\u00a77x %s",
+			Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.GRAY)),
+			Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)));
+	}
+
 	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.messages.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
 	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.messages.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");
-	public static Text menus$offerCancelled(Offer newOffer, int refundUnits, double refundMoney) {
+	public static Text messages$offerCancelled(Offer newOffer, int refundUnits, double refundMoney) {
 		return Text.translatableWithFallback("stonks.messages.offerCancelled", "Offer cancelled! Refunded %sx %s and %s",
 			Text.literal(Integer.toString(refundUnits)).styled(s -> s.withColor(Formatting.AQUA)),
 			newOffer.getProduct().getProductName(),
 			StonksFabricUtils.currencyText(Optional.of(refundMoney), true));
 	}
+	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("messages.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
+	public static Text messages$noMoneyToInstantBuy(double moneyToSpend) { return Text.translatableWithFallback("messages.noMoneyToInstantBuy", "\u00a7cYou don't have %s \u00a7cto buy!", StonksFabricUtils.currencyText(Optional.of(moneyToSpend), true)); }
 }
 // @formatter:on

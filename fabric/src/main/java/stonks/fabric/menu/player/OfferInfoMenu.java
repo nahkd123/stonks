@@ -147,7 +147,7 @@ public class OfferInfoMenu extends StackedMenu {
 
 					close();
 					getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
-					getPlayer().sendMessage(MenuText.menus$offerCancelled(newOffer, refundUnits, refundMoney), true);
+					getPlayer().sendMessage(MenuText.messages$offerCancelled(newOffer, refundUnits, refundMoney), true);
 				});
 			});
 	}

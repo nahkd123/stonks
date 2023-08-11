@@ -103,13 +103,18 @@ public class ProductMenu extends StackedMenu {
 				}
 
 				var topPrice = computed.map(v -> type == OfferType.BUY ? v.min() : v.max());
-				return new GuiElementBuilder(icon)
+				var tax = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().tax;
+				var out = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
 						? MenuText.menus$productInfo$instantBuy(computed)
 						: MenuText.menus$productInfo$instantSell(computed))
 					.addLoreLine(Text.empty())
 					.addLoreLine(MenuText.menus$productInfo$topOfferedPrice(topPrice))
-					.addLoreLine(MenuText.menus$productInfo$avgOfferedPrice(computed))
+					.addLoreLine(MenuText.menus$productInfo$avgOfferedPrice(computed));
+
+				if (type == OfferType.SELL && tax > 0d) out.addLoreLine(MenuText.menus$productInfo$instantSellTax(tax));
+
+				return out
 					.addLoreLine(Text.empty())
 					.addLoreLine(computed.isEmpty()
 						? MenuText.menus$productInfo$noOffers

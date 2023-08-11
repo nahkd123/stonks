@@ -77,9 +77,10 @@ public class StonksFabricHelper {
 							unitsLeftText);
 					player.sendMessage(text, true);
 				} else {
+					var config = StonksFabric.getServiceProvider(player).getPlatformConfig();
 					var unitsLeft = result.units();
 					var unitsSold = units - unitsLeft;
-					var earnings = result.balance();
+					var earnings = config.applyTax(result.balance());
 
 					provider.getStonksAdapter().accountDeposit(player, earnings);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsLeft);

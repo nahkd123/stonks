@@ -86,7 +86,7 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			? overview.getBuyOffers().compute()
 			: overview.getSellOffers().compute();
 
-		var delta = 0.1;
+		var delta = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().topOfferPriceDelta;
 		var topOfferPPU = computed.map(v -> switch (offerType) {
 		case BUY -> v.max();
 		case SELL -> v.min();

@@ -26,6 +26,7 @@ import java.util.List;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.product.Product;
 import stonks.core.service.StonksService;
+import stonks.fabric.PlatformConfig;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
 import stonks.fabric.misc.TasksHandler;
@@ -72,5 +73,15 @@ public interface StonksProvider {
 	 */
 	public TasksHandler getTasksHandler();
 
-	public void startStonks(StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters);
+	/**
+	 * <p>
+	 * Platform-specific configurations. These configurations are not shared through
+	 * services, unlike {@code useService}.
+	 * </p>
+	 * 
+	 * @return Platform configurations.
+	 */
+	public PlatformConfig getPlatformConfig();
+
+	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters);
 }

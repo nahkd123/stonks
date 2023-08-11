@@ -59,12 +59,15 @@ public class OfferInfoMenu extends StackedMenu {
 	public GuiElementBuilder createClaimAllButton() {
 		var canClaim = offer.canClaim();
 		var unitsToClaim = offer.getAvailableToClaim();
+		var config = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig();
+		var tax = config.tax;
 
 		return new GuiElementBuilder(canClaim ? Items.GOLD_INGOT : Items.BARRIER)
 			.setName(MenuText.menus$offerInfo$claimOffer)
 			.addLoreLine(Text.empty())
 			.addLoreLine(offer.getType() == OfferType.BUY
 				? MenuText.menus$offerInfo$claimOffer$units(unitsToClaim)
+				: tax > 0d ? MenuText.menus$offerInfo$claimOffer$moneyWithTax(unitsToClaim, offer, config)
 				: MenuText.menus$offerInfo$claimOffer$money(unitsToClaim, offer))
 			.addLoreLine(Text.empty())
 			.addLoreLine(canClaim
@@ -96,7 +99,7 @@ public class OfferInfoMenu extends StackedMenu {
 					if (offer.getType() == OfferType.BUY) {
 						adapter.addUnitsTo(getPlayer(), offer.getProduct(), delta);
 					} else {
-						adapter.accountDeposit(getPlayer(), delta * offer.getPricePerUnit());
+						adapter.accountDeposit(getPlayer(), config.applyTax(delta * offer.getPricePerUnit()));
 					}
 
 					new OfferInfoMenu(getPrevious(), getPlayer(), newOffer).open();

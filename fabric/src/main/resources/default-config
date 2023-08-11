@@ -3,6 +3,22 @@
 // Issues tracker: https://github.com/nahkd123/stonks/issues
 // Documentations: https://github.com/nahkd123/stonks/wiki
 
+// Platform configurations
+// These configurations are defaults. You can omit them if you want.
+platformConfig
+    // Number of currency decimal points. Used for parsing player's input.
+    // Set this to 0 if you are using economy system with integer value for currency
+    // It should be equals to configured decimal points in ScoreboardEconomyAdapter
+    // or CommonEconomyAdapter
+    decimals 2
+
+    // Tax rate. A value of 1 means it will takes 100% of incomes.
+    tax 0.00
+
+    // Price delta for top offer. Used for "Top offer +/- $0.1" button
+    // in offer price setup menu.
+    topOfferPriceDelta 0.1
+
 // Service
 // You can only have 1 active service for each server
 useService stonks.fabric.service.IntegratedStonksService

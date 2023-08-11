@@ -69,7 +69,8 @@ public class OfferCustomPriceInput extends SignGui {
 		}
 
 		try {
-			var base = Double.parseDouble(input);
+			var base = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig()
+				.processCurrency(Double.parseDouble(input));
 			var price = base * mul;
 
 			if (price <= 0) {

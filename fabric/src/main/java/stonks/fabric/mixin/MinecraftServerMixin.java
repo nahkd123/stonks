@@ -31,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.service.LocalStonksService;
 import stonks.core.service.StonksService;
+import stonks.fabric.PlatformConfig;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.adapter.AdaptersContainer;
 import stonks.fabric.adapter.StonksFabricAdapter;
@@ -51,6 +52,8 @@ public abstract class MinecraftServerMixin implements StonksProvider {
 	private AdaptersContainer stonks$adapters;
 	@Unique
 	private TasksHandler stonks$tasksHandler;
+	@Unique
+	private PlatformConfig stonks$config;
 
 	@Override
 	public StonksService getStonksService() { return stonks$service; }
@@ -65,10 +68,14 @@ public abstract class MinecraftServerMixin implements StonksProvider {
 	public TasksHandler getTasksHandler() { return stonks$tasksHandler; }
 
 	@Override
-	public void startStonks(StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters) {
+	public PlatformConfig getPlatformConfig() { return stonks$config; }
+
+	@Override
+	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters) {
 		stonks$service = service.createService((MinecraftServer) (Object) this);
 		stonks$cache = new StonksServiceCache(stonks$service);
 		stonks$tasksHandler = new TasksHandler();
+		stonks$config = config;
 
 		stonks$adapters = new AdaptersContainer();
 		for (var p : adapters) stonks$adapters.add(p.createAdapter((MinecraftServer) (Object) this));

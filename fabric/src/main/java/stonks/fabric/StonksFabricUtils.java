@@ -73,10 +73,16 @@ public class StonksFabricUtils {
 	}
 
 	public static final DecimalFormat CURRENCY_FORMATTER = new DecimalFormat("#,##0.##");
+	public static final DecimalFormat TAX_FORMATTER = new DecimalFormat("#,##0.##%");
 
 	public static Text currencyText(Optional<Double> v, boolean fullNotAvailable) {
 		if (v.isEmpty()) return fullNotAvailable ? MenuText.messages$notAvailable : MenuText.messages$notAvailableShort;
 		return MenuText.messages$currency(v.get());
+	}
+
+	public static Optional<Text> taxText(double tax) {
+		if (tax <= 0d) return Optional.empty();
+		return Optional.of(Text.literal(TAX_FORMATTER.format(tax)).styled(s -> s.withColor(Formatting.YELLOW)));
 	}
 
 	public static Text offerText(OfferType type, OverviewOffer offer) {

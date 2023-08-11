@@ -90,6 +90,7 @@ public class StonksFabric {
 		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
 			StonksServiceProvider service = $ -> new StonksMemoryService();
 			var adapters = new ArrayList<StonksFabricAdapterProvider>();
+			var config = new PlatformConfig();
 
 			for (var child : getMainConfig().getChildren()) {
 				if (child.getKey().equals("useService")) {
@@ -103,12 +104,26 @@ public class StonksFabric {
 					if (newAdapter != null) adapters.add(newAdapter);
 					continue;
 				}
+
+				if (child.getKey().equals("platformConfig") || child.getKey().equals("fabric.platformConfig")) {
+					LOGGER.info("Found platform configurations!");
+					config.from(child);
+				}
 			}
 
 			LOGGER.info("Loading Stonks...");
 			((StonksProvider) server).startStonks(
+				config,
 				service,
 				adapters);
+
+			LOGGER.info("Platform configurations:");
+			LOGGER.info("  Decimal points: {} (minimum of ${})",
+				config.decimals,
+				StonksFabricUtils.CURRENCY_FORMATTER.format(1d / Math.pow(10, config.decimals)));
+			LOGGER.info("  Tax: {}", StonksFabricUtils.TAX_FORMATTER.format(config.tax));
+			LOGGER.info("  Top offer delta: ${}",
+				StonksFabricUtils.CURRENCY_FORMATTER.format(config.topOfferPriceDelta));
 		});
 
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {

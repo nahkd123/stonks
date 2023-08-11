@@ -33,6 +33,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.core.market.OfferType;
 import stonks.core.market.OverviewOffer;
+import stonks.fabric.menu.MenuText;
 
 public class StonksFabricUtils {
 	public static Text progressBar(int width, Formatting background, double[] progress, Formatting[] colors) {
@@ -71,34 +72,23 @@ public class StonksFabricUtils {
 		return out;
 	}
 
-	public static final DecimalFormat CURRENCY_FORMATTER = new DecimalFormat("$#,##0.##");
+	public static final DecimalFormat CURRENCY_FORMATTER = new DecimalFormat("#,##0.##");
 
 	public static Text currencyText(Optional<Double> v, boolean fullNotAvailable) {
-		return v
-			.map(d -> Text.literal(CURRENCY_FORMATTER.format(d)).styled(s -> s.withColor(Formatting.YELLOW)))
-			.orElse(Text.literal(fullNotAvailable ? "Not Available" : "n/a").styled(s -> s.withColor(Formatting.RED)));
+		if (v.isEmpty()) return fullNotAvailable ? MenuText.messages$notAvailable : MenuText.messages$notAvailableShort;
+		return MenuText.messages$currency(v.get());
 	}
 
 	public static Text offerText(OfferType type, OverviewOffer offer) {
-		var typeText = Text.literal(type.toString()).styled(s -> s
-			.withBold(true)
-			.withColor(switch (type) {
-			case BUY -> Formatting.GREEN;
-			case SELL -> Formatting.YELLOW;
-			}));
+		var typeText = type == OfferType.BUY
+			? MenuText.messages$offerInfoText$buy
+			: MenuText.messages$offerInfoText$sell;
+		var totalAvailableUnits = Text.literal(Integer.toString(offer.totalAvailableUnits()))
+			.styled(s -> s.withColor(Formatting.AQUA));
+		var offersCountText = Text.literal(Integer.toString(offer.offers())).styled(s -> s.withColor(Formatting.AQUA));
+		var ppuText = currencyText(Optional.of(offer.pricePerUnit()), false);
 
-		return Text.empty()
-			.styled(s -> s.withColor(Formatting.GRAY))
-			.append(typeText)
-			.append(" ")
-			.append(Text.literal(Integer.toString(offer.totalAvailableUnits()))
-				.styled(s -> s.withColor(Formatting.AQUA)))
-			.append("x from ")
-			.append(Text.literal(Integer.toString(offer.offers()))
-				.styled(s -> s.withColor(Formatting.AQUA)))
-			.append(" offers for ")
-			.append(currencyText(Optional.of(offer.pricePerUnit()), false))
-			.append("/ea"); // BUY 128x from 64 offers for $1,525/ea
+		return MenuText.messages$offerInfoText(typeText, totalAvailableUnits, offersCountText, ppuText);
 	}
 
 	public static boolean compareStack(ItemStack a, ItemStack b) {

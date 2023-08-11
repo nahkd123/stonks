@@ -25,6 +25,7 @@ import static net.minecraft.text.Text.translatableWithFallback;
 
 import java.util.Optional;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.core.market.ComputedOffersList;
@@ -84,7 +85,7 @@ public class MenuText {
 
 	public static Text menus$offerInfo(Offer offer) { return translatableWithFallback("stonks.menu.offerInfo", "Market > Offers > %s", offer.getProduct().getProductName()); }
 	public static final Text menus$offerInfo$claimOffer = translatableWithFallback("stonks.menu.offerInfo.claimOffer", "\u00a7eClaim offer");
-	public static Text menus$offerInfo$claimOffer$units(int unitsToClaim) { return translatableWithFallback("stonks.menu.offerInfo.claimOffer.units", "\u00a77You have %s \u00a77units to claim", Text.literal(unitsToClaim + " units").styled(s -> s.withColor(Formatting.AQUA))); }
+	public static Text menus$offerInfo$claimOffer$units(int unitsToClaim) { return translatableWithFallback("stonks.menu.offerInfo.claimOffer.units", "\u00a77You have %s \u00a77units to claim", Text.literal(Integer.toString(unitsToClaim)).styled(s -> s.withColor(Formatting.AQUA))); }
 	public static Text menus$offerInfo$claimOffer$money(int unitsToClaim, Offer offer) { return translatableWithFallback("stonks.menu.offerInfo.claimOffer.money", "\u00a77You have %s \u00a77to claim", StonksFabricUtils.currencyText(Optional.of(unitsToClaim * offer.getPricePerUnit()), true)); }
 	public static final Text menus$offerInfo$claimOffer$clickToClaim = translatableWithFallback("stonks.menu.offerInfo.claimOffer.clickToClaim", "\u00a77Click to claim all");
 	public static final Text menus$offerInfo$claimOffer$noClaim = translatableWithFallback("stonks.menu.offerInfo.claimOffer.noClaim", "\u00a7cCan't claim");
@@ -181,8 +182,23 @@ public class MenuText {
 	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("stonks.message.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
 	public static Text messages$noMoneyToInstantBuy(double moneyToSpend) { return Text.translatableWithFallback("stonks.message.noMoneyToInstantBuy", "\u00a7cYou don't have %s \u00a7cto buy!", StonksFabricUtils.currencyText(Optional.of(moneyToSpend), true)); }
 	public static Text messages$notEnoughMoney(double balance, double price) { return Text.translatableWithFallback("stonks.message.notEnoughMoney", "\u00a7cNot enough money! (%s\u00a7c/%s\u00a7c)", StonksFabricUtils.currencyText(Optional.of(price), true), StonksFabricUtils.currencyText(Optional.of(balance), true)); }
+	public static Text messages$notEnoughItems(int currentAmount, int amount) { return Text.translatableWithFallback("stonks.message.notEnoughItems", "\u00a7cNot enough items! (%s/%s\u00a7c)", amount, currentAmount); }
 	public static final Text messages$priceMoreThanZero = Text.translatableWithFallback("stonks.message.priceMoreThanZero", "\u00a7cYou must specify price more than $0");
 	public static Text messages$invaildInput(String input) { return Text.translatableWithFallback("stonks.message.invaildInput", "\u00a7cInvaild input: %s", input); }
 	public static final Text messages$amountAtLeastOne = Text.translatableWithFallback("stonks.message.amountAtLeastOne", "\u00a7cYou must specify at least 1");
+	public static final Text message$pleaseWait = Text.translatableWithFallback("stonks.message.pleaseWait", "Please wait...");
+	public static final Text message$errorRefunding = Text.translatableWithFallback("stonks.message.errorRefunding", "\u00a7cAn error occured, refunding all your stuffs");
+	public static Text messages$bought(Text amountText, Text productNameText, Text moneySpentText) { return Text.translatableWithFallback("stonks.message.bought", "Bought %sx %s for %s", amountText, productNameText, moneySpentText); }
+	public static Text messages$boughtWithExtras(Text amountText, Text productNameText, Text moneySpentText, MutableText unitsLeftText) { return Text.translatableWithFallback("stonks.message.boughtWithExtras", "Bought %sx %s for %s with %s units can't be bought", amountText, productNameText, moneySpentText, unitsLeftText); }
+	public static Text messages$sold(Text amountText, Text productNameText, Text moneySpentText) { return Text.translatableWithFallback("stonks.message.sold", "Sold %sx %s for %s", amountText, productNameText, moneySpentText); }
+	public static Text messages$soldWithExtras(Text amountText, Text productNameText, Text moneyReceivedText, MutableText unitsLeftText) { return Text.translatableWithFallback("stonks.message.soldWithExtras", "Sold %sx %s for %s with %s units can't be sold", amountText, productNameText, moneyReceivedText, unitsLeftText); }
+	public static Text messages$placedBuyOffer(MutableText unitsText, MutableText productNameText, Text totalPriceText, Text pricePerUnitText) { return Text.translatableWithFallback("stonks.message.placedBuyOffer", "Placed buy offer: %sx %s for %s @ %s/each", unitsText, productNameText, totalPriceText, pricePerUnitText); }
+	public static Text messages$placedSellOffer(MutableText unitsText, MutableText productNameText, Text totalPriceText, Text pricePerUnitText) { return Text.translatableWithFallback("stonks.message.placedSellOffer", "Placed sell offer: %sx %s for %s @ %s/each", unitsText, productNameText, totalPriceText, pricePerUnitText); }
+	public static final Text messages$notAvailable = Text.translatableWithFallback("stonks.message.notAvailable", "\u00a7cNot Available!");
+	public static final Text messages$notAvailableShort = Text.translatableWithFallback("stonks.message.notAvailable.short", "\u00a7cn/a");
+	public static Text messages$currency(double val) { return Text.translatableWithFallback("stonks.message.currency", "\u00a7e$%s", Text.literal(StonksFabricUtils.CURRENCY_FORMATTER.format(val)).styled(s -> s.withColor(Formatting.YELLOW))); }
+	public static Text messages$offerInfoText(Text typeText, Text totalAvailableUnits, Text offersCountText, Text ppuText) { return Text.translatableWithFallback("stonks.message.offerInfoText", "\u00a77%s %s\u00a77x from %s \u00a77offers for %s\u00a77/each", typeText, totalAvailableUnits, offersCountText, ppuText); }
+	public static final Text messages$offerInfoText$buy = Text.translatableWithFallback("stonks.message.offerInfoText.buy", "\u00a7a\u00a9lBUY");
+	public static final Text messages$offerInfoText$sell = Text.translatableWithFallback("stonks.message.offerInfoText.sell", "\u00a7e\u00a7lSELL");
 }
 // @formatter:on

@@ -26,7 +26,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.menu.MenuText;
@@ -71,8 +70,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 			var amount = base * mul;
 
 			if (amount <= 0) {
-				getPlayer().sendMessage(Text.literal("You must specify at least 1")
-					.styled(s -> s.withColor(Formatting.RED)), true);
+				getPlayer().sendMessage(MenuText.messages$amountAtLeastOne, true);
 				return;
 			}
 
@@ -80,8 +78,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 				.getStonksAdapter()
 				.getUnits(getPlayer(), getMenu().getProduct());
 			if (menu.getOfferType() == OfferType.SELL && amount > currentAmount) {
-				getPlayer().sendMessage(Text.literal("Not enough items! (" + amount + "/" + currentAmount + ")")
-					.styled(s -> s.withColor(Formatting.RED)), true);
+				getPlayer().sendMessage(MenuText.messages$notEnoughItems(currentAmount, amount), true);
 				return;
 			}
 

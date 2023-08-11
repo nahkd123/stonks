@@ -153,6 +153,15 @@ public class MenuText {
 	public static final Text menus$createOffer$customPrice$0 = Text.translatableWithFallback("stonks.menu.createOffer.customPrice.0", "\u00a77Get rich in your own way.");
 	public static final Text menus$createOffer$clickForCustomPrice = Text.translatableWithFallback("stonks.menu.createOffer.clickForCustomPrice", "\u00a77Click to specify custom price");
 
+	public static final Text menus$confirmOffer = Text.translatableWithFallback("stonks.menu.confirmOffer", "Confirm offer");
+	public static final Text menus$confirmOffer$buy = Text.translatableWithFallback("stonks.menu.confirmOffer.buy", "\u00a7aConfirm buy offer");
+	public static final Text menus$confirmOffer$sell = Text.translatableWithFallback("stonks.menu.confirmOffer.sell", "\u00a7aConfirm sell offer");
+	public static Text menus$confirmOffer$buying(Product product, int amount) { return Text.translatableWithFallback("stonks.menu.confirmOffer.buying", "\u00a77Buying %s\u00a77x %s", Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.GRAY)), Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY))); }
+	public static Text menus$confirmOffer$selling(Product product, int amount) { return Text.translatableWithFallback("stonks.menu.confirmOffer.selling", "\u00a77Selling %s\u00a77x %s", Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.GRAY)), Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY))); }
+	public static Text menus$confirmOffer$totalPrice(int amount, double pricePerUnit) { return Text.translatableWithFallback("stonks.menu.confirmOffer.totalPrice", "\u00a77Total price: %s", StonksFabricUtils.currencyText(Optional.of(pricePerUnit * amount), true)); }
+	public static Text menus$confirmOffer$pricePerUnit(double pricePerUnit) { return Text.translatableWithFallback("stonks.menu.confirmOffer.pricePerUnit", "\u00a77Price per unit: %s", StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true)); }
+	public static final Text menus$confirmOffer$clickToConfirm = Text.translatableWithFallback("stonks.menu.confirmOffer.clickToConfirm", "\u00a77Click to confirm");
+
 	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.messages.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
 	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.messages.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");
 	public static Text messages$offerCancelled(Offer newOffer, int refundUnits, double refundMoney) {

@@ -162,15 +162,27 @@ public class MenuText {
 	public static Text menus$confirmOffer$pricePerUnit(double pricePerUnit) { return Text.translatableWithFallback("stonks.menu.confirmOffer.pricePerUnit", "\u00a77Price per unit: %s", StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true)); }
 	public static final Text menus$confirmOffer$clickToConfirm = Text.translatableWithFallback("stonks.menu.confirmOffer.clickToConfirm", "\u00a77Click to confirm");
 
-	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.messages.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
-	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.messages.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");
+	public static final Text signInputs$separator = Text.translatableWithFallback("stonks.signInput.separator", "--------");
+	public static final Text signInputs$priceInput = Text.translatableWithFallback("stonks.signInput.priceInput", "Specify your price per unit");
+	public static final Text signInputs$amountInput = Text.translatableWithFallback("stonks.signInput.amountInput", "Specify your amount");
+	public static Text signInputs$currentBuyTarget(int amount, Product product) { return Text.translatableWithFallback("stonks.signInput.priceInput.currentBuyTargetWithAmount", "You're buying %sx %s", amount, product.getProductName()); }
+	public static Text signInputs$currentSellTarget(int amount, Product product) { return Text.translatableWithFallback("stonks.signInput.priceInput.currentSellTargetWithAmount", "You're selling %sx %s", amount, product.getProductName()); }
+	public static Text signInputs$currentBuyTarget(Product product) { return Text.translatableWithFallback("stonks.signInput.priceInput.currentBuyTarget", "You're buying %s", product.getProductName()); }
+	public static Text signInputs$currentSellTarget(Product product) { return Text.translatableWithFallback("stonks.signInput.priceInput.currentSellTarget", "You're selling %s", product.getProductName()); }
+
+	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.message.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
+	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.message.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");
 	public static Text messages$offerCancelled(Offer newOffer, int refundUnits, double refundMoney) {
-		return Text.translatableWithFallback("stonks.messages.offerCancelled", "Offer cancelled! Refunded %sx %s and %s",
+		return Text.translatableWithFallback("stonks.message.offerCancelled", "Offer cancelled! Refunded %sx %s and %s",
 			Text.literal(Integer.toString(refundUnits)).styled(s -> s.withColor(Formatting.AQUA)),
 			newOffer.getProduct().getProductName(),
 			StonksFabricUtils.currencyText(Optional.of(refundMoney), true));
 	}
-	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("messages.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
-	public static Text messages$noMoneyToInstantBuy(double moneyToSpend) { return Text.translatableWithFallback("messages.noMoneyToInstantBuy", "\u00a7cYou don't have %s \u00a7cto buy!", StonksFabricUtils.currencyText(Optional.of(moneyToSpend), true)); }
+	public static Text messages$noUnitsToInstantSell(Product product) { return Text.translatableWithFallback("stonks.message.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }
+	public static Text messages$noMoneyToInstantBuy(double moneyToSpend) { return Text.translatableWithFallback("stonks.message.noMoneyToInstantBuy", "\u00a7cYou don't have %s \u00a7cto buy!", StonksFabricUtils.currencyText(Optional.of(moneyToSpend), true)); }
+	public static Text messages$notEnoughMoney(double balance, double price) { return Text.translatableWithFallback("stonks.message.notEnoughMoney", "\u00a7cNot enough money! (%s\u00a7c/%s\u00a7c)", StonksFabricUtils.currencyText(Optional.of(price), true), StonksFabricUtils.currencyText(Optional.of(balance), true)); }
+	public static final Text messages$priceMoreThanZero = Text.translatableWithFallback("stonks.message.priceMoreThanZero", "\u00a7cYou must specify price more than $0");
+	public static Text messages$invaildInput(String input) { return Text.translatableWithFallback("stonks.message.invaildInput", "\u00a7cInvaild input: %s", input); }
+	public static final Text messages$amountAtLeastOne = Text.translatableWithFallback("stonks.message.amountAtLeastOne", "\u00a7cYou must specify at least 1");
 }
 // @formatter:on

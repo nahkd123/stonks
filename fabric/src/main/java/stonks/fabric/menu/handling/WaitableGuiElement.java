@@ -33,16 +33,16 @@ import nahara.common.tasks.Task;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import stonks.fabric.menu.MenuText;
 
 public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 	protected static final ItemStack[] LOADING = Stream
 		.of(":..", ".:.", "..:", ".:.")
 		.map(v -> new GuiElementBuilder(Items.CLOCK)
-			.setName(Text.literal("Please wait " + v).styled(s -> s.withColor(Formatting.GRAY)))
+			.setName(MenuText.icons$loading(v))
 			.asStack())
 		.toArray(ItemStack[]::new);
+
 	public static final AnimatedGuiElement ANIMATED_LOADING = new AnimatedGuiElement(LOADING, 5, false, EMPTY_CALLBACK);
 
 	private Task<T> task;

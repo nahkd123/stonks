@@ -39,7 +39,6 @@ import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
 
@@ -52,7 +51,7 @@ public class MarketMainMenu extends StackedMenu {
 
 	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
-		setTitle(Text.literal("Market"));
+		setTitle(MenuText.menus$mainMenu);
 
 		for (int i = 0; i < getHeight() - 1; i++) {
 			var slot = (i + 1) * getWidth();
@@ -69,9 +68,8 @@ public class MarketMainMenu extends StackedMenu {
 			(categories, error) -> {
 				if (error != null) {
 					var icon = new GuiElementBuilder(Items.BARRIER)
-						.setName(Text.literal("An error occured").styled(s -> s.withColor(Formatting.RED)))
-						.addLoreLine(Text.literal("Failed to get categories list")
-							.styled(s -> s.withColor(Formatting.GRAY)));
+						.setName(MenuText.errors)
+						.addLoreLine(MenuText.errors$categoriesList);
 
 					for (int i = 0; i < getHeight() - 1; i++) {
 						var slot = (i + 1) * getWidth();
@@ -106,9 +104,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(10, categories == null || categoriesPage <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.RED_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage, 64), 1))
-				.setName(Text.literal("Scroll Up").styled(s -> s.withColor(Formatting.GRAY)))
-				.addLoreLine(Text.literal("Current page: " + (categoriesPage + 1) + "/" + categoriesMaxPages)
-					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setName(MenuText.icons$scrollUp)
+				.addLoreLine(MenuText.icons$scrollUp$0(categoriesPage, categoriesMaxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (categoriesPage <= 0 || categories == null) return;
 					categoriesPage--;
@@ -118,9 +115,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(46, categories == null || categoriesPage >= (categoriesMaxPages - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage + 2, 64), 1))
-				.setName(Text.literal("Scroll Down").styled(s -> s.withColor(Formatting.GRAY)))
-				.addLoreLine(Text.literal("Current page: " + (categoriesPage + 1) + "/" + categoriesMaxPages)
-					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setName(MenuText.icons$scrollDown)
+				.addLoreLine(MenuText.icons$scrollDown$0(categoriesPage, categoriesMaxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (categoriesPage >= (categoriesMaxPages - 1) || categories == null) return;
 					categoriesPage++;
@@ -132,9 +128,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(2, categories == null || productsPage <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage, 64), 1))
-				.setName(Text.literal("<-- Previous Page").styled(s -> s.withColor(Formatting.GRAY)))
-				.addLoreLine(Text.literal("Current page: " + (productsPage + 1) + "/" + productsMaxPage)
-					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setName(MenuText.icons$previousPage)
+				.addLoreLine(MenuText.icons$previousPage$0(productsPage, productsMaxPage))
 				.setCallback((index, type, action, gui) -> {
 					if (productsPage <= 0 || categories == null) return;
 					productsPage--;
@@ -144,9 +139,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(6, categories == null || productsPage >= (productsMaxPage - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage + 2, 64), 1))
-				.setName(Text.literal("Next Page -->").styled(s -> s.withColor(Formatting.GRAY)))
-				.addLoreLine(Text.literal("Current page: " + (productsPage + 1) + "/" + productsMaxPage)
-					.styled(s -> s.withColor(Formatting.GRAY)))
+				.setName(MenuText.icons$nextPage)
+				.addLoreLine(MenuText.icons$nextPage$0(productsPage, productsMaxPage))
 				.setCallback((index, type, action, gui) -> {
 					if (productsPage >= (productsMaxPage - 1) || categories == null) return;
 					productsPage++;
@@ -170,9 +164,11 @@ public class MarketMainMenu extends StackedMenu {
 				var selected = currentCategoryIndex == selectedCategoryIndex;
 
 				var a = new GuiElementBuilder(Items.PAPER)
-					.setName(Text.literal(category.getCategoryName()).styled(s -> s.withColor(Formatting.AQUA)))
-					.addLoreLine(Text.literal(selected ? "Selected" : "Click to open")
-						.styled(s -> s.withColor(Formatting.GRAY)))
+					.setName(Text.literal(category.getCategoryName())
+						.styled(s -> s.withColor(Formatting.AQUA)))
+					.addLoreLine(selected
+						? MenuText.menus$mainMenu$category$selected
+						: MenuText.menus$mainMenu$category$unselected)
 					.setCallback((index, type, action, gui) -> {
 						selectedCategoryIndex = currentCategoryIndex;
 						productsPage = 0;
@@ -215,11 +211,10 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(slot, new WaitableGuiElement<>(cache.getOverview(product).get()) {
 			@Override
 			public ItemStack createStackWhenLoaded(ProductMarketOverview overview, Throwable error) {
+				// TODO use message from UserException
 				if (error != null) return new GuiElementBuilder(Items.BARRIER)
-					.setName(Text.literal("An error occured!").styled(s -> s.withColor(Formatting.RED)))
-					// TODO use message from UserException
-					.addLoreLine(Text.literal("Failed to query quick price details")
-						.styled(s -> s.withColor(Formatting.GRAY)))
+					.setName(MenuText.errors)
+					.addLoreLine(MenuText.errors$quickPriceDetails)
 					.asStack();
 
 				// TODO should we use avg price?
@@ -229,17 +224,12 @@ public class MarketMainMenu extends StackedMenu {
 				return GuiElementBuilder.from(dispStack)
 					.setLore(new ArrayList<>()) // Clear all lore
 					.addLoreLine(Text.literal(category.getCategoryName())
-						.styled(s -> s.withItalic(false).withColor(Formatting.DARK_GRAY)))
+						.styled(s -> s.withColor(Formatting.DARK_GRAY)))
 					.addLoreLine(Text.empty())
-					.addLoreLine(Text.literal("Instant Buy: ")
-						.styled(s -> s.withColor(Formatting.GRAY))
-						.append(StonksFabricUtils.currencyText(instantBuyPrice, true)))
-					.addLoreLine(Text.literal("Instant Sell: ")
-						.styled(s -> s.withColor(Formatting.GRAY))
-						.append(StonksFabricUtils.currencyText(instantSellPrice, true)))
+					.addLoreLine(MenuText.menus$mainMenu$product$instantBuy(instantBuyPrice))
+					.addLoreLine(MenuText.menus$mainMenu$product$instantSell(instantSellPrice))
 					.addLoreLine(Text.empty())
-					.addLoreLine(Text.literal("Click").styled(s -> s.withColor(Formatting.YELLOW))
-						.append(" to open product info").styled(s -> s.withColor(Formatting.GRAY)))
+					.addLoreLine(MenuText.menus$mainMenu$product$clickToOpen)
 					.asStack();
 			}
 

@@ -26,11 +26,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.menu.product.OfferPriceConfigureMenu;
+import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.product.OfferAmountConfigureMenu;
+import stonks.fabric.menu.product.OfferPriceConfigureMenu;
 
 public class OfferSelectCustomAmountInput extends SignGui {
 	private OfferAmountConfigureMenu menu;
@@ -42,10 +42,11 @@ public class OfferSelectCustomAmountInput extends SignGui {
 		setSignType(Blocks.DARK_OAK_SIGN);
 		setColor(DyeColor.WHITE);
 		setLine(0, Text.empty());
-		setLine(1, Text.literal("--------"));
-		setLine(2, Text.literal("Specify how much you want to"));
-		setLine(3, Text.literal(
-			menu.getOfferType().toString().toLowerCase() + " " + menu.getProduct().getProductName()));
+		setLine(1, MenuText.signInputs$separator);
+		setLine(2, MenuText.signInputs$amountInput);
+		setLine(3, menu.getOfferType() == OfferType.BUY
+			? MenuText.signInputs$currentBuyTarget(menu.getProduct())
+			: MenuText.signInputs$currentSellTarget(menu.getProduct()));
 	}
 
 	public OfferAmountConfigureMenu getMenu() { return menu; }
@@ -69,8 +70,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 			var amount = base * mul;
 
 			if (amount <= 0) {
-				getPlayer().sendMessage(Text.literal("You must specify at least 1")
-					.styled(s -> s.withColor(Formatting.RED)), true);
+				getPlayer().sendMessage(MenuText.messages$amountAtLeastOne, true);
 				return;
 			}
 
@@ -78,17 +78,14 @@ public class OfferSelectCustomAmountInput extends SignGui {
 				.getStonksAdapter()
 				.getUnits(getPlayer(), getMenu().getProduct());
 			if (menu.getOfferType() == OfferType.SELL && amount > currentAmount) {
-				getPlayer().sendMessage(Text.literal("Not enough items! (" + amount + "/" + currentAmount + ")")
-					.styled(s -> s.withColor(Formatting.RED)), true);
+				getPlayer().sendMessage(MenuText.messages$notEnoughItems(currentAmount, amount), true);
 				return;
 			}
 
 			var type = getMenu().getOfferType();
 			new OfferPriceConfigureMenu(getMenu(), getPlayer(), type, amount, getMenu().getOverview()).open();
 		} catch (NumberFormatException e) {
-			getPlayer().sendMessage(
-				Text.literal("Invaild input: " + input).styled(s -> s.withColor(Formatting.RED)),
-				true);
+			getPlayer().sendMessage(MenuText.messages$invaildInput(input), true);
 		}
 	}
 }

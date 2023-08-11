@@ -33,8 +33,8 @@ import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.menu.MenuIcons;
+import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.product.input.OfferCustomPriceInput;
 
@@ -51,16 +51,15 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		this.overview = overview;
 		product = overview.getProduct();
 
-		setTitle(Text.literal("Market > " + product.getProductName() + " > " + switch (offerType) {
-		case BUY -> "Buy";
-		case SELL -> "Sell";
-		} + " offer"));
+		setTitle(offerType == OfferType.BUY
+			? MenuText.menus$createOffer$buy(product)
+			: MenuText.menus$createOffer$sell(product));
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
 			.createDisplayStack(product))
 			.setCount(Math.min(Math.max(amount / 64, 1), 64))
-			.setName(Text.literal(amount + "x " + product.getProductName())
+			.setName(Text.literal(amount + "x " + product.getProductName()) // TODO
 				.styled(s -> s.withColor(Formatting.AQUA)))
 			.setLore(new ArrayList<>()));
 
@@ -87,78 +86,77 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			? overview.getBuyOffers().compute()
 			: overview.getSellOffers().compute();
 
+		var delta = 0.1;
 		var topOfferPPU = computed.map(v -> switch (offerType) {
 		case BUY -> v.max();
 		case SELL -> v.min();
 		});
 		var topOfferDelta = topOfferPPU.map(v -> v + switch (offerType) {
-		case BUY -> 0.1;
-		case SELL -> -0.1;
+		case BUY -> delta;
+		case SELL -> -delta;
 		}).map(v -> v > 0d ? v : null);
 		var averageOffer = computed.map(v -> v.average());
 
-		var totalString = switch (offerType) {
-		case BUY -> "spending";
-		case SELL -> "earning";
+		var topOfferTextDelta = switch (offerType) {
+		case BUY -> MenuText.menus$createOffer$topBuyDelta(delta);
+		case SELL -> MenuText.menus$createOffer$topSellDelta(delta);
+		};
+		var totalTextDelta = switch (offerType) {
+		case BUY -> MenuText.menus$createOffer$totalSpending(topOfferDelta, amount);
+		case SELL -> MenuText.menus$createOffer$totalEarning(topOfferDelta, amount);
 		};
 
 		setSlot(19, new GuiElementBuilder(computed.isPresent() ? Items.GOLD_INGOT : Items.BARRIER)
-			.setName(Text.literal("Top offer " + switch (offerType) {
-			case BUY -> "+";
-			case SELL -> "-";
-			} + " 0.1").styled(s -> s.withColor(Formatting.YELLOW)))
-			.addLoreLine(Text.literal("Get your offer filled first").styled(s -> s.withColor(Formatting.GRAY)))
+			.setName(topOfferTextDelta)
+			.addLoreLine(MenuText.menus$createOffer$topOfferDelta)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Top offer: ").styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(topOfferPPU, true)))
-			.addLoreLine(Text.literal("Your offer: ").styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(topOfferDelta, true)))
-			.addLoreLine(Text.literal("Total " + totalString + ": ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(topOfferDelta.map(v -> v * amount), true)))
+			.addLoreLine(MenuText.menus$createOffer$topOfferPrice(topOfferPPU))
+			.addLoreLine(MenuText.menus$createOffer$yourOfferPrice(topOfferDelta))
+			.addLoreLine(totalTextDelta)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal(topOfferDelta.isPresent()
-				? "Click to place offer"
-				: "Can't make this offer")
-				.styled(s -> s.withColor(topOfferDelta.isPresent() ? Formatting.GRAY : Formatting.RED)))
+			.addLoreLine(topOfferDelta.isPresent()
+				? MenuText.menus$createOffer$clickForConfirmation
+				: MenuText.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferDelta.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferDelta.get())
 					.open();
 			}));
 
+		var totalTextTop = switch (offerType) {
+		case BUY -> MenuText.menus$createOffer$totalSpending(topOfferPPU, amount);
+		case SELL -> MenuText.menus$createOffer$totalEarning(topOfferPPU, amount);
+		};
+
 		setSlot(21, new GuiElementBuilder(topOfferPPU.isPresent() ? Items.GOLD_BLOCK : Items.BARRIER)
-			.setName(Text.literal("Same as top offer").styled(s -> s.withColor(Formatting.YELLOW)))
+			.setName(MenuText.menus$createOffer$sameAsTopOffer)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Top offer: ").styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(topOfferPPU, true)))
-			.addLoreLine(Text.literal("Total " + totalString + ": ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(topOfferPPU.map(v -> v * amount), true)))
+			.addLoreLine(MenuText.menus$createOffer$topOfferPrice(topOfferPPU))
+			.addLoreLine(totalTextTop)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal(topOfferPPU.isPresent()
-				? "Click to place offer"
-				: "Can't make this offer")
-				.styled(s -> s.withColor(topOfferPPU.isPresent() ? Formatting.GRAY : Formatting.RED)))
+			.addLoreLine(topOfferPPU.isPresent()
+				? MenuText.menus$createOffer$clickForConfirmation
+				: MenuText.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferPPU.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferPPU.get())
 					.open();
 			}));
 
+		var totalTextAverage = switch (offerType) {
+		case BUY -> MenuText.menus$createOffer$totalSpending(averageOffer, amount);
+		case SELL -> MenuText.menus$createOffer$totalEarning(averageOffer, amount);
+		};
+
 		setSlot(23, new GuiElementBuilder(averageOffer.isPresent() ? Items.CHEST : Items.BARRIER)
-			.setName(Text.literal("Average of top offers").styled(s -> s.withColor(Formatting.YELLOW)))
+			.setName(MenuText.menus$createOffer$averageOfTopOffers)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Average: ").styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(averageOffer, true)))
-			.addLoreLine(Text.literal("Total " + totalString + ": ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(averageOffer.map(v -> v * amount), true)))
+			.addLoreLine(MenuText.menus$createOffer$avgOfferPrice(averageOffer))
+			.addLoreLine(totalTextAverage)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal(averageOffer.isPresent()
-				? "Click to place offer"
-				: "Can't make this offer")
-				.styled(s -> s.withColor(averageOffer.isPresent() ? Formatting.GRAY : Formatting.RED)))
+			.addLoreLine(averageOffer.isPresent()
+				? MenuText.menus$createOffer$clickForConfirmation
+				: MenuText.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!averageOffer.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, averageOffer.get())
@@ -166,10 +164,10 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
-			.setName(Text.literal("Custom price").styled(s -> s.withColor(Formatting.YELLOW)))
-			.addLoreLine(Text.literal("Get rich in your own way.").styled(s -> s.withColor(Formatting.GRAY)))
+			.setName(MenuText.menus$createOffer$customPrice)
+			.addLoreLine(MenuText.menus$createOffer$customPrice$0)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Click to specify custom price").styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(MenuText.menus$createOffer$clickForCustomPrice)
 			.setCallback((index, type, action, gui) -> new OfferCustomPriceInput(player, this).open()));
 	}
 }

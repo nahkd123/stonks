@@ -22,7 +22,6 @@
 package stonks.fabric.menu.product;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
@@ -34,14 +33,14 @@ import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
-import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.menu.MenuIcons;
+import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 
 public class OfferConfirmMenu extends StackedMenu {
 	public OfferConfirmMenu(StackedMenu previous, ServerPlayerEntity player, Product product, OfferType offerType, int amount, double pricePerUnit) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
-		setTitle(Text.literal("Confirm offer"));
+		setTitle(MenuText.menus$confirmOffer);
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
@@ -52,22 +51,17 @@ public class OfferConfirmMenu extends StackedMenu {
 			.setLore(new ArrayList<>()));
 
 		setSlot(22, new GuiElementBuilder(Items.GREEN_TERRACOTTA)
-			.setName(Text.literal("Confirm " + offerType.toString().toLowerCase() + " offer")
-				.styled(s -> s.withColor(Formatting.GREEN)))
+			.setName(offerType == OfferType.BUY
+				? MenuText.menus$confirmOffer$buy
+				: MenuText.menus$confirmOffer$sell)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal(switch (offerType) {
-			case BUY -> "Buying ";
-			case SELL -> "Selling ";
-			} + amount + "x " + product.getProductName())
-				.styled(s -> s.withColor(Formatting.GRAY)))
-			.addLoreLine(Text.literal("Price per unit: ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true)))
-			.addLoreLine(Text.literal("Total: ")
-				.styled(s -> s.withColor(Formatting.GRAY))
-				.append(StonksFabricUtils.currencyText(Optional.of(pricePerUnit * amount), true)))
+			.addLoreLine(offerType == OfferType.BUY
+				? MenuText.menus$confirmOffer$buying(product, amount)
+				: MenuText.menus$confirmOffer$selling(product, amount))
+			.addLoreLine(MenuText.menus$confirmOffer$pricePerUnit(pricePerUnit))
+			.addLoreLine(MenuText.menus$confirmOffer$totalPrice(amount, pricePerUnit))
 			.addLoreLine(Text.empty())
-			.addLoreLine(Text.literal("Click to confirm").styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(MenuText.menus$confirmOffer$clickToConfirm)
 			.setCallback((index, type, action, gui) -> {
 				close();
 				StonksFabricHelper.placeOffer(player, product, offerType, amount, pricePerUnit);

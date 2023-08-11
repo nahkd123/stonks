@@ -129,6 +129,30 @@ public class MenuText {
 			Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)));
 	}
 
+	public static Text menus$createOffer$buy(Product product) { return Text.translatableWithFallback("stonks.menu.createOffer.buy", "Market > %s > Buy offer", product.getProductName()); }
+	public static Text menus$createOffer$sell(Product product) { return Text.translatableWithFallback("stonks.menu.createOffer.sell", "Market > %s > Sell offer", product.getProductName());}
+	public static Text menus$createOffer$buyFixed(int amount) { return Text.translatableWithFallback("stonks.menu.createOffer.buyFixed", "\u00a7eBuy x%s", Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.YELLOW))); }
+	public static Text menus$createOffer$sellFixed(int amount) { return Text.translatableWithFallback("stonks.menu.createOffer.sellFixed", "\u00a7eSell x%s", Text.literal(Integer.toString(amount)).styled(s -> s.withColor(Formatting.YELLOW))); }
+	public static final Text menus$createOffer$sellAll = Text.translatableWithFallback("stonks.menu.createOffer.sellAll", "\u00a7eSell everything!");
+	public static final Text menus$createOffer$noOfferForYou = Text.translatableWithFallback("stonks.menu.createOffer.noOfferForYou", "\u00a7cCan't make this offer");
+	public static final Text menus$createOffer$clickForPrice = Text.translatableWithFallback("stonks.menu.createOffer.clickForPrice", "\u00a77Click to configure offer pricing");
+	public static final Text menus$createOffer$customAmount = Text.translatableWithFallback("stonks.menu.createOffer.customAmount", "\u00a7eCustom amount");
+	public static final Text menus$createOffer$clickForAmount = Text.translatableWithFallback("stonks.menu.createOffer.clickForAmount", "\u00a77Click to specify amount");
+	public static Text menus$createOffer$topBuyDelta(double delta) { return Text.translatableWithFallback("stonks.menu.createOffer.topBuyDelta", "\u00a7eTop offer + %s", StonksFabricUtils.currencyText(Optional.of(delta), false));}
+	public static Text menus$createOffer$topSellDelta(double delta) { return Text.translatableWithFallback("stonks.menu.createOffer.topSellDelta", "\u00a7eTop offer - %s", StonksFabricUtils.currencyText(Optional.of(delta), false)); }
+	public static final Text menus$createOffer$topOfferDelta = Text.translatableWithFallback("stonks.menu.createOffer.topOfferDelta.0", "\u00a77Get your offer filled first");
+	public static final Text menus$createOffer$sameAsTopOffer = Text.translatableWithFallback("stonks.menu.createOffer.sameAsTopOffer", "\u00a7eSame as top offer");
+	public static final Text menus$createOffer$averageOfTopOffers = Text.translatableWithFallback("stonks.menu.createOffer.averageOfTopOffers", "\u00a7eAverage of top offers");
+	public static Text menus$createOffer$totalSpending(Optional<Double> topOfferDelta, int amount) { return Text.translatableWithFallback("stonks.menu.createOffer.totalSpending", "\u00a77Total spending: %s", StonksFabricUtils.currencyText(topOfferDelta.map(v -> v * amount), true)); }
+	public static Text menus$createOffer$totalEarning(Optional<Double> topOfferDelta, int amount) { return Text.translatableWithFallback("stonks.menu.createOffer.totalEarning", "\u00a77Total earning: %s", StonksFabricUtils.currencyText(topOfferDelta.map(v -> v * amount), true)); }
+	public static Text menus$createOffer$topOfferPrice(Optional<Double> pricePerUnit) { return Text.translatableWithFallback("stonks.menu.createOffer.topOfferPrice", "\u00a77Top offer: %s\u00a77/ea", StonksFabricUtils.currencyText(pricePerUnit, true)); }
+	public static Text menus$createOffer$avgOfferPrice(Optional<Double> pricePerUnit) { return Text.translatableWithFallback("stonks.menu.createOffer.avgOfferPrice", "\u00a77Average price: %s\u00a77/ea", StonksFabricUtils.currencyText(pricePerUnit, true)); }
+	public static Text menus$createOffer$yourOfferPrice(Optional<Double> pricePerUnit) { return Text.translatableWithFallback("stonks.menu.createOffer.yourOfferPrice", "\u00a77Your offer: %s\u00a77/ea", StonksFabricUtils.currencyText(pricePerUnit, true)); }
+	public static final Text menus$createOffer$clickForConfirmation = Text.translatableWithFallback("stonks.menu.createOffer.clickToPlace", "\u00a77Click to place offer");
+	public static final Text menus$createOffer$customPrice = Text.translatableWithFallback("stonks.menu.createOffer.customPrice", "\u00a7eCustom price");
+	public static final Text menus$createOffer$customPrice$0 = Text.translatableWithFallback("stonks.menu.createOffer.customPrice.0", "\u00a77Get rich in your own way.");
+	public static final Text menus$createOffer$clickForCustomPrice = Text.translatableWithFallback("stonks.menu.createOffer.clickForCustomPrice", "\u00a77Click to specify custom price");
+
 	public static final Text messages$offerClaimFailed = translatableWithFallback("stonks.messages.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");
 	public static final Text messages$offerCancelFailed = Text.translatableWithFallback("stonks.messages.offerCancelFailed", "\u00a7cAn error occured. Cancel failed!");
 	public static Text messages$offerCancelled(Offer newOffer, int refundUnits, double refundMoney) {

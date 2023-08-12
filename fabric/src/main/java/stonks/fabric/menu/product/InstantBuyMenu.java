@@ -128,7 +128,8 @@ public class InstantBuyMenu extends StackedMenu {
 							return;
 						}
 
-						placeBuyButtons();
+						new InstantBuyMenu(getPrevious(), getPlayer(), getProduct(), originalPricePerUnit, instantPricePerUnit)
+							.open();
 					});
 				}
 			});

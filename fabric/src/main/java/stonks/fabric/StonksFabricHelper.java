@@ -122,7 +122,7 @@ public class StonksFabricHelper {
 			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
 				(offer, error) -> {
 					if (error != null) {
-						player.sendMessage(Translations.Messages.ErrorRefunding, false);
+						player.sendMessage(Translations.Messages.ErrorRefunding, true);
 
 						if (type == OfferType.BUY) {
 							adapter.accountDeposit(player, totalPrice);

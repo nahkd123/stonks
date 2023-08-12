@@ -28,11 +28,11 @@ dependencies {
     mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
     modApi "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
-    implementation annotationProcessor("com.github.nahkd123.nahara-modkit:nahara-modkit-annotations-v1:$rootProject.nahara_modkit_version")
+    implementation annotationProcessor(naharaModkit('nahara-modkit-annotations-v1'))
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_version"
     modImplementation include("eu.pb4:sgui:$rootProject.sgui_version")
     modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")
     api include(project(':core'))
-    api include('com.github.nahkd123.nahara-toolkit:nahara-common-tasks:main-SNAPSHOT')
-    api include('com.github.nahkd123.nahara-toolkit:nahara-common-configurations:main-SNAPSHOT')
+    api include(naharaToolkit('nahara-common-tasks'))
+    api include(naharaToolkit('nahara-common-configurations'))
 }

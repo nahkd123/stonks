@@ -1,6 +1,6 @@
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
-    api "com.github.nahkd123.nahara-toolkit:nahara-common-tasks:$rootProject.nahara_toolkit_version"
+    api naharaToolkit('nahara-common-tasks')
 }
 
 tasks.named('test') {

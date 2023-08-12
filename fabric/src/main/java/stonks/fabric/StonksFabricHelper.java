@@ -21,17 +21,13 @@
  */
 package stonks.fabric;
 
-import java.util.Optional;
-
 import nahara.common.tasks.Task;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
-import stonks.fabric.menu.MenuText;
+import stonks.fabric.translation.Translations;
 
 public class StonksFabricHelper {
 	public static Task<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
@@ -44,20 +40,18 @@ public class StonksFabricHelper {
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(MenuText.message$pleaseWait, true);
+		player.sendMessage(Translations.Messages.PleaseWait, true);
 		var task = provider.getStonksService().instantOffer(product, type, units, balance);
 
 		provider.getTasksHandler()
 			.handle(task, (result, error) -> {
 				if (error != null) {
-					player.sendMessage(MenuText.message$errorRefunding, true);
+					player.sendMessage(Translations.Messages.ErrorRefunding, true);
 					if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
 					else provider.getStonksAdapter().addUnitsTo(player, product, units);
 					error.printStackTrace();
 					return;
 				}
-
-				var productNameText = Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.AQUA));
 
 				if (type == OfferType.BUY) {
 					var unitsLeft = result.units();
@@ -68,16 +62,10 @@ public class StonksFabricHelper {
 					provider.getStonksAdapter().accountDeposit(player, moneyLeft);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsBought);
 
-					var amountText = Text.literal(Integer.toString(unitsBought))
-						.styled(s -> s.withColor(Formatting.AQUA));
-					var moneySpentText = StonksFabricUtils.currencyText(Optional.of(moneySpent), true);
-					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
-						.styled(s -> s.withColor(Formatting.AQUA));
-					var text = unitsLeft == 0
-						? MenuText.messages$bought(amountText, productNameText, moneySpentText)
-						: MenuText.messages$boughtWithExtras(amountText, productNameText, moneySpentText,
-							unitsLeftText);
-					player.sendMessage(text, true);
+					player.sendMessage(unitsLeft == 0
+						? Translations.Messages.Bought(unitsBought, product, moneySpent)
+						: Translations.Messages.BoughtWithExtras(unitsBought, product, moneySpent, unitsLeft),
+						true);
 				} else {
 					var config = StonksFabric.getServiceProvider(player).getPlatformConfig();
 					var unitsLeft = result.units();
@@ -87,16 +75,10 @@ public class StonksFabricHelper {
 					provider.getStonksAdapter().accountDeposit(player, earnings);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsLeft);
 
-					var amountText = Text.literal(Integer.toString(unitsSold))
-						.styled(s -> s.withColor(Formatting.AQUA));
-					var moneyReceivedText = StonksFabricUtils.currencyText(Optional.of(earnings), true);
-					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
-						.styled(s -> s.withColor(Formatting.AQUA));
-					var text = unitsLeft == 0
-						? MenuText.messages$sold(amountText, productNameText, moneyReceivedText)
-						: MenuText.messages$soldWithExtras(amountText, productNameText, moneyReceivedText,
-							unitsLeftText);
-					player.sendMessage(text, true);
+					player.sendMessage(unitsLeft == 0
+						? Translations.Messages.Sold(unitsSold, product, earnings)
+						: Translations.Messages.SoldWithExtras(unitsSold, product, earnings, unitsLeft),
+						true);
 				}
 			});
 
@@ -112,7 +94,7 @@ public class StonksFabricHelper {
 			var balance = adapter.accountBalance(player);
 
 			if (balance < totalPrice) {
-				player.sendMessage(MenuText.messages$notEnoughMoney(balance, totalPrice), true);
+				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -126,19 +108,19 @@ public class StonksFabricHelper {
 			}
 
 			if (currentUnits < units) {
-				player.sendMessage(MenuText.messages$notEnoughItems(currentUnits, units));
+				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units));
 				return;
 			}
 
 			adapter.removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(MenuText.message$pleaseWait, true);
+		player.sendMessage(Translations.Messages.PleaseWait, true);
 		provider.getTasksHandler()
 			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
 				(offer, error) -> {
 					if (error != null) {
-						player.sendMessage(MenuText.message$errorRefunding, true);
+						player.sendMessage(Translations.Messages.ErrorRefunding, true);
 
 						if (type == OfferType.BUY) {
 							adapter.accountDeposit(player, totalPrice);
@@ -150,15 +132,9 @@ public class StonksFabricHelper {
 						return;
 					}
 
-					var unitsText = Text.literal(Integer.toString(units)).styled(s -> s.withColor(Formatting.AQUA));
-					var productNameText = Text.literal(product.getProductName())
-						.styled(s -> s.withColor(Formatting.AQUA));
-					var totalPriceText = StonksFabricUtils.currencyText(Optional.of(totalPrice), true);
-					var pricePerUnitText = StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true);
 					player.sendMessage(offer.getType() == OfferType.BUY
-						? MenuText.messages$placedBuyOffer(unitsText, productNameText, totalPriceText, pricePerUnitText)
-						: MenuText.messages$placedSellOffer(unitsText, productNameText, totalPriceText,
-							pricePerUnitText),
+						? Translations.Messages.PlacedBuyOffer(units, product, totalPrice, pricePerUnit)
+						: Translations.Messages.PlacedSellOffer(units, product, totalPrice, pricePerUnit),
 						true);
 				});
 	}
@@ -167,7 +143,7 @@ public class StonksFabricHelper {
 		var player = server.getPlayerManager().getPlayer(filledOffer.getOffererId());
 		if (player == null) return;
 		player.sendMessage(filledOffer.getType() == OfferType.BUY
-			? MenuText.messages$buyOfferFilled(filledOffer)
-			: MenuText.messages$sellOfferFilled(filledOffer));
+			? Translations.Messages.BuyOfferFilled(filledOffer)
+			: Translations.Messages.SellOfferFilled(filledOffer));
 	}
 }

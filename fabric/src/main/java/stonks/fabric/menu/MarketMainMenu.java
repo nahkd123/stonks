@@ -41,6 +41,7 @@ import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
+import stonks.fabric.translation.Translations;
 
 public class MarketMainMenu extends StackedMenu {
 	private static final int CATEGORIES_PER_PAGE = 5;
@@ -51,7 +52,7 @@ public class MarketMainMenu extends StackedMenu {
 
 	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
-		setTitle(MenuText.menus$mainMenu);
+		setTitle(Translations.Menus.MainMenu.MainMenu);
 
 		for (int i = 0; i < getHeight() - 1; i++) {
 			var slot = (i + 1) * getWidth();
@@ -68,8 +69,8 @@ public class MarketMainMenu extends StackedMenu {
 			(categories, error) -> {
 				if (error != null) {
 					var icon = new GuiElementBuilder(Items.BARRIER)
-						.setName(MenuText.errors)
-						.addLoreLine(MenuText.errors$categoriesList);
+						.setName(Translations.Errors.Errors)
+						.addLoreLine(Translations.Errors.CategoriesList);
 
 					for (int i = 0; i < getHeight() - 1; i++) {
 						var slot = (i + 1) * getWidth();
@@ -104,8 +105,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(10, categories == null || categoriesPage <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.RED_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage, 64), 1))
-				.setName(MenuText.icons$scrollUp)
-				.addLoreLine(MenuText.icons$scrollUp$0(categoriesPage, categoriesMaxPages))
+				.setName(Translations.Icons.ScrollUp)
+				.addLoreLine(Translations.Icons.ScrollUp$0(categoriesPage, categoriesMaxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (categoriesPage <= 0 || categories == null) return;
 					categoriesPage--;
@@ -115,8 +116,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(46, categories == null || categoriesPage >= (categoriesMaxPages - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage + 2, 64), 1))
-				.setName(MenuText.icons$scrollDown)
-				.addLoreLine(MenuText.icons$scrollDown$0(categoriesPage, categoriesMaxPages))
+				.setName(Translations.Icons.ScrollDown)
+				.addLoreLine(Translations.Icons.ScrollDown$0(categoriesPage, categoriesMaxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (categoriesPage >= (categoriesMaxPages - 1) || categories == null) return;
 					categoriesPage++;
@@ -128,8 +129,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(2, categories == null || productsPage <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage, 64), 1))
-				.setName(MenuText.icons$previousPage)
-				.addLoreLine(MenuText.icons$previousPage$0(productsPage, productsMaxPage))
+				.setName(Translations.Icons.PreviousPage)
+				.addLoreLine(Translations.Icons.PreviousPage$0(productsPage, productsMaxPage))
 				.setCallback((index, type, action, gui) -> {
 					if (productsPage <= 0 || categories == null) return;
 					productsPage--;
@@ -139,8 +140,8 @@ public class MarketMainMenu extends StackedMenu {
 		setSlot(6, categories == null || productsPage >= (productsMaxPage - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage + 2, 64), 1))
-				.setName(MenuText.icons$nextPage)
-				.addLoreLine(MenuText.icons$nextPage$0(productsPage, productsMaxPage))
+				.setName(Translations.Icons.NextPage)
+				.addLoreLine(Translations.Icons.NextPage$0(productsPage, productsMaxPage))
 				.setCallback((index, type, action, gui) -> {
 					if (productsPage >= (productsMaxPage - 1) || categories == null) return;
 					productsPage++;
@@ -167,8 +168,8 @@ public class MarketMainMenu extends StackedMenu {
 					.setName(Text.literal(category.getCategoryName())
 						.styled(s -> s.withColor(Formatting.AQUA)))
 					.addLoreLine(selected
-						? MenuText.menus$mainMenu$category$selected
-						: MenuText.menus$mainMenu$category$unselected)
+						? Translations.Menus.MainMenu.Category$Selected
+						: Translations.Menus.MainMenu.Category$Unselected)
 					.setCallback((index, type, action, gui) -> {
 						selectedCategoryIndex = currentCategoryIndex;
 						productsPage = 0;
@@ -213,8 +214,8 @@ public class MarketMainMenu extends StackedMenu {
 			public ItemStack createStackWhenLoaded(ProductMarketOverview overview, Throwable error) {
 				// TODO use message from UserException
 				if (error != null) return new GuiElementBuilder(Items.BARRIER)
-					.setName(MenuText.errors)
-					.addLoreLine(MenuText.errors$quickPriceDetails)
+					.setName(Translations.Errors.Errors)
+					.addLoreLine(Translations.Errors.QuickPriceDetails)
 					.asStack();
 
 				// TODO should we use avg price?
@@ -226,10 +227,10 @@ public class MarketMainMenu extends StackedMenu {
 					.addLoreLine(Text.literal(category.getCategoryName())
 						.styled(s -> s.withColor(Formatting.DARK_GRAY)))
 					.addLoreLine(Text.empty())
-					.addLoreLine(MenuText.menus$mainMenu$product$instantBuy(instantBuyPrice))
-					.addLoreLine(MenuText.menus$mainMenu$product$instantSell(instantSellPrice))
+					.addLoreLine(Translations.Menus.MainMenu.product$instantBuy(instantBuyPrice))
+					.addLoreLine(Translations.Menus.MainMenu.product$instantSell(instantSellPrice))
 					.addLoreLine(Text.empty())
-					.addLoreLine(MenuText.menus$mainMenu$product$clickToOpen)
+					.addLoreLine(Translations.Menus.MainMenu.Product$ClickToOpen)
 					.asStack();
 			}
 

@@ -34,9 +34,9 @@ import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.menu.MenuIcons;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
+import stonks.fabric.translation.Translations;
 
 public class ViewOffersMenu extends StackedMenu {
 	private Cached<List<Offer>> offersCache;
@@ -48,7 +48,7 @@ public class ViewOffersMenu extends StackedMenu {
 
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
-		setTitle(MenuText.menus$viewOffers);
+		setTitle(Translations.Menus.ViewOffers.ViewOffers);
 		offersCache = StonksFabric.getServiceProvider(player).getStonksCache().getOffers(player.getUuid());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
@@ -65,8 +65,8 @@ public class ViewOffersMenu extends StackedMenu {
 		setSlot(2, page <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
-				.setName(MenuText.icons$previousPage)
-				.addLoreLine(MenuText.icons$previousPage$0(page, maxPages))
+				.setName(Translations.Icons.PreviousPage)
+				.addLoreLine(Translations.Icons.PreviousPage$0(page, maxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (page <= 0 || isUpdating) return;
 					page--;
@@ -76,8 +76,8 @@ public class ViewOffersMenu extends StackedMenu {
 		setSlot(6, page >= (maxPages - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
-				.setName(MenuText.icons$nextPage)
-				.addLoreLine(MenuText.icons$nextPage$0(page, maxPages))
+				.setName(Translations.Icons.NextPage)
+				.addLoreLine(Translations.Icons.NextPage$0(page, maxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (page >= (maxPages - 1) || isUpdating) return;
 					page++;
@@ -100,8 +100,8 @@ public class ViewOffersMenu extends StackedMenu {
 				if (error != null) {
 					loadedOffers = null;
 					setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
-						.setName(MenuText.errors)
-						.addLoreLine(MenuText.menus$viewOffers$retrying)
+						.setName(Translations.Errors.Errors)
+						.addLoreLine(Translations.Menus.ViewOffers.Retrying)
 						.asStack());
 					return;
 				}
@@ -120,9 +120,9 @@ public class ViewOffersMenu extends StackedMenu {
 		if (offers == null) return;
 		if (offers.size() == 0) {
 			setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
-				.setName(MenuText.menus$viewOffers$noOffers)
-				.addLoreLine(MenuText.menus$viewOffers$noOffers$0)
-				.addLoreLine(MenuText.menus$viewOffers$noOffers$1));
+				.setName(Translations.Menus.ViewOffers.NoOffers)
+				.addLoreLine(Translations.Menus.ViewOffers.NoOffers$0)
+				.addLoreLine(Translations.Menus.ViewOffers.NoOffers$1));
 			return;
 		}
 
@@ -136,7 +136,7 @@ public class ViewOffersMenu extends StackedMenu {
 			var offer = offers.get(offerIndex);
 			setSlot(getWidth() + i, createOfferButton(player, offer)
 				.addLoreLine(Text.empty())
-				.addLoreLine(MenuText.menus$viewOffers$offer$clickToOpen)
+				.addLoreLine(Translations.Menus.ViewOffers.Offer$ClickToOpen)
 				.setCallback((index, type, action, gui) -> new OfferInfoMenu(this, player, offer).open()));
 		}
 	}
@@ -147,14 +147,14 @@ public class ViewOffersMenu extends StackedMenu {
 			.getStonksAdapter()
 			.createDisplayStack(offer.getProduct()))
 			.setName(offer.getType() == OfferType.BUY
-				? MenuText.menus$viewOffers$offer$buy(offer)
-				: MenuText.menus$viewOffers$offer$sell(offer))
+				? Translations.Menus.ViewOffers.Offer$Buy(offer)
+				: Translations.Menus.ViewOffers.Offer$Sell(offer))
 			.setLore(new ArrayList<>())
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$viewOffers$offer$progress(offer))
-			.addLoreLine(MenuText.menus$viewOffers$offer$progressLegends)
+			.addLoreLine(Translations.Menus.ViewOffers.Offer$Progress(offer))
+			.addLoreLine(Translations.Menus.ViewOffers.Offer$ProgressLegends)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$viewOffers$offer$pricePerUnit(offer))
-			.addLoreLine(MenuText.menus$viewOffers$offer$totalPrice(offer));
+			.addLoreLine(Translations.Menus.ViewOffers.Offer$PricePerUnit(offer))
+			.addLoreLine(Translations.Menus.ViewOffers.Offer$TotalPrice(offer));
 	}
 }

@@ -33,13 +33,13 @@ import nahara.common.tasks.Task;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
-import stonks.fabric.menu.MenuText;
+import stonks.fabric.translation.Translations.Icons;
 
 public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 	protected static final ItemStack[] LOADING = Stream
 		.of(":..", ".:.", "..:", ".:.")
 		.map(v -> new GuiElementBuilder(Items.CLOCK)
-			.setName(MenuText.icons$loading(v))
+			.setName(Icons.Loading(v))
 			.asStack())
 		.toArray(ItemStack[]::new);
 

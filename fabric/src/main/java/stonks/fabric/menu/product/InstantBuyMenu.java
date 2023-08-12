@@ -32,9 +32,9 @@ import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.product.input.OfferInstantBuyAmountInput;
+import stonks.fabric.translation.Translations;
 
 public class InstantBuyMenu extends StackedMenu {
 	private Product product;
@@ -47,7 +47,7 @@ public class InstantBuyMenu extends StackedMenu {
 		this.originalPricePerUnit = originalPricePerUnit;
 		this.instantPricePerUnit = instantPricePerUnit;
 
-		setTitle(MenuText.menus$instantBuy(product));
+		setTitle(Translations.Menus.InstantBuy._InstantBuy(product));
 		placeBuyButtons();
 	}
 
@@ -66,17 +66,17 @@ public class InstantBuyMenu extends StackedMenu {
 		setSlot(23, createInstantBuyButton(balance, 1024, Items.GOLD_BLOCK));
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
-			.setName(MenuText.menus$instantBuy$customAmount)
+			.setName(Translations.Menus.InstantBuy.CustomAmount)
 			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$instantBuy$customAmount$0)
+			.addLoreLine(Translations.Menus.InstantBuy.CustomAmount$0)
 			.setCallback((index, type, action, gui) -> new OfferInstantBuyAmountInput(player, this).open()));
 	}
 
 	public void blockBuyButtons() {
 		var blockIcon = new GuiElementBuilder(Items.BARRIER)
-			.setName(MenuText.menus$instantBuy$buying)
-			.addLoreLine(MenuText.menus$instantBuy$buying$0);
+			.setName(Translations.Menus.InstantBuy.Buying)
+			.addLoreLine(Translations.Menus.InstantBuy.Buying$0);
 		setSlot(19, blockIcon);
 		setSlot(20, blockIcon);
 		setSlot(21, blockIcon);
@@ -90,24 +90,24 @@ public class InstantBuyMenu extends StackedMenu {
 		var canBuy = balance >= moneyToSpend;
 
 		return new GuiElementBuilder(canBuy ? icon : Items.BARRIER, Math.min(Math.max(amount / 64, 1), 64))
-			.setName(MenuText.menus$instantBuy$fixedAmount(amount))
+			.setName(Translations.Menus.InstantBuy.FixedAmount(amount))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$instantBuy$averagePrice(amount, originalPricePerUnit))
-			.addLoreLine(MenuText.menus$instantBuy$minimumBalance(moneyToSpend))
+			.addLoreLine(Translations.Menus.InstantBuy.AveragePrice(amount, originalPricePerUnit))
+			.addLoreLine(Translations.Menus.InstantBuy.MinimumBalance(moneyToSpend))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$instantBuy$0)
-			.addLoreLine(MenuText.menus$instantBuy$1)
+			.addLoreLine(Translations.Menus.InstantBuy.GuideText$0)
+			.addLoreLine(Translations.Menus.InstantBuy.GuideText$1)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$instantBuy$holdShift)
+			.addLoreLine(Translations.Menus.InstantBuy.HoldShift)
 			.addLoreLine(canBuy
-				? MenuText.menus$instantBuy$clickToBuy
-				: MenuText.menus$instantBuy$noBuy)
+				? Translations.Menus.InstantBuy.ClickToBuy
+				: Translations.Menus.InstantBuy.NoBuy)
 			.setCallback((index, type, action, gui) -> {
 				var provider = StonksFabric.getServiceProvider(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
-					getPlayer().sendMessage(MenuText.messages$noMoneyToInstantBuy(moneyToSpend), true);
+					getPlayer().sendMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;
 				}

@@ -1,15 +1,7 @@
 Thank you for showing your interest in contributing to Stonks! Stonks is a players' market where each player can list their offers for whatever products they want, similar to stocks market, but for the top selling block game.
 
 # Contribute guidelines
-## Apply Code of Conduct whenever possible
-You can see [Code of Conduct here](./CODE_OF_CONDUCT.md)
-
-## Every contributions should have a **valid** reason
-To avoid unwanted problem that happened from previous Hacktoberfests, I decided to ask everyone that if you are contributing to this project, you should have a clear reason.
-
-You can't just create a pull request that removes all newline characters from the end of each file.
-
-TODO: Add more guidelines because yes
+insert big todo here
 
 # Ways to contribute
 ## Get people to try Stonks

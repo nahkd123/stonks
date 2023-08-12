@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nahara.common.configurations.Config;
+import nahara.modkit.annotations.v1.Dependencies;
+import nahara.modkit.annotations.v1.Dependency;
 import nahara.modkit.annotations.v1.EntryPoint;
 import nahara.modkit.annotations.v1.Mod;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -62,10 +64,16 @@ import stonks.fabric.service.StonksServiceProvider;
 @Mod(
 	modid = StonksFabric.MODID,
 	name = "Stonks2",
-	version = "2.0.0", // TODO use string template
+	version = "${stonks_version}",
 	description = "Stonks2 for Fabric",
 	authors = "nahkd123",
 	license = "MIT")
+@Dependencies({
+	@Dependency(value = "fabricloader", version = ">=${loader_version}"),
+	@Dependency(value = "minecraft", version = "~${minecraft_version}"),
+	@Dependency(value = "java", version = ">=17"),
+	@Dependency(value = "fabric-api", version = ">=${fabric_version}")
+})
 public class StonksFabric {
 	public static final String MODID = "stonks";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);

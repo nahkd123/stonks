@@ -27,9 +27,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.product.InstantBuyConfirmMenu;
 import stonks.fabric.menu.product.InstantBuyMenu;
+import stonks.fabric.translation.Translations;
 
 public class OfferInstantBuyAmountInput extends SignGui {
 	private InstantBuyMenu menu;

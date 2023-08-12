@@ -33,6 +33,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.core.market.OfferType;
 import stonks.core.market.OverviewOffer;
+import stonks.fabric.translation.Translations;
 
 public class StonksFabricUtils {
 	public static Text progressBar(int width, Formatting background, double[] progress, Formatting[] colors) {

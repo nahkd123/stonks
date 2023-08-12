@@ -31,6 +31,7 @@ import net.minecraft.util.Formatting;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
+import stonks.fabric.translation.Translations;
 
 public class StonksFabricHelper {
 	public static Task<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {

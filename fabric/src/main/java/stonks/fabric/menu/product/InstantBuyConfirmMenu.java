@@ -31,8 +31,8 @@ import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.StackedMenu;
+import stonks.fabric.translation.Translations;
 
 public class InstantBuyConfirmMenu extends StackedMenu {
 	private Product product;

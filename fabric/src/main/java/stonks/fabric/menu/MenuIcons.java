@@ -23,8 +23,8 @@ package stonks.fabric.menu;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.player.ViewOffersMenu;
+import stonks.fabric.translation.Translations;
 
 public class MenuIcons {
 	public static final GuiElementBuilder BORDER = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE)

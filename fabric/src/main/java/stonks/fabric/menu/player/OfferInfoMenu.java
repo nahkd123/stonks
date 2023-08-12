@@ -31,9 +31,9 @@ import net.minecraft.text.Text;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
+import stonks.fabric.translation.Translations;
 
 public class OfferInfoMenu extends StackedMenu {
 	private Offer offer;

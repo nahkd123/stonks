@@ -28,9 +28,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.product.OfferAmountConfigureMenu;
 import stonks.fabric.menu.product.OfferPriceConfigureMenu;
+import stonks.fabric.translation.Translations;
 
 public class OfferSelectCustomAmountInput extends SignGui {
 	private OfferAmountConfigureMenu menu;

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric;
+package stonks.fabric.translation;
 
 import static net.minecraft.text.Text.translatableWithFallback;
 
@@ -31,6 +31,8 @@ import net.minecraft.util.Formatting;
 import stonks.core.market.ComputedOffersList;
 import stonks.core.market.Offer;
 import stonks.core.product.Product;
+import stonks.fabric.PlatformConfig;
+import stonks.fabric.StonksFabricUtils;
 
 public final class Translations {
 	// @formatter:off

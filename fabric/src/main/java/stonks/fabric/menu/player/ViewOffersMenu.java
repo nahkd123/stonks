@@ -33,12 +33,12 @@ import stonks.core.caching.Cached;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
-import stonks.fabric.Translations.Errors;
-import stonks.fabric.Translations.Icons;
 import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
+import stonks.fabric.translation.Translations;
+import stonks.fabric.translation.Translations.Errors;
+import stonks.fabric.translation.Translations.Icons;
 
 public class ViewOffersMenu extends StackedMenu {
 	private Cached<List<Offer>> offersCache;

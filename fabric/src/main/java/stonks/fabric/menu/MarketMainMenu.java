@@ -39,11 +39,11 @@ import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
-import stonks.fabric.Translations.Errors;
-import stonks.fabric.Translations.Menus.MainMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
+import stonks.fabric.translation.Translations;
+import stonks.fabric.translation.Translations.Errors;
+import stonks.fabric.translation.Translations.Menus.MainMenu;
 
 public class MarketMainMenu extends StackedMenu {
 	private static final int CATEGORIES_PER_PAGE = 5;

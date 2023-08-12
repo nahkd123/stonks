@@ -33,10 +33,10 @@ import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.product.input.OfferCustomPriceInput;
+import stonks.fabric.translation.Translations;
 
 public class OfferPriceConfigureMenu extends StackedMenu {
 	private Product product;

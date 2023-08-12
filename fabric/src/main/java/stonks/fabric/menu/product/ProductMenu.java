@@ -42,10 +42,10 @@ import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
 import stonks.fabric.StonksFabricUtils;
-import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
+import stonks.fabric.translation.Translations;
 
 public class ProductMenu extends StackedMenu {
 	private Product product;

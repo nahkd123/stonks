@@ -11,12 +11,24 @@ eclipse {
     synchronizationTasks 'eclipseFactorypath'
 }
 
+compileJava {
+    def expands = Map.of(
+        "stonks_version", rootProject.stonks_version,
+        "minecraft_version", rootProject.minecraft_version,
+        "loader_version", rootProject.loader_version,
+        "fabric_version", rootProject.fabric_version
+    ).entrySet().stream()
+    .map(v -> "${v.getKey()}:${v.getValue()}")
+    .collect(java.util.stream.Collectors.joining(';'))
+    options.compilerArgs << "-Anahara.modkit.expand=${expands}"
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
     mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
     modApi "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
-    implementation annotationProcessor('com.github.nahkd123.nahara-modkit:nahara-modkit-annotations-v1:main-SNAPSHOT')
+    implementation annotationProcessor("com.github.nahkd123.nahara-modkit:nahara-modkit-annotations-v1:$rootProject.nahara_modkit_version")
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_version"
     modImplementation include("eu.pb4:sgui:$rootProject.sgui_version")
     modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")

@@ -22,6 +22,7 @@
 package stonks.core.exec;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import stonks.core.market.Offer;
 
@@ -42,8 +43,19 @@ public class InstantOfferExecutor {
 
 	public void setCurrentUnits(int currentUnits) { this.currentUnits = currentUnits; }
 
-	// TODO send event when offer is filled
-	public InstantOfferExecutor executeInstantBuy(Iterator<Offer> sellOffersIterator) {
+	/**
+	 * <p>
+	 * Execute instant buy.
+	 * </p>
+	 * 
+	 * @param sellOffersIterator   An iterator of sorted sell offers. This method
+	 *                             may choose to remove the offer from iterator if
+	 *                             the offer is filled.
+	 * @param filledOffersConsumer A consumer that listens for filled offers. Can be
+	 *                             {@code null}.
+	 * @return This executor for chaining.
+	 */
+	public InstantOfferExecutor executeInstantBuy(Iterator<Offer> sellOffersIterator, Consumer<Offer> filledOffersConsumer) {
 		while (sellOffersIterator.hasNext()) {
 			var offer = sellOffersIterator.next();
 			var canBuyUnits = (int) Math.floor(getCurrentBalance() / offer.getPricePerUnit());
@@ -55,6 +67,7 @@ public class InstantOfferExecutor {
 			offer.fillOffer(toBuy);
 
 			if (offer.isFilled()) {
+				if (filledOffersConsumer != null) filledOffersConsumer.accept(offer);
 				sellOffersIterator.remove();
 			} else return this;
 		}
@@ -62,7 +75,19 @@ public class InstantOfferExecutor {
 		return this;
 	}
 
-	public InstantOfferExecutor executeInstantSell(Iterator<Offer> buyOffersIterator) {
+	/**
+	 * <p>
+	 * Execute instant sell.
+	 * </p>
+	 * 
+	 * @param buyOffersIterator    An iterator of sorted buy offers. This method may
+	 *                             choose to remove the offer from iterator if the
+	 *                             offer is filled.
+	 * @param filledOffersConsumer A consumer that listens for filled offers. Can be
+	 *                             {@code null}.
+	 * @return This executor for chaining.
+	 */
+	public InstantOfferExecutor executeInstantSell(Iterator<Offer> buyOffersIterator, Consumer<Offer> filledOffersConsumer) {
 		while (buyOffersIterator.hasNext()) {
 			var offer = buyOffersIterator.next();
 			var availableUnits = offer.getAvailableUnits();
@@ -73,6 +98,7 @@ public class InstantOfferExecutor {
 			offer.fillOffer(toSell);
 
 			if (offer.isFilled()) {
+				if (filledOffersConsumer != null) filledOffersConsumer.accept(offer);
 				buyOffersIterator.remove();
 			} else return this;
 		}

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
 
 import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
@@ -105,4 +106,8 @@ public class UnstableStonksService implements StonksService {
 		return wrapTask(underlying.instantOffer(product, type, units, balance));
 	}
 
+	@Override
+	public void subscribeToOfferFilledEvents(Consumer<Offer> consumer) {
+		underlying.subscribeToOfferFilledEvents(consumer); // TODO add delay
+	}
 }

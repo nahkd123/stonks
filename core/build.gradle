@@ -3,6 +3,13 @@ dependencies {
     api naharaToolkit('nahara-common-tasks')
 }
 
+processResources {
+    inputs.property "version", rootProject.stonks_version
+    filesMatching('fabric.mod.json') {
+        expand "version": rootProject.stonks_version
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

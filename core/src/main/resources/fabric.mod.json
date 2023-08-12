@@ -1,0 +1,12 @@
+{
+    "schemaVersion": 1,
+    "id": "stonks-core",
+    "version": "${version}",
+    "name": "Stonks Core (Library)",
+    "custom": {
+        "modmenu": {
+            "parent": "stonks-fabric",
+            "badges": ["library"]
+        }
+    }
+}

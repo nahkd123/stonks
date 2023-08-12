@@ -41,9 +41,9 @@ public class OfferInstantBuyAmountInput extends SignGui {
 		setSignType(Blocks.DARK_OAK_SIGN);
 		setColor(DyeColor.WHITE);
 		setLine(0, Text.empty());
-		setLine(1, Translations.signInputs$separator);
-		setLine(2, Translations.signInputs$amountInput);
-		setLine(3, Translations.signInputs$currentBuyTarget(menu.getProduct()));
+		setLine(1, Translations.SignInputs.Separator);
+		setLine(2, Translations.SignInputs.AmountInput);
+		setLine(3, Translations.SignInputs.CurrentBuyTarget(menu.getProduct()));
 	}
 
 	public InstantBuyMenu getMenu() { return menu; }
@@ -67,7 +67,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 			var amount = base * mul;
 
 			if (amount <= 0) {
-				getPlayer().sendMessage(Translations.messages$amountAtLeastOne, true);
+				getPlayer().sendMessage(Translations.Messages.AmountAtLeastOne, true);
 				return;
 			}
 
@@ -77,7 +77,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 			var totalPrice = menu.getInstantPricePerUnit() * amount;
 
 			if (balance < totalPrice) {
-				getPlayer().sendMessage(Translations.messages$notEnoughMoney(balance, totalPrice), true);
+				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -85,7 +85,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 				.getInstantPricePerUnit())
 				.open();
 		} catch (NumberFormatException e) {
-			getPlayer().sendMessage(Translations.messages$invaildInput(input), true);
+			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
 		}
 	}
 }

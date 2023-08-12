@@ -41,7 +41,7 @@ public class OfferInfoMenu extends StackedMenu {
 	public OfferInfoMenu(StackedMenu previous, ServerPlayerEntity player, Offer offer) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		this.offer = offer;
-		setTitle(Translations.menus$offerInfo(offer));
+		setTitle(Translations.Menus.OfferInfo._OfferInfo(offer));
 
 		setSlot(7, ViewOffersMenu.createOfferButton(player, offer));
 
@@ -63,16 +63,17 @@ public class OfferInfoMenu extends StackedMenu {
 		var tax = config.tax;
 
 		return new GuiElementBuilder(canClaim ? Items.GOLD_INGOT : Items.BARRIER)
-			.setName(Translations.menus$offerInfo$claimOffer)
+			.setName(Translations.Menus.OfferInfo.ClaimOffer)
 			.addLoreLine(Text.empty())
 			.addLoreLine(offer.getType() == OfferType.BUY
-				? Translations.menus$offerInfo$claimOffer$units(unitsToClaim)
-				: tax > 0d ? Translations.menus$offerInfo$claimOffer$moneyWithTax(unitsToClaim, offer, config)
-				: Translations.menus$offerInfo$claimOffer$money(unitsToClaim, offer))
+				? Translations.Menus.OfferInfo.ClaimOffer$Units(unitsToClaim)
+				: tax > 0d
+					? Translations.Menus.OfferInfo.ClaimOffer$MoneyWithTax(unitsToClaim, offer, config)
+				: Translations.Menus.OfferInfo.ClaimOffer$Money(unitsToClaim, offer))
 			.addLoreLine(Text.empty())
 			.addLoreLine(canClaim
-				? Translations.menus$offerInfo$claimOffer$clickToClaim
-				: Translations.menus$offerInfo$claimOffer$noClaim)
+				? Translations.Menus.OfferInfo.ClaimOffer$ClickToClaim
+				: Translations.Menus.OfferInfo.ClaimOffer$NoClaim)
 			.setCallback((index, type, action, gui) -> {
 				if (!canClaim) return;
 
@@ -81,14 +82,14 @@ public class OfferInfoMenu extends StackedMenu {
 				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
-					.setName(Translations.menus$offerInfo$claimOffer$claiming));
+					.setName(Translations.Menus.OfferInfo.ClaimOffer$Claiming));
 
 				var previousUnits = offer.getClaimedUnits();
 				handler.handle(service.claimOffer(offer), (newOffer, error) -> {
 					if (error != null) {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
-							.setName(Translations.menus$offerInfo$claimOffer$claimFailed));
-						else getPlayer().sendMessage(Translations.messages$offerClaimFailed, true);
+							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
+						else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
 						error.printStackTrace();
 						return;
 					}
@@ -110,24 +111,24 @@ public class OfferInfoMenu extends StackedMenu {
 
 	public GuiElementBuilder createCancelButton() {
 		return new GuiElementBuilder(Items.RED_TERRACOTTA)
-			.setName(Translations.menus$offerInfo$cancelOffer)
-			.addLoreLine(Translations.menus$offerInfo$cancelOffer$0)
+			.setName(Translations.Menus.OfferInfo.CancelOffer)
+			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$0)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$offerInfo$cancelOffer$clickToCancel)
+			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$ClickToCancel)
 			.setCallback((index, type, action, gui) -> {
 				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
 				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
-					.setName(Translations.menus$offerInfo$cancelOffer$cancelling));
+					.setName(Translations.Menus.OfferInfo.CancelOffer$Cancelling));
 
 				var previousClaimedUnits = offer.getClaimedUnits();
 				handler.handle(service.cancelOffer(offer), (newOffer, error) -> {
 					if (error != null) {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
-							.setName(Translations.menus$offerInfo$cancelOffer$cancelFailed));
-						else getPlayer().sendMessage(Translations.messages$offerCancelFailed, true);
+							.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
+						else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
 						error.printStackTrace();
 						return;
 					}
@@ -150,7 +151,9 @@ public class OfferInfoMenu extends StackedMenu {
 
 					close();
 					getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
-					getPlayer().sendMessage(Translations.messages$offerCancelled(newOffer, refundUnits, refundMoney), true);
+					getPlayer().sendMessage(
+						Translations.Messages.OfferCancelled(newOffer, refundUnits, refundMoney),
+						true);
 				});
 			});
 	}

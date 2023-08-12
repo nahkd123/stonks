@@ -47,7 +47,7 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		this.originalPricePerUnit = originalPricePerUnit;
 		this.instantPricePerUnit = instantPricePerUnit;
 
-		setTitle(Translations.menus$instantBuy(product));
+		setTitle(Translations.Menus.InstantBuy._InstantBuy(product));
 		var balance = StonksFabric.getServiceProvider(player).getStonksAdapter().accountBalance(player);
 		setSlot(22, createConfirmButton(balance, Items.GOLD_INGOT));
 	}
@@ -65,24 +65,24 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		var canBuy = balance >= moneyToSpend;
 
 		return new GuiElementBuilder(canBuy ? icon : Items.BARRIER, Math.min(Math.max(amount / 64, 1), 64))
-			.setName(Translations.menus$instantBuy$confirm)
-			.addLoreLine(Translations.menus$instantBuy$confirm$0(amount, getProduct()))
+			.setName(Translations.Menus.InstantBuy.Confirm)
+			.addLoreLine(Translations.Menus.InstantBuy.Confirm$0(amount, getProduct()))
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$instantBuy$averagePrice(amount, originalPricePerUnit))
-			.addLoreLine(Translations.menus$instantBuy$minimumBalance(moneyToSpend))
-			.addLoreLine(Translations.menus$instantBuy$0)
-			.addLoreLine(Translations.menus$instantBuy$1)
+			.addLoreLine(Translations.Menus.InstantBuy.AveragePrice(amount, originalPricePerUnit))
+			.addLoreLine(Translations.Menus.InstantBuy.MinimumBalance(moneyToSpend))
+			.addLoreLine(Translations.Menus.InstantBuy.GuideText$0)
+			.addLoreLine(Translations.Menus.InstantBuy.GuideText$1)
 			.addLoreLine(Text.empty())
 			.addLoreLine(canBuy
-				? Translations.menus$instantBuy$clickToBuy
-				: Translations.menus$instantBuy$noBuy)
+				? Translations.Menus.InstantBuy.ClickToBuy
+				: Translations.Menus.InstantBuy.NoBuy)
 			.setCallback((index, type, action, gui) -> {
 				close();
 				var provider = StonksFabric.getServiceProvider(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
-					getPlayer().sendMessage(Translations.messages$noMoneyToInstantBuy(moneyToSpend), true);
+					getPlayer().sendMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;
 				}

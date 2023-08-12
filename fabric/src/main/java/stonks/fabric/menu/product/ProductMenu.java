@@ -53,7 +53,7 @@ public class ProductMenu extends StackedMenu {
 
 	public ProductMenu(StackedMenu previous, ServerPlayerEntity player, Product product) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
-		setTitle(Translations.menus$productInfo(product));
+		setTitle(Translations.Menus.ProductInfo._ProductInfo(product));
 		this.product = product;
 		this.queryTask = StonksFabric.getServiceProvider(getPlayer()).getStonksCache().getOverview(product).get();
 
@@ -97,8 +97,8 @@ public class ProductMenu extends StackedMenu {
 					error.printStackTrace();
 					// TODO use message from UserException
 					return new GuiElementBuilder(Items.BARRIER)
-						.setName(Translations.errors)
-						.addLoreLine(Translations.errors$quickPriceDetails)
+						.setName(Translations.Errors.Errors)
+						.addLoreLine(Translations.Errors.QuickPriceDetails)
 						.asStack();
 				}
 
@@ -106,20 +106,21 @@ public class ProductMenu extends StackedMenu {
 				var tax = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().tax;
 				var out = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
-						? Translations.menus$productInfo$instantBuy(computed)
-						: Translations.menus$productInfo$instantSell(computed))
+						? Translations.Menus.ProductInfo.InstantBuy(computed)
+						: Translations.Menus.ProductInfo.InstantSell(computed))
 					.addLoreLine(Text.empty())
-					.addLoreLine(Translations.menus$productInfo$topOfferedPrice(topPrice))
-					.addLoreLine(Translations.menus$productInfo$avgOfferedPrice(computed));
+					.addLoreLine(Translations.Menus.ProductInfo.TopOfferedPrice(topPrice))
+					.addLoreLine(Translations.Menus.ProductInfo.AvgOfferedPrice(computed));
 
-				if (type == OfferType.SELL && tax > 0d) out.addLoreLine(Translations.menus$productInfo$instantSellTax(tax));
+				if (type == OfferType.SELL && tax > 0d)
+					out.addLoreLine(Translations.Menus.ProductInfo.InstantSellTax(tax));
 
 				return out
 					.addLoreLine(Text.empty())
 					.addLoreLine(computed.isEmpty()
-						? Translations.menus$productInfo$noOffers
-						: type == OfferType.BUY ? Translations.menus$productInfo$clickToInstantBuy
-						: Translations.menus$productInfo$clickToInstantSell)
+						? Translations.Menus.ProductInfo.NoOffers
+						: type == OfferType.BUY ? Translations.Menus.ProductInfo.ClickToInstantBuy
+						: Translations.Menus.ProductInfo.ClickToInstantSell)
 					.asStack();
 			}
 
@@ -138,7 +139,8 @@ public class ProductMenu extends StackedMenu {
 					var provider = StonksFabric.getServiceProvider(getPlayer());
 					var units = provider.getStonksAdapter().getUnits(getPlayer(), product);
 					if (units <= 0) {
-						getPlayer().sendMessage(Translations.messages$noUnitsToInstantSell(product), true);
+						getPlayer().sendMessage(Translations.Messages.NoUnitsToInstantSell(product),
+							true);
 						return;
 					}
 
@@ -161,28 +163,28 @@ public class ProductMenu extends StackedMenu {
 					error.printStackTrace();
 					// TODO use message from UserException
 					return new GuiElementBuilder(Items.BARRIER)
-						.setName(Translations.errors)
-						.addLoreLine(Translations.errors$quickPriceDetails)
+						.setName(Translations.Errors.Errors)
+						.addLoreLine(Translations.Errors.QuickPriceDetails)
 						.asStack();
 				}
 
 				var elem = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
-						? Translations.menus$productInfo$buyOffer
-						: Translations.menus$productInfo$sellOffer)
+						? Translations.Menus.ProductInfo.BuyOffer
+						: Translations.Menus.ProductInfo.SellOffer)
 					.addLoreLine(Text.empty());
 
 				if (list.getEntries().size() > 0) {
 					for (var e : list.getEntries()) { elem.addLoreLine(StonksFabricUtils.offerText(type, e)); }
 				} else {
-					elem.addLoreLine(Translations.menus$productInfo$noOffers);
+					elem.addLoreLine(Translations.Menus.ProductInfo.NoOffers);
 				}
 
 				return elem
 					.addLoreLine(Text.empty())
 					.addLoreLine(list.getEntries().size() == 0
-						? Translations.menus$productInfo$makeOffer$noOffers
-						: Translations.menus$productInfo$makeOffer)
+						? Translations.Menus.ProductInfo.MakeOffer$NoOffers
+						: Translations.Menus.ProductInfo.MakeOffer)
 					.asStack();
 			}
 

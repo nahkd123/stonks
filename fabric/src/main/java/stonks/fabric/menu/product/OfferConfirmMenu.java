@@ -40,7 +40,7 @@ import stonks.fabric.menu.StackedMenu;
 public class OfferConfirmMenu extends StackedMenu {
 	public OfferConfirmMenu(StackedMenu previous, ServerPlayerEntity player, Product product, OfferType offerType, int amount, double pricePerUnit) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
-		setTitle(Translations.menus$confirmOffer);
+		setTitle(Translations.Menus.ConfirmOffer.ConfirmOffer);
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
@@ -52,16 +52,16 @@ public class OfferConfirmMenu extends StackedMenu {
 
 		setSlot(22, new GuiElementBuilder(Items.GREEN_TERRACOTTA)
 			.setName(offerType == OfferType.BUY
-				? Translations.menus$confirmOffer$buy
-				: Translations.menus$confirmOffer$sell)
+				? Translations.Menus.ConfirmOffer.Buy
+				: Translations.Menus.ConfirmOffer.Sell)
 			.addLoreLine(Text.empty())
 			.addLoreLine(offerType == OfferType.BUY
-				? Translations.menus$confirmOffer$buying(product, amount)
-				: Translations.menus$confirmOffer$selling(product, amount))
-			.addLoreLine(Translations.menus$confirmOffer$pricePerUnit(pricePerUnit))
-			.addLoreLine(Translations.menus$confirmOffer$totalPrice(amount, pricePerUnit))
+				? Translations.Menus.ConfirmOffer.Buying(product, amount)
+				: Translations.Menus.ConfirmOffer.Selling(product, amount))
+			.addLoreLine(Translations.Menus.ConfirmOffer.PricePerUnit(pricePerUnit))
+			.addLoreLine(Translations.Menus.ConfirmOffer.TotalPrice(amount, pricePerUnit))
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$confirmOffer$clickToConfirm)
+			.addLoreLine(Translations.Menus.ConfirmOffer.ClickToConfirm)
 			.setCallback((index, type, action, gui) -> {
 				close();
 				StonksFabricHelper.placeOffer(player, product, offerType, amount, pricePerUnit);

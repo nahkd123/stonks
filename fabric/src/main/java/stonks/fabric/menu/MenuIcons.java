@@ -28,17 +28,17 @@ import stonks.fabric.menu.player.ViewOffersMenu;
 
 public class MenuIcons {
 	public static final GuiElementBuilder BORDER = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE)
-		.setName(Translations.icons$border);
+		.setName(Translations.Icons.Border);
 
 	public static final GuiElementBuilder BACK = new GuiElementBuilder(Items.ARROW)
-		.setName(Translations.icons$previousMenu)
+		.setName(Translations.Icons.PreviousMenu)
 		.setCallback((index, type, action, gui) -> {
 			if (gui instanceof StackedMenu stacked) { stacked.getPrevious().open(); }
 		});
 
 	public static final GuiElementBuilder MAIN_MENU = new GuiElementBuilder(Items.GOLD_BLOCK)
-		.setName(Translations.icons$mainMenu)
-		.addLoreLine(Translations.icons$mainMenu$0)
+		.setName(Translations.Icons.MainMenu)
+		.addLoreLine(Translations.Icons.MainMenu$0)
 		.setCallback((index, type, action, gui) -> {
 			var previous = gui instanceof StackedMenu stacked ? stacked : null;
 			if (previous != null && previous.getPrevious() instanceof MarketMainMenu) {
@@ -51,8 +51,8 @@ public class MenuIcons {
 		});
 
 	public static final GuiElementBuilder VIEW_SELF_OFFERS = new GuiElementBuilder(Items.CHEST)
-		.setName(Translations.icons$viewOffers)
-		.addLoreLine(Translations.icons$viewOffer$0)
+		.setName(Translations.Icons.ViewOffers)
+		.addLoreLine(Translations.Icons.ViewOffers$0)
 		.setCallback((index, type, action, gui) -> {
 			var previous = gui instanceof StackedMenu stacked ? stacked : null;
 			if (previous != null && previous.getPrevious() instanceof ViewOffersMenu) {

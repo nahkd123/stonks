@@ -43,13 +43,13 @@ public class StonksFabricHelper {
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(Translations.message$pleaseWait, true);
+		player.sendMessage(Translations.Messages.PleaseWait, true);
 		var task = provider.getStonksService().instantOffer(product, type, units, balance);
 
 		provider.getTasksHandler()
 			.handle(task, (result, error) -> {
 				if (error != null) {
-					player.sendMessage(Translations.message$errorRefunding, true);
+					player.sendMessage(Translations.Messages.ErrorRefunding, true);
 					if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
 					else provider.getStonksAdapter().addUnitsTo(player, product, units);
 					error.printStackTrace();
@@ -73,8 +73,8 @@ public class StonksFabricHelper {
 					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
 						.styled(s -> s.withColor(Formatting.AQUA));
 					var text = unitsLeft == 0
-						? Translations.messages$bought(amountText, productNameText, moneySpentText)
-						: Translations.messages$boughtWithExtras(amountText, productNameText, moneySpentText,
+						? Translations.Messages.Bought(amountText, productNameText, moneySpentText)
+						: Translations.Messages.BoughtWithExtras(amountText, productNameText, moneySpentText,
 							unitsLeftText);
 					player.sendMessage(text, true);
 				} else {
@@ -92,8 +92,8 @@ public class StonksFabricHelper {
 					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
 						.styled(s -> s.withColor(Formatting.AQUA));
 					var text = unitsLeft == 0
-						? Translations.messages$sold(amountText, productNameText, moneyReceivedText)
-						: Translations.messages$soldWithExtras(amountText, productNameText, moneyReceivedText,
+						? Translations.Messages.Sold(amountText, productNameText, moneyReceivedText)
+						: Translations.Messages.SoldWithExtras(amountText, productNameText, moneyReceivedText,
 							unitsLeftText);
 					player.sendMessage(text, true);
 				}
@@ -111,7 +111,7 @@ public class StonksFabricHelper {
 			var balance = adapter.accountBalance(player);
 
 			if (balance < totalPrice) {
-				player.sendMessage(Translations.messages$notEnoughMoney(balance, totalPrice), true);
+				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -125,19 +125,19 @@ public class StonksFabricHelper {
 			}
 
 			if (currentUnits < units) {
-				player.sendMessage(Translations.messages$notEnoughItems(currentUnits, units));
+				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units));
 				return;
 			}
 
 			adapter.removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(Translations.message$pleaseWait, true);
+		player.sendMessage(Translations.Messages.PleaseWait, true);
 		provider.getTasksHandler()
 			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
 				(offer, error) -> {
 					if (error != null) {
-						player.sendMessage(Translations.message$errorRefunding, true);
+						player.sendMessage(Translations.Messages.ErrorRefunding, true);
 
 						if (type == OfferType.BUY) {
 							adapter.accountDeposit(player, totalPrice);
@@ -155,8 +155,9 @@ public class StonksFabricHelper {
 					var totalPriceText = StonksFabricUtils.currencyText(Optional.of(totalPrice), true);
 					var pricePerUnitText = StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true);
 					player.sendMessage(offer.getType() == OfferType.BUY
-						? Translations.messages$placedBuyOffer(unitsText, productNameText, totalPriceText, pricePerUnitText)
-						: Translations.messages$placedSellOffer(unitsText, productNameText, totalPriceText,
+						? Translations.Messages.PlacedBuyOffer(unitsText, productNameText, totalPriceText,
+							pricePerUnitText)
+						: Translations.Messages.PlacedSellOffer(unitsText, productNameText, totalPriceText,
 							pricePerUnitText),
 						true);
 				});
@@ -166,7 +167,7 @@ public class StonksFabricHelper {
 		var player = server.getPlayerManager().getPlayer(filledOffer.getOffererId());
 		if (player == null) return;
 		player.sendMessage(filledOffer.getType() == OfferType.BUY
-			? Translations.messages$buyOfferFilled(filledOffer)
-			: Translations.messages$sellOfferFilled(filledOffer));
+			? Translations.Messages.BuyOfferFilled(filledOffer)
+			: Translations.Messages.SellOfferFilled(filledOffer));
 	}
 }

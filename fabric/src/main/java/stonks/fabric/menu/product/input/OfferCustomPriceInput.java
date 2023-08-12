@@ -42,11 +42,11 @@ public class OfferCustomPriceInput extends SignGui {
 		setSignType(Blocks.DARK_OAK_SIGN);
 		setColor(DyeColor.WHITE);
 		setLine(0, Text.empty());
-		setLine(1, Translations.signInputs$separator);
-		setLine(2, Translations.signInputs$priceInput);
+		setLine(1, Translations.SignInputs.Separator);
+		setLine(2, Translations.SignInputs.PriceInput);
 		setLine(3, menu.getOfferType() == OfferType.BUY
-			? Translations.signInputs$currentBuyTarget(menu.getAmount(), menu.getProduct())
-			: Translations.signInputs$currentSellTarget(menu.getAmount(), menu.getProduct()));
+			? Translations.SignInputs.CurrentBuyTarget(menu.getAmount(), menu.getProduct())
+			: Translations.SignInputs.CurrentSellTarget(menu.getAmount(), menu.getProduct()));
 	}
 
 	public OfferPriceConfigureMenu getMenu() { return menu; }
@@ -74,7 +74,7 @@ public class OfferCustomPriceInput extends SignGui {
 			var price = base * mul;
 
 			if (price <= 0) {
-				getPlayer().sendMessage(Translations.messages$priceMoreThanZero, true);
+				getPlayer().sendMessage(Translations.Messages.PriceMoreThanZero, true);
 				return;
 			}
 
@@ -84,13 +84,13 @@ public class OfferCustomPriceInput extends SignGui {
 			var totalPrice = price * menu.getAmount();
 
 			if (menu.getOfferType() == OfferType.BUY && totalPrice > balance) {
-				getPlayer().sendMessage(Translations.messages$notEnoughMoney(balance, totalPrice));
+				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice));
 			}
 
 			new OfferConfirmMenu(menu, player, menu.getProduct(), menu.getOfferType(), menu.getAmount(), price)
 				.open();
 		} catch (NumberFormatException e) {
-			getPlayer().sendMessage(Translations.messages$invaildInput(input), true);
+			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
 		}
 	}
 }

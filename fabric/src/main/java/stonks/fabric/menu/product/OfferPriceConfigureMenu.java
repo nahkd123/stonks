@@ -52,8 +52,8 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		product = overview.getProduct();
 
 		setTitle(offerType == OfferType.BUY
-			? Translations.menus$createOffer$buy(product)
-			: Translations.menus$createOffer$sell(product));
+			? Translations.Menus.CreateOffer.Title$Buy(product)
+			: Translations.Menus.CreateOffer.Title$Sell(product));
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
@@ -98,25 +98,25 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		var averageOffer = computed.map(v -> v.average());
 
 		var topOfferTextDelta = switch (offerType) {
-		case BUY -> Translations.menus$createOffer$topBuyDelta(delta);
-		case SELL -> Translations.menus$createOffer$topSellDelta(delta);
+		case BUY -> Translations.Menus.CreateOffer.TopBuyDelta(delta);
+		case SELL -> Translations.Menus.CreateOffer.TopSellDelta(delta);
 		};
 		var totalTextDelta = switch (offerType) {
-		case BUY -> Translations.menus$createOffer$totalSpending(topOfferDelta, amount);
-		case SELL -> Translations.menus$createOffer$totalEarning(topOfferDelta, amount);
+		case BUY -> Translations.Menus.CreateOffer.TotalSpending(topOfferDelta, amount);
+		case SELL -> Translations.Menus.CreateOffer.TotalEarning(topOfferDelta, amount);
 		};
 
 		setSlot(19, new GuiElementBuilder(computed.isPresent() ? Items.GOLD_INGOT : Items.BARRIER)
 			.setName(topOfferTextDelta)
-			.addLoreLine(Translations.menus$createOffer$topOfferDelta)
+			.addLoreLine(Translations.Menus.CreateOffer.TopOfferDelta)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$createOffer$topOfferPrice(topOfferPPU))
-			.addLoreLine(Translations.menus$createOffer$yourOfferPrice(topOfferDelta))
+			.addLoreLine(Translations.Menus.CreateOffer.TopOfferPrice(topOfferPPU))
+			.addLoreLine(Translations.Menus.CreateOffer.YourOfferPrice(topOfferDelta))
 			.addLoreLine(totalTextDelta)
 			.addLoreLine(Text.empty())
 			.addLoreLine(topOfferDelta.isPresent()
-				? Translations.menus$createOffer$clickForConfirmation
-				: Translations.menus$createOffer$noOfferForYou)
+				? Translations.Menus.CreateOffer.ClickForConfirmation
+				: Translations.Menus.CreateOffer.NoOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferDelta.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferDelta.get())
@@ -124,19 +124,19 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		var totalTextTop = switch (offerType) {
-		case BUY -> Translations.menus$createOffer$totalSpending(topOfferPPU, amount);
-		case SELL -> Translations.menus$createOffer$totalEarning(topOfferPPU, amount);
+		case BUY -> Translations.Menus.CreateOffer.TotalSpending(topOfferPPU, amount);
+		case SELL -> Translations.Menus.CreateOffer.TotalEarning(topOfferPPU, amount);
 		};
 
 		setSlot(21, new GuiElementBuilder(topOfferPPU.isPresent() ? Items.GOLD_BLOCK : Items.BARRIER)
-			.setName(Translations.menus$createOffer$sameAsTopOffer)
+			.setName(Translations.Menus.CreateOffer.SameAsTopOffer)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$createOffer$topOfferPrice(topOfferPPU))
+			.addLoreLine(Translations.Menus.CreateOffer.TopOfferPrice(topOfferPPU))
 			.addLoreLine(totalTextTop)
 			.addLoreLine(Text.empty())
 			.addLoreLine(topOfferPPU.isPresent()
-				? Translations.menus$createOffer$clickForConfirmation
-				: Translations.menus$createOffer$noOfferForYou)
+				? Translations.Menus.CreateOffer.ClickForConfirmation
+				: Translations.Menus.CreateOffer.NoOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferPPU.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferPPU.get())
@@ -144,19 +144,19 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		var totalTextAverage = switch (offerType) {
-		case BUY -> Translations.menus$createOffer$totalSpending(averageOffer, amount);
-		case SELL -> Translations.menus$createOffer$totalEarning(averageOffer, amount);
+		case BUY -> Translations.Menus.CreateOffer.TotalSpending(averageOffer, amount);
+		case SELL -> Translations.Menus.CreateOffer.TotalEarning(averageOffer, amount);
 		};
 
 		setSlot(23, new GuiElementBuilder(averageOffer.isPresent() ? Items.CHEST : Items.BARRIER)
-			.setName(Translations.menus$createOffer$averageOfTopOffers)
+			.setName(Translations.Menus.CreateOffer.AverageOfTopOffers)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$createOffer$avgOfferPrice(averageOffer))
+			.addLoreLine(Translations.Menus.CreateOffer.AvgOfferPrice(averageOffer))
 			.addLoreLine(totalTextAverage)
 			.addLoreLine(Text.empty())
 			.addLoreLine(averageOffer.isPresent()
-				? Translations.menus$createOffer$clickForConfirmation
-				: Translations.menus$createOffer$noOfferForYou)
+				? Translations.Menus.CreateOffer.ClickForConfirmation
+				: Translations.Menus.CreateOffer.NoOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!averageOffer.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, averageOffer.get())
@@ -164,10 +164,10 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
-			.setName(Translations.menus$createOffer$customPrice)
-			.addLoreLine(Translations.menus$createOffer$customPrice$0)
+			.setName(Translations.Menus.CreateOffer.CustomPrice)
+			.addLoreLine(Translations.Menus.CreateOffer.CustomPrice$0)
 			.addLoreLine(Text.empty())
-			.addLoreLine(Translations.menus$createOffer$clickForCustomPrice)
+			.addLoreLine(Translations.Menus.CreateOffer.ClickForCustomPrice)
 			.setCallback((index, type, action, gui) -> new OfferCustomPriceInput(player, this).open()));
 	}
 }

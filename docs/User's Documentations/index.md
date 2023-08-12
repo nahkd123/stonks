@@ -3,3 +3,4 @@ Welcome and thank you for using Stonks. You are viewing user's documentations, w
 
 - [Installation guide](./Installation.md)
 - [Configuring Stonks](./Configuration.md)
+- [Using the market](./Market.md)

@@ -31,7 +31,6 @@ import net.minecraft.util.Formatting;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
-import stonks.fabric.menu.MenuText;
 
 public class StonksFabricHelper {
 	public static Task<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
@@ -44,13 +43,13 @@ public class StonksFabricHelper {
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(MenuText.message$pleaseWait, true);
+		player.sendMessage(Translations.message$pleaseWait, true);
 		var task = provider.getStonksService().instantOffer(product, type, units, balance);
 
 		provider.getTasksHandler()
 			.handle(task, (result, error) -> {
 				if (error != null) {
-					player.sendMessage(MenuText.message$errorRefunding, true);
+					player.sendMessage(Translations.message$errorRefunding, true);
 					if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
 					else provider.getStonksAdapter().addUnitsTo(player, product, units);
 					error.printStackTrace();
@@ -74,8 +73,8 @@ public class StonksFabricHelper {
 					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
 						.styled(s -> s.withColor(Formatting.AQUA));
 					var text = unitsLeft == 0
-						? MenuText.messages$bought(amountText, productNameText, moneySpentText)
-						: MenuText.messages$boughtWithExtras(amountText, productNameText, moneySpentText,
+						? Translations.messages$bought(amountText, productNameText, moneySpentText)
+						: Translations.messages$boughtWithExtras(amountText, productNameText, moneySpentText,
 							unitsLeftText);
 					player.sendMessage(text, true);
 				} else {
@@ -93,8 +92,8 @@ public class StonksFabricHelper {
 					var unitsLeftText = Text.literal(Integer.toString(unitsLeft))
 						.styled(s -> s.withColor(Formatting.AQUA));
 					var text = unitsLeft == 0
-						? MenuText.messages$sold(amountText, productNameText, moneyReceivedText)
-						: MenuText.messages$soldWithExtras(amountText, productNameText, moneyReceivedText,
+						? Translations.messages$sold(amountText, productNameText, moneyReceivedText)
+						: Translations.messages$soldWithExtras(amountText, productNameText, moneyReceivedText,
 							unitsLeftText);
 					player.sendMessage(text, true);
 				}
@@ -112,7 +111,7 @@ public class StonksFabricHelper {
 			var balance = adapter.accountBalance(player);
 
 			if (balance < totalPrice) {
-				player.sendMessage(MenuText.messages$notEnoughMoney(balance, totalPrice), true);
+				player.sendMessage(Translations.messages$notEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -126,19 +125,19 @@ public class StonksFabricHelper {
 			}
 
 			if (currentUnits < units) {
-				player.sendMessage(MenuText.messages$notEnoughItems(currentUnits, units));
+				player.sendMessage(Translations.messages$notEnoughItems(currentUnits, units));
 				return;
 			}
 
 			adapter.removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(MenuText.message$pleaseWait, true);
+		player.sendMessage(Translations.message$pleaseWait, true);
 		provider.getTasksHandler()
 			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
 				(offer, error) -> {
 					if (error != null) {
-						player.sendMessage(MenuText.message$errorRefunding, true);
+						player.sendMessage(Translations.message$errorRefunding, true);
 
 						if (type == OfferType.BUY) {
 							adapter.accountDeposit(player, totalPrice);
@@ -156,8 +155,8 @@ public class StonksFabricHelper {
 					var totalPriceText = StonksFabricUtils.currencyText(Optional.of(totalPrice), true);
 					var pricePerUnitText = StonksFabricUtils.currencyText(Optional.of(pricePerUnit), true);
 					player.sendMessage(offer.getType() == OfferType.BUY
-						? MenuText.messages$placedBuyOffer(unitsText, productNameText, totalPriceText, pricePerUnitText)
-						: MenuText.messages$placedSellOffer(unitsText, productNameText, totalPriceText,
+						? Translations.messages$placedBuyOffer(unitsText, productNameText, totalPriceText, pricePerUnitText)
+						: Translations.messages$placedSellOffer(unitsText, productNameText, totalPriceText,
 							pricePerUnitText),
 						true);
 				});
@@ -167,7 +166,7 @@ public class StonksFabricHelper {
 		var player = server.getPlayerManager().getPlayer(filledOffer.getOffererId());
 		if (player == null) return;
 		player.sendMessage(filledOffer.getType() == OfferType.BUY
-			? MenuText.messages$buyOfferFilled(filledOffer)
-			: MenuText.messages$sellOfferFilled(filledOffer));
+			? Translations.messages$buyOfferFilled(filledOffer)
+			: Translations.messages$sellOfferFilled(filledOffer));
 	}
 }

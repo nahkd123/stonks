@@ -27,7 +27,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.menu.MenuText;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.product.InstantBuyConfirmMenu;
 import stonks.fabric.menu.product.InstantBuyMenu;
 
@@ -41,9 +41,9 @@ public class OfferInstantBuyAmountInput extends SignGui {
 		setSignType(Blocks.DARK_OAK_SIGN);
 		setColor(DyeColor.WHITE);
 		setLine(0, Text.empty());
-		setLine(1, MenuText.signInputs$separator);
-		setLine(2, MenuText.signInputs$amountInput);
-		setLine(3, MenuText.signInputs$currentBuyTarget(menu.getProduct()));
+		setLine(1, Translations.signInputs$separator);
+		setLine(2, Translations.signInputs$amountInput);
+		setLine(3, Translations.signInputs$currentBuyTarget(menu.getProduct()));
 	}
 
 	public InstantBuyMenu getMenu() { return menu; }
@@ -67,7 +67,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 			var amount = base * mul;
 
 			if (amount <= 0) {
-				getPlayer().sendMessage(MenuText.messages$amountAtLeastOne, true);
+				getPlayer().sendMessage(Translations.messages$amountAtLeastOne, true);
 				return;
 			}
 
@@ -77,7 +77,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 			var totalPrice = menu.getInstantPricePerUnit() * amount;
 
 			if (balance < totalPrice) {
-				getPlayer().sendMessage(MenuText.messages$notEnoughMoney(balance, totalPrice), true);
+				getPlayer().sendMessage(Translations.messages$notEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -85,7 +85,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 				.getInstantPricePerUnit())
 				.open();
 		} catch (NumberFormatException e) {
-			getPlayer().sendMessage(MenuText.messages$invaildInput(input), true);
+			getPlayer().sendMessage(Translations.messages$invaildInput(input), true);
 		}
 	}
 }

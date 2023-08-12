@@ -23,21 +23,22 @@ package stonks.fabric.menu;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.player.ViewOffersMenu;
 
 public class MenuIcons {
 	public static final GuiElementBuilder BORDER = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE)
-		.setName(MenuText.icons$border);
+		.setName(Translations.icons$border);
 
 	public static final GuiElementBuilder BACK = new GuiElementBuilder(Items.ARROW)
-		.setName(MenuText.icons$previousMenu)
+		.setName(Translations.icons$previousMenu)
 		.setCallback((index, type, action, gui) -> {
 			if (gui instanceof StackedMenu stacked) { stacked.getPrevious().open(); }
 		});
 
 	public static final GuiElementBuilder MAIN_MENU = new GuiElementBuilder(Items.GOLD_BLOCK)
-		.setName(MenuText.icons$mainMenu)
-		.addLoreLine(MenuText.icons$mainMenu$0)
+		.setName(Translations.icons$mainMenu)
+		.addLoreLine(Translations.icons$mainMenu$0)
 		.setCallback((index, type, action, gui) -> {
 			var previous = gui instanceof StackedMenu stacked ? stacked : null;
 			if (previous != null && previous.getPrevious() instanceof MarketMainMenu) {
@@ -50,8 +51,8 @@ public class MenuIcons {
 		});
 
 	public static final GuiElementBuilder VIEW_SELF_OFFERS = new GuiElementBuilder(Items.CHEST)
-		.setName(MenuText.icons$viewOffers)
-		.addLoreLine(MenuText.icons$viewOffer$0)
+		.setName(Translations.icons$viewOffers)
+		.addLoreLine(Translations.icons$viewOffer$0)
 		.setCallback((index, type, action, gui) -> {
 			var previous = gui instanceof StackedMenu stacked ? stacked : null;
 			if (previous != null && previous.getPrevious() instanceof ViewOffersMenu) {

@@ -33,8 +33,8 @@ import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.product.input.OfferCustomPriceInput;
 
@@ -52,8 +52,8 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		product = overview.getProduct();
 
 		setTitle(offerType == OfferType.BUY
-			? MenuText.menus$createOffer$buy(product)
-			: MenuText.menus$createOffer$sell(product));
+			? Translations.menus$createOffer$buy(product)
+			: Translations.menus$createOffer$sell(product));
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
@@ -98,25 +98,25 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		var averageOffer = computed.map(v -> v.average());
 
 		var topOfferTextDelta = switch (offerType) {
-		case BUY -> MenuText.menus$createOffer$topBuyDelta(delta);
-		case SELL -> MenuText.menus$createOffer$topSellDelta(delta);
+		case BUY -> Translations.menus$createOffer$topBuyDelta(delta);
+		case SELL -> Translations.menus$createOffer$topSellDelta(delta);
 		};
 		var totalTextDelta = switch (offerType) {
-		case BUY -> MenuText.menus$createOffer$totalSpending(topOfferDelta, amount);
-		case SELL -> MenuText.menus$createOffer$totalEarning(topOfferDelta, amount);
+		case BUY -> Translations.menus$createOffer$totalSpending(topOfferDelta, amount);
+		case SELL -> Translations.menus$createOffer$totalEarning(topOfferDelta, amount);
 		};
 
 		setSlot(19, new GuiElementBuilder(computed.isPresent() ? Items.GOLD_INGOT : Items.BARRIER)
 			.setName(topOfferTextDelta)
-			.addLoreLine(MenuText.menus$createOffer$topOfferDelta)
+			.addLoreLine(Translations.menus$createOffer$topOfferDelta)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$createOffer$topOfferPrice(topOfferPPU))
-			.addLoreLine(MenuText.menus$createOffer$yourOfferPrice(topOfferDelta))
+			.addLoreLine(Translations.menus$createOffer$topOfferPrice(topOfferPPU))
+			.addLoreLine(Translations.menus$createOffer$yourOfferPrice(topOfferDelta))
 			.addLoreLine(totalTextDelta)
 			.addLoreLine(Text.empty())
 			.addLoreLine(topOfferDelta.isPresent()
-				? MenuText.menus$createOffer$clickForConfirmation
-				: MenuText.menus$createOffer$noOfferForYou)
+				? Translations.menus$createOffer$clickForConfirmation
+				: Translations.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferDelta.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferDelta.get())
@@ -124,19 +124,19 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		var totalTextTop = switch (offerType) {
-		case BUY -> MenuText.menus$createOffer$totalSpending(topOfferPPU, amount);
-		case SELL -> MenuText.menus$createOffer$totalEarning(topOfferPPU, amount);
+		case BUY -> Translations.menus$createOffer$totalSpending(topOfferPPU, amount);
+		case SELL -> Translations.menus$createOffer$totalEarning(topOfferPPU, amount);
 		};
 
 		setSlot(21, new GuiElementBuilder(topOfferPPU.isPresent() ? Items.GOLD_BLOCK : Items.BARRIER)
-			.setName(MenuText.menus$createOffer$sameAsTopOffer)
+			.setName(Translations.menus$createOffer$sameAsTopOffer)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$createOffer$topOfferPrice(topOfferPPU))
+			.addLoreLine(Translations.menus$createOffer$topOfferPrice(topOfferPPU))
 			.addLoreLine(totalTextTop)
 			.addLoreLine(Text.empty())
 			.addLoreLine(topOfferPPU.isPresent()
-				? MenuText.menus$createOffer$clickForConfirmation
-				: MenuText.menus$createOffer$noOfferForYou)
+				? Translations.menus$createOffer$clickForConfirmation
+				: Translations.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!topOfferPPU.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferPPU.get())
@@ -144,19 +144,19 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		var totalTextAverage = switch (offerType) {
-		case BUY -> MenuText.menus$createOffer$totalSpending(averageOffer, amount);
-		case SELL -> MenuText.menus$createOffer$totalEarning(averageOffer, amount);
+		case BUY -> Translations.menus$createOffer$totalSpending(averageOffer, amount);
+		case SELL -> Translations.menus$createOffer$totalEarning(averageOffer, amount);
 		};
 
 		setSlot(23, new GuiElementBuilder(averageOffer.isPresent() ? Items.CHEST : Items.BARRIER)
-			.setName(MenuText.menus$createOffer$averageOfTopOffers)
+			.setName(Translations.menus$createOffer$averageOfTopOffers)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$createOffer$avgOfferPrice(averageOffer))
+			.addLoreLine(Translations.menus$createOffer$avgOfferPrice(averageOffer))
 			.addLoreLine(totalTextAverage)
 			.addLoreLine(Text.empty())
 			.addLoreLine(averageOffer.isPresent()
-				? MenuText.menus$createOffer$clickForConfirmation
-				: MenuText.menus$createOffer$noOfferForYou)
+				? Translations.menus$createOffer$clickForConfirmation
+				: Translations.menus$createOffer$noOfferForYou)
 			.setCallback((index, type, action, gui) -> {
 				if (!averageOffer.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, averageOffer.get())
@@ -164,10 +164,10 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			}));
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
-			.setName(MenuText.menus$createOffer$customPrice)
-			.addLoreLine(MenuText.menus$createOffer$customPrice$0)
+			.setName(Translations.menus$createOffer$customPrice)
+			.addLoreLine(Translations.menus$createOffer$customPrice$0)
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$createOffer$clickForCustomPrice)
+			.addLoreLine(Translations.menus$createOffer$clickForCustomPrice)
 			.setCallback((index, type, action, gui) -> new OfferCustomPriceInput(player, this).open()));
 	}
 }

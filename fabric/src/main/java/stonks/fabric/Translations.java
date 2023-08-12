@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.menu;
+package stonks.fabric;
 
 import static net.minecraft.text.Text.translatableWithFallback;
 
@@ -31,11 +31,9 @@ import net.minecraft.util.Formatting;
 import stonks.core.market.ComputedOffersList;
 import stonks.core.market.Offer;
 import stonks.core.product.Product;
-import stonks.fabric.PlatformConfig;
-import stonks.fabric.StonksFabricUtils;
 
 // @formatter:off
-public class MenuText {
+public class Translations {
 	public static final Text icons$border = translatableWithFallback("stonks.menu.icon.border", " ");
 	public static final Text icons$previousMenu = translatableWithFallback("stonks.menu.icon.previousMenu", "\u00a77<-- \u00a7aBack");
 	public static final Text icons$mainMenu = translatableWithFallback("stonks.menu.icon.mainMenu", "\u00a7eMarket menu");

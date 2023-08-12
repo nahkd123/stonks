@@ -31,7 +31,7 @@ import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
-import stonks.fabric.menu.MenuText;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.StackedMenu;
 
 public class InstantBuyConfirmMenu extends StackedMenu {
@@ -47,7 +47,7 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		this.originalPricePerUnit = originalPricePerUnit;
 		this.instantPricePerUnit = instantPricePerUnit;
 
-		setTitle(MenuText.menus$instantBuy(product));
+		setTitle(Translations.menus$instantBuy(product));
 		var balance = StonksFabric.getServiceProvider(player).getStonksAdapter().accountBalance(player);
 		setSlot(22, createConfirmButton(balance, Items.GOLD_INGOT));
 	}
@@ -65,24 +65,24 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		var canBuy = balance >= moneyToSpend;
 
 		return new GuiElementBuilder(canBuy ? icon : Items.BARRIER, Math.min(Math.max(amount / 64, 1), 64))
-			.setName(MenuText.menus$instantBuy$confirm)
-			.addLoreLine(MenuText.menus$instantBuy$confirm$0(amount, getProduct()))
+			.setName(Translations.menus$instantBuy$confirm)
+			.addLoreLine(Translations.menus$instantBuy$confirm$0(amount, getProduct()))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$instantBuy$averagePrice(amount, originalPricePerUnit))
-			.addLoreLine(MenuText.menus$instantBuy$minimumBalance(moneyToSpend))
-			.addLoreLine(MenuText.menus$instantBuy$0)
-			.addLoreLine(MenuText.menus$instantBuy$1)
+			.addLoreLine(Translations.menus$instantBuy$averagePrice(amount, originalPricePerUnit))
+			.addLoreLine(Translations.menus$instantBuy$minimumBalance(moneyToSpend))
+			.addLoreLine(Translations.menus$instantBuy$0)
+			.addLoreLine(Translations.menus$instantBuy$1)
 			.addLoreLine(Text.empty())
 			.addLoreLine(canBuy
-				? MenuText.menus$instantBuy$clickToBuy
-				: MenuText.menus$instantBuy$noBuy)
+				? Translations.menus$instantBuy$clickToBuy
+				: Translations.menus$instantBuy$noBuy)
 			.setCallback((index, type, action, gui) -> {
 				close();
 				var provider = StonksFabric.getServiceProvider(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
-					getPlayer().sendMessage(MenuText.messages$noMoneyToInstantBuy(moneyToSpend), true);
+					getPlayer().sendMessage(Translations.messages$noMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;
 				}

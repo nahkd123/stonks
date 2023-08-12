@@ -33,7 +33,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.core.market.OfferType;
 import stonks.core.market.OverviewOffer;
-import stonks.fabric.menu.MenuText;
 
 public class StonksFabricUtils {
 	public static Text progressBar(int width, Formatting background, double[] progress, Formatting[] colors) {
@@ -76,8 +75,8 @@ public class StonksFabricUtils {
 	public static final DecimalFormat TAX_FORMATTER = new DecimalFormat("#,##0.##%");
 
 	public static Text currencyText(Optional<Double> v, boolean fullNotAvailable) {
-		if (v.isEmpty()) return fullNotAvailable ? MenuText.messages$notAvailable : MenuText.messages$notAvailableShort;
-		return MenuText.messages$currency(v.get());
+		if (v.isEmpty()) return fullNotAvailable ? Translations.messages$notAvailable : Translations.messages$notAvailableShort;
+		return Translations.messages$currency(v.get());
 	}
 
 	public static Optional<Text> taxText(double tax) {
@@ -87,14 +86,14 @@ public class StonksFabricUtils {
 
 	public static Text offerText(OfferType type, OverviewOffer offer) {
 		var typeText = type == OfferType.BUY
-			? MenuText.messages$offerInfoText$buy
-			: MenuText.messages$offerInfoText$sell;
+			? Translations.messages$offerInfoText$buy
+			: Translations.messages$offerInfoText$sell;
 		var totalAvailableUnits = Text.literal(Integer.toString(offer.totalAvailableUnits()))
 			.styled(s -> s.withColor(Formatting.AQUA));
 		var offersCountText = Text.literal(Integer.toString(offer.offers())).styled(s -> s.withColor(Formatting.AQUA));
 		var ppuText = currencyText(Optional.of(offer.pricePerUnit()), false);
 
-		return MenuText.messages$offerInfoText(typeText, totalAvailableUnits, offersCountText, ppuText);
+		return Translations.messages$offerInfoText(typeText, totalAvailableUnits, offersCountText, ppuText);
 	}
 
 	public static boolean compareStack(ItemStack a, ItemStack b) {

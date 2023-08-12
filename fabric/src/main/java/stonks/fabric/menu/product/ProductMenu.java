@@ -42,8 +42,8 @@ import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
 import stonks.fabric.StonksFabricUtils;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 
@@ -53,7 +53,7 @@ public class ProductMenu extends StackedMenu {
 
 	public ProductMenu(StackedMenu previous, ServerPlayerEntity player, Product product) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
-		setTitle(MenuText.menus$productInfo(product));
+		setTitle(Translations.menus$productInfo(product));
 		this.product = product;
 		this.queryTask = StonksFabric.getServiceProvider(getPlayer()).getStonksCache().getOverview(product).get();
 
@@ -97,8 +97,8 @@ public class ProductMenu extends StackedMenu {
 					error.printStackTrace();
 					// TODO use message from UserException
 					return new GuiElementBuilder(Items.BARRIER)
-						.setName(MenuText.errors)
-						.addLoreLine(MenuText.errors$quickPriceDetails)
+						.setName(Translations.errors)
+						.addLoreLine(Translations.errors$quickPriceDetails)
 						.asStack();
 				}
 
@@ -106,20 +106,20 @@ public class ProductMenu extends StackedMenu {
 				var tax = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().tax;
 				var out = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
-						? MenuText.menus$productInfo$instantBuy(computed)
-						: MenuText.menus$productInfo$instantSell(computed))
+						? Translations.menus$productInfo$instantBuy(computed)
+						: Translations.menus$productInfo$instantSell(computed))
 					.addLoreLine(Text.empty())
-					.addLoreLine(MenuText.menus$productInfo$topOfferedPrice(topPrice))
-					.addLoreLine(MenuText.menus$productInfo$avgOfferedPrice(computed));
+					.addLoreLine(Translations.menus$productInfo$topOfferedPrice(topPrice))
+					.addLoreLine(Translations.menus$productInfo$avgOfferedPrice(computed));
 
-				if (type == OfferType.SELL && tax > 0d) out.addLoreLine(MenuText.menus$productInfo$instantSellTax(tax));
+				if (type == OfferType.SELL && tax > 0d) out.addLoreLine(Translations.menus$productInfo$instantSellTax(tax));
 
 				return out
 					.addLoreLine(Text.empty())
 					.addLoreLine(computed.isEmpty()
-						? MenuText.menus$productInfo$noOffers
-						: type == OfferType.BUY ? MenuText.menus$productInfo$clickToInstantBuy
-						: MenuText.menus$productInfo$clickToInstantSell)
+						? Translations.menus$productInfo$noOffers
+						: type == OfferType.BUY ? Translations.menus$productInfo$clickToInstantBuy
+						: Translations.menus$productInfo$clickToInstantSell)
 					.asStack();
 			}
 
@@ -138,7 +138,7 @@ public class ProductMenu extends StackedMenu {
 					var provider = StonksFabric.getServiceProvider(getPlayer());
 					var units = provider.getStonksAdapter().getUnits(getPlayer(), product);
 					if (units <= 0) {
-						getPlayer().sendMessage(MenuText.messages$noUnitsToInstantSell(product), true);
+						getPlayer().sendMessage(Translations.messages$noUnitsToInstantSell(product), true);
 						return;
 					}
 
@@ -161,28 +161,28 @@ public class ProductMenu extends StackedMenu {
 					error.printStackTrace();
 					// TODO use message from UserException
 					return new GuiElementBuilder(Items.BARRIER)
-						.setName(MenuText.errors)
-						.addLoreLine(MenuText.errors$quickPriceDetails)
+						.setName(Translations.errors)
+						.addLoreLine(Translations.errors$quickPriceDetails)
 						.asStack();
 				}
 
 				var elem = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
-						? MenuText.menus$productInfo$buyOffer
-						: MenuText.menus$productInfo$sellOffer)
+						? Translations.menus$productInfo$buyOffer
+						: Translations.menus$productInfo$sellOffer)
 					.addLoreLine(Text.empty());
 
 				if (list.getEntries().size() > 0) {
 					for (var e : list.getEntries()) { elem.addLoreLine(StonksFabricUtils.offerText(type, e)); }
 				} else {
-					elem.addLoreLine(MenuText.menus$productInfo$noOffers);
+					elem.addLoreLine(Translations.menus$productInfo$noOffers);
 				}
 
 				return elem
 					.addLoreLine(Text.empty())
 					.addLoreLine(list.getEntries().size() == 0
-						? MenuText.menus$productInfo$makeOffer$noOffers
-						: MenuText.menus$productInfo$makeOffer)
+						? Translations.menus$productInfo$makeOffer$noOffers
+						: Translations.menus$productInfo$makeOffer)
 					.asStack();
 			}
 

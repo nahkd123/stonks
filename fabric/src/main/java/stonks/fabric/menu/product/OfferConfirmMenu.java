@@ -33,14 +33,14 @@ import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricHelper;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 
 public class OfferConfirmMenu extends StackedMenu {
 	public OfferConfirmMenu(StackedMenu previous, ServerPlayerEntity player, Product product, OfferType offerType, int amount, double pricePerUnit) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
-		setTitle(MenuText.menus$confirmOffer);
+		setTitle(Translations.menus$confirmOffer);
 
 		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
 			.getStonksAdapter()
@@ -52,16 +52,16 @@ public class OfferConfirmMenu extends StackedMenu {
 
 		setSlot(22, new GuiElementBuilder(Items.GREEN_TERRACOTTA)
 			.setName(offerType == OfferType.BUY
-				? MenuText.menus$confirmOffer$buy
-				: MenuText.menus$confirmOffer$sell)
+				? Translations.menus$confirmOffer$buy
+				: Translations.menus$confirmOffer$sell)
 			.addLoreLine(Text.empty())
 			.addLoreLine(offerType == OfferType.BUY
-				? MenuText.menus$confirmOffer$buying(product, amount)
-				: MenuText.menus$confirmOffer$selling(product, amount))
-			.addLoreLine(MenuText.menus$confirmOffer$pricePerUnit(pricePerUnit))
-			.addLoreLine(MenuText.menus$confirmOffer$totalPrice(amount, pricePerUnit))
+				? Translations.menus$confirmOffer$buying(product, amount)
+				: Translations.menus$confirmOffer$selling(product, amount))
+			.addLoreLine(Translations.menus$confirmOffer$pricePerUnit(pricePerUnit))
+			.addLoreLine(Translations.menus$confirmOffer$totalPrice(amount, pricePerUnit))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$confirmOffer$clickToConfirm)
+			.addLoreLine(Translations.menus$confirmOffer$clickToConfirm)
 			.setCallback((index, type, action, gui) -> {
 				close();
 				StonksFabricHelper.placeOffer(player, product, offerType, amount, pricePerUnit);

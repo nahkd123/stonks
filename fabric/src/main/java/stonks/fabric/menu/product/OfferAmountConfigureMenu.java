@@ -32,8 +32,8 @@ import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
+import stonks.fabric.Translations;
 import stonks.fabric.menu.MenuIcons;
-import stonks.fabric.menu.MenuText;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.product.input.OfferSelectCustomAmountInput;
 
@@ -49,8 +49,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 		this.overview = overview;
 
 		setTitle(offerType == OfferType.BUY
-			? MenuText.menus$createOffer$buy(product)
-			: MenuText.menus$createOffer$sell(product));
+			? Translations.menus$createOffer$buy(product)
+			: Translations.menus$createOffer$sell(product));
 
 		var icons = switch (offerType) {
 		case BUY -> new Item[] { Items.IRON_INGOT, Items.DIAMOND, Items.DIAMOND_BLOCK };
@@ -66,10 +66,10 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 		setSlot(23, createOfferSelectButton(offerType == OfferType.BUY ? 4096 : -1, icons[2]));
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
-			.setName(MenuText.menus$createOffer$customAmount)
+			.setName(Translations.menus$createOffer$customAmount)
 			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
 			.addLoreLine(Text.empty())
-			.addLoreLine(MenuText.menus$createOffer$clickForAmount)
+			.addLoreLine(Translations.menus$createOffer$clickForAmount)
 			.setCallback((index, type, action, gui) -> new OfferSelectCustomAmountInput(player, this).open()));
 	}
 
@@ -95,17 +95,17 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 		var amount2 = amount;
 
 		var buttonName = offerType == OfferType.BUY
-			? MenuText.menus$createOffer$buyFixed(amount)
-			: fillAll ? MenuText.menus$createOffer$sellAll
-			: MenuText.menus$createOffer$sellFixed(amount);
+			? Translations.menus$createOffer$buyFixed(amount)
+			: fillAll ? Translations.menus$createOffer$sellAll
+			: Translations.menus$createOffer$sellFixed(amount);
 
 		return new GuiElementBuilder(disabled ? Items.BARRIER : icon, Math.min(Math.max(amount / 64, 1), 64))
 			.setName(buttonName)
 			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
 			.addLoreLine(Text.empty())
 			.addLoreLine(disabled
-				? MenuText.menus$createOffer$noOfferForYou
-				: MenuText.menus$createOffer$clickForPrice)
+				? Translations.menus$createOffer$noOfferForYou
+				: Translations.menus$createOffer$clickForPrice)
 			.setCallback((index, type, action, gui) -> {
 				if (disabled) return;
 				new OfferPriceConfigureMenu(this, getPlayer(), getOfferType(), amount2, getOverview()).open();

@@ -91,12 +91,8 @@ public class StonksFabricUtils {
 		var typeText = type == OfferType.BUY
 			? Translations.Messages.OfferInfoText$Buy
 			: Translations.Messages.OfferInfoText$Sell;
-		var totalAvailableUnits = Text.literal(Integer.toString(offer.totalAvailableUnits()))
-			.styled(s -> s.withColor(Formatting.AQUA));
-		var offersCountText = Text.literal(Integer.toString(offer.offers())).styled(s -> s.withColor(Formatting.AQUA));
-		var ppuText = currencyText(Optional.of(offer.pricePerUnit()), false);
-
-		return Translations.Messages.OfferInfoText(typeText, totalAvailableUnits, offersCountText, ppuText);
+		return Translations.Messages.OfferInfoText(typeText, offer.totalAvailableUnits(), offer.offers(),
+			offer.pricePerUnit());
 	}
 
 	public static boolean compareStack(ItemStack a, ItemStack b) {

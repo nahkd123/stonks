@@ -117,6 +117,11 @@ public class StonksFabric {
 				service,
 				adapters);
 
+			LOGGER.info("Subscribing to service events...");
+			((StonksProvider) server).getStonksService().subscribeToOfferFilledEvents(filled -> {
+				StonksFabricHelper.sendOfferFilledMessage(server, filled);
+			});
+
 			LOGGER.info("Platform configurations:");
 			LOGGER.info("  Decimal points: {} (minimum of ${})",
 				config.decimals,

@@ -207,5 +207,7 @@ public class MenuText {
 	public static Text messages$offerInfoText(Text typeText, Text totalAvailableUnits, Text offersCountText, Text ppuText) { return Text.translatableWithFallback("stonks.message.offerInfoText", "\u00a77%s %s\u00a77x from %s \u00a77offers for %s\u00a77/each", typeText, totalAvailableUnits, offersCountText, ppuText); }
 	public static final Text messages$offerInfoText$buy = Text.translatableWithFallback("stonks.message.offerInfoText.buy", "\u00a7a\u00a9lBUY");
 	public static final Text messages$offerInfoText$sell = Text.translatableWithFallback("stonks.message.offerInfoText.sell", "\u00a7e\u00a7lSELL");
+	public static Text messages$buyOfferFilled(Offer offer) { return Text.translatableWithFallback("stonks.message.buyOfferFilled", "\u00a77\u00a7l[\u00a7eStonks\u00a77\u00a7l]\u00a7r Your %sx %s buy offer has been filled!", Text.literal(Integer.toString(offer.getTotalUnits())).styled(s -> s.withColor(Formatting.AQUA)), Text.literal(offer.getProduct().getProductName()).styled(s -> s.withColor(Formatting.AQUA))); }
+	public static Text messages$sellOfferFilled(Offer offer) { return Text.translatableWithFallback("stonks.message.sellOfferFilled", "\u00a77\u00a7l[\u00a7eStonks\u00a77\u00a7l]\u00a7r Your %sx %s sell offer has been filled!", Text.literal(Integer.toString(offer.getTotalUnits())).styled(s -> s.withColor(Formatting.AQUA)), Text.literal(offer.getProduct().getProductName()).styled(s -> s.withColor(Formatting.AQUA))); }
 }
 // @formatter:on

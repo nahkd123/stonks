@@ -37,8 +37,6 @@ import stonks.fabric.menu.MenuIcons;
 import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.translation.Translations;
-import stonks.fabric.translation.Translations.Errors;
-import stonks.fabric.translation.Translations.Icons;
 
 public class ViewOffersMenu extends StackedMenu {
 	private Cached<List<Offer>> offersCache;
@@ -67,8 +65,8 @@ public class ViewOffersMenu extends StackedMenu {
 		setSlot(2, page <= 0
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
-				.setName(Icons.PreviousPage)
-				.addLoreLine(Icons.PreviousPage$0(page, maxPages))
+				.setName(Translations.Icons.PreviousPage)
+				.addLoreLine(Translations.Icons.PreviousPage$0(page, maxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (page <= 0 || isUpdating) return;
 					page--;
@@ -78,8 +76,8 @@ public class ViewOffersMenu extends StackedMenu {
 		setSlot(6, page >= (maxPages - 1)
 			? MenuIcons.BORDER
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
-				.setName(Icons.NextPage)
-				.addLoreLine(Icons.NextPage$0(page, maxPages))
+				.setName(Translations.Icons.NextPage)
+				.addLoreLine(Translations.Icons.NextPage$0(page, maxPages))
 				.setCallback((index, type, action, gui) -> {
 					if (page >= (maxPages - 1) || isUpdating) return;
 					page++;
@@ -102,7 +100,7 @@ public class ViewOffersMenu extends StackedMenu {
 				if (error != null) {
 					loadedOffers = null;
 					setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
-						.setName(Errors.Errors)
+						.setName(Translations.Errors.Errors)
 						.addLoreLine(Translations.Menus.ViewOffers.Retrying)
 						.asStack());
 					return;

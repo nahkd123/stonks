@@ -42,8 +42,6 @@ import stonks.fabric.StonksFabric;
 import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.menu.product.ProductMenu;
 import stonks.fabric.translation.Translations;
-import stonks.fabric.translation.Translations.Errors;
-import stonks.fabric.translation.Translations.Menus.MainMenu;
 
 public class MarketMainMenu extends StackedMenu {
 	private static final int CATEGORIES_PER_PAGE = 5;
@@ -54,7 +52,7 @@ public class MarketMainMenu extends StackedMenu {
 
 	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
-		setTitle(MainMenu.MainMenu);
+		setTitle(Translations.Menus.MainMenu.MainMenu);
 
 		for (int i = 0; i < getHeight() - 1; i++) {
 			var slot = (i + 1) * getWidth();
@@ -71,7 +69,7 @@ public class MarketMainMenu extends StackedMenu {
 			(categories, error) -> {
 				if (error != null) {
 					var icon = new GuiElementBuilder(Items.BARRIER)
-						.setName(Errors.Errors)
+						.setName(Translations.Errors.Errors)
 						.addLoreLine(Translations.Errors.CategoriesList);
 
 					for (int i = 0; i < getHeight() - 1; i++) {
@@ -216,7 +214,7 @@ public class MarketMainMenu extends StackedMenu {
 			public ItemStack createStackWhenLoaded(ProductMarketOverview overview, Throwable error) {
 				// TODO use message from UserException
 				if (error != null) return new GuiElementBuilder(Items.BARRIER)
-					.setName(Errors.Errors)
+					.setName(Translations.Errors.Errors)
 					.addLoreLine(Translations.Errors.QuickPriceDetails)
 					.asStack();
 

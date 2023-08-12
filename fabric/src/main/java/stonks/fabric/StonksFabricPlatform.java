@@ -28,6 +28,7 @@ import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.misc.StonksSounds;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
 
@@ -71,6 +72,15 @@ public interface StonksFabricPlatform extends StonksPlatform {
 	 * @return Platform configurations.
 	 */
 	public PlatformConfig getPlatformConfig();
+
+	/**
+	 * <p>
+	 * Obtain the sounds handler to play and schedule sounds.
+	 * </p>
+	 * 
+	 * @return The sounds handler.
+	 */
+	public StonksSounds getSounds();
 
 	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters);
 }

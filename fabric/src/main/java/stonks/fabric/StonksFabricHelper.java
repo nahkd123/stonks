@@ -80,6 +80,8 @@ public class StonksFabricHelper {
 						: Translations.Messages.SoldWithExtras(unitsSold, product, earnings, unitsLeft),
 						true);
 				}
+
+				StonksFabric.getPlatform(player).getSounds().playInstantOfferSound(player);
 			});
 
 		return task.afterThatDo($ -> null);
@@ -136,6 +138,8 @@ public class StonksFabricHelper {
 						? Translations.Messages.PlacedBuyOffer(units, product, totalPrice, pricePerUnit)
 						: Translations.Messages.PlacedSellOffer(units, product, totalPrice, pricePerUnit),
 						true);
+
+					StonksFabric.getPlatform(player).getSounds().playOfferPlacedSound(player);
 				});
 	}
 
@@ -145,5 +149,6 @@ public class StonksFabricHelper {
 		player.sendMessage(filledOffer.getType() == OfferType.BUY
 			? Translations.Messages.BuyOfferFilled(filledOffer)
 			: Translations.Messages.SellOfferFilled(filledOffer));
+		StonksFabric.getPlatform(server).getSounds().playOfferFilledSound(player);
 	}
 }

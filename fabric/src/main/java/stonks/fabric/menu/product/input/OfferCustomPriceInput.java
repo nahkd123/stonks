@@ -75,6 +75,7 @@ public class OfferCustomPriceInput extends SignGui {
 
 			if (price <= 0) {
 				getPlayer().sendMessage(Translations.Messages.PriceMoreThanZero, true);
+				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}
 
@@ -85,12 +86,15 @@ public class OfferCustomPriceInput extends SignGui {
 
 			if (menu.getOfferType() == OfferType.BUY && totalPrice > balance) {
 				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice));
+				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
+				return;
 			}
 
 			new OfferConfirmMenu(menu, player, menu.getProduct(), menu.getOfferType(), menu.getAmount(), price)
 				.open();
 		} catch (NumberFormatException e) {
 			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
+			StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 		}
 	}
 }

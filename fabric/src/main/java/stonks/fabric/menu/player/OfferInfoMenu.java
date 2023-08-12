@@ -25,8 +25,6 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
@@ -90,6 +88,7 @@ public class OfferInfoMenu extends StackedMenu {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
+						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return;
 					}
@@ -104,7 +103,7 @@ public class OfferInfoMenu extends StackedMenu {
 					}
 
 					new OfferInfoMenu(getPrevious(), getPlayer(), newOffer).open();
-					getPlayer().playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1f, 1f);
+					StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
 				});
 			});
 	}
@@ -129,6 +128,7 @@ public class OfferInfoMenu extends StackedMenu {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
+						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return;
 					}
@@ -151,9 +151,8 @@ public class OfferInfoMenu extends StackedMenu {
 					adapter.accountDeposit(getPlayer(), refundMoney);
 
 					close();
-					getPlayer().playSound(SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.PLAYERS, 1f, 1f);
-					getPlayer().sendMessage(
-						Translations.Messages.OfferCancelled(newOffer, refundUnits, refundMoney),
+					StonksFabric.getPlatform(getPlayer()).getSounds().playCancelledSound(getPlayer());
+					getPlayer().sendMessage(Translations.Messages.OfferCancelled(newOffer, refundUnits, refundMoney),
 						true);
 				});
 			});

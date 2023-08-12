@@ -151,6 +151,7 @@ public class StonksFabric {
 
 	private static void onServerTick(MinecraftServer server) {
 		((StonksFabricPlatform) server).getTasksHandler().tick();
+		((StonksFabricPlatform) server).getSounds().tick();
 	}
 
 	public static StonksFabricPlatform getPlatform(MinecraftServer server) {

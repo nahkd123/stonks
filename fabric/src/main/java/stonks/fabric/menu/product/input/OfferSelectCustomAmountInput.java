@@ -71,6 +71,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 
 			if (amount <= 0) {
 				getPlayer().sendMessage(Translations.Messages.AmountAtLeastOne, true);
+				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}
 
@@ -86,6 +87,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 			new OfferPriceConfigureMenu(getMenu(), getPlayer(), type, amount, getMenu().getOverview()).open();
 		} catch (NumberFormatException e) {
 			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
+			StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 		}
 	}
 }

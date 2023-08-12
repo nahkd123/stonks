@@ -78,6 +78,7 @@ public class MarketMainMenu extends StackedMenu {
 					}
 
 					setSlot(2 + cx + (1 + cy) * getWidth(), icon);
+					StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 					error.printStackTrace();
 					return;
 				}

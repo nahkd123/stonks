@@ -58,7 +58,8 @@ public abstract class StackedMenu extends SimpleGui {
 	 * <p>
 	 * A local {@link TasksHandler} that's bound to this menu. Does not call
 	 * callbacks if the menu is closed. If you want to handle tasks outside the
-	 * bound of menus, consider using {@link StonksFabricPlatform#getTasksHandler()}.
+	 * bound of menus, consider using
+	 * {@link StonksFabricPlatform#getTasksHandler()}.
 	 * </p>
 	 * 
 	 * @return GUI tasks handler.

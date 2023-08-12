@@ -40,6 +40,32 @@ keyWithNoValue
 !!! info
     This configuration can be used with Fabric or Bukkit version of Stonks.
 
+### Platform configuration
+Platform configuration allows you to configure currency decimal points, tax, top offer price delta thing and category icons.
+
+=== "All"
+    ```naharaconfig
+    platformConfig
+        // Number of currency decimal points. Used for parsing player's input.
+        decimals 2
+
+        // Tax rate. A value of 1 means it will takes 100% of incomes.
+        tax 0.00
+
+        // Price delta for top offer. Used for "Top offer +/- $0.1" button
+        // in offer price setup menu.
+        topOfferPriceDelta 0.1
+
+        // Category icons
+        // If you don't specify icons here, it will defaults to minecraft:paper
+        categoryIcon foods minecraft:carrot
+        categoryIcon specials minecraft:diamond
+    ```
+
+    - `decimals`: Decimal points for currency system. You must change this to ensure player can't type an   extremely small number, like `0.0000001` for example. It should be equals to number of decimal points from    economy adapters.
+    - `tax`: Tax rate (**not** in percentage!). Setting the value to `0.01` means it will takes 1% from player's    incomes.
+    - `topOfferPriceDelta`: Price delta thing for quick offer button (the "Top offer +/- $0.x" button to be     precise).
+
 ### Registering service
 Each server can only have 1 running Stonks service, which must be configured manually in configuration file. Simply use `useService [Service Name]` to register it with your server:
 

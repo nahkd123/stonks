@@ -143,7 +143,8 @@ public class OfferInfoMenu extends StackedMenu {
 						refundMoney = (totalUnits - newOffer.getFilledUnits()) * ppu;
 					} else {
 						refundUnits = totalUnits - newOffer.getFilledUnits();
-						refundMoney = (newOffer.getFilledUnits() - previousClaimedUnits) * ppu;
+						refundMoney = StonksFabric.getPlatform(getPlayer()).getPlatformConfig()
+							.applyTax((newOffer.getFilledUnits() - previousClaimedUnits) * ppu);
 					}
 
 					adapter.addUnitsTo(getPlayer(), newOffer.getProduct(), refundUnits);

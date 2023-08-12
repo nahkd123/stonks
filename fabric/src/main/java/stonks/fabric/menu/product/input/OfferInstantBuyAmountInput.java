@@ -68,6 +68,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 
 			if (amount <= 0) {
 				getPlayer().sendMessage(Translations.Messages.AmountAtLeastOne, true);
+				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}
 
@@ -78,6 +79,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 
 			if (balance < totalPrice) {
 				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
+				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}
 
@@ -86,6 +88,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 				.open();
 		} catch (NumberFormatException e) {
 			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
+			StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 		}
 	}
 }

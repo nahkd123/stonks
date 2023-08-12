@@ -84,7 +84,32 @@ public class StonksSounds {
 		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 6, 1f, 0.8f);
 	}
 
+	public void playInstantOfferSound(ServerPlayerEntity player) {
+		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0, 1f, 0.3f);
+		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 3, 1f, 0.6f);
+	}
+
+	public void playOfferPlacedSound(ServerPlayerEntity player) {
+		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0, 1f, 1f);
+	}
+
 	public void playCancelledSound(ServerPlayerEntity player) {
 		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+	}
+
+	public void playErrorSound(ServerPlayerEntity player) {
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 6, 1f, 1f);
+	}
+
+	public void playFailedSound(ServerPlayerEntity player) {
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
+	}
+
+	public void playOfferFilledSound(ServerPlayerEntity player) {
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(), 0, 1f, 1f);
+		play(player, SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(), 3, 1f, 1f);
 	}
 }

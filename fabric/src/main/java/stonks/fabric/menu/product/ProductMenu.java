@@ -95,6 +95,7 @@ public class ProductMenu extends StackedMenu {
 			public ItemStack createStackWhenLoaded(Optional<ComputedOffersList> computed, Throwable error) {
 				if (error != null) {
 					error.printStackTrace();
+					StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 					// TODO use message from UserException
 					return new GuiElementBuilder(Items.BARRIER)
 						.setName(Translations.Errors.Errors)

@@ -88,6 +88,7 @@ public class OfferInfoMenu extends StackedMenu {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
+						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return;
 					}
@@ -127,6 +128,7 @@ public class OfferInfoMenu extends StackedMenu {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
+						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return;
 					}

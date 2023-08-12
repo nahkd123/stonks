@@ -103,6 +103,8 @@ public class ViewOffersMenu extends StackedMenu {
 						.setName(Translations.Errors.Errors)
 						.addLoreLine(Translations.Menus.ViewOffers.Retrying)
 						.asStack());
+					StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
+					error.printStackTrace();
 					return;
 				}
 

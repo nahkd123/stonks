@@ -1,0 +1,39 @@
+name: Release on GitHub
+
+on:
+  push: 
+    tags: [ "*" ]
+  workflow_dispatch:
+
+permissions: 
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build with Gradle (Stonks version ${{ github.action_ref }})
+        uses: gradle/gradle-build-action@v2.6.0
+        with:
+          arguments: |
+            build
+            -Pstonks_version=${{ github.action_ref }}
+            --stacktrace
+            --warning-mode=fail
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "stonks-fabric-${{ github.action_ref }}-release"
+          path: fabric/build/libs/
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          draft: true
+          files: |
+            */build/libs/*.jar

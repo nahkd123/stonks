@@ -198,7 +198,7 @@ public final class Translations {
 		public static final Text ErrorRefunding = translatableWithFallback("stonks.message.errorRefunding", "\u00a7cAn error occured, refunding all your stuffs");
 		public static final Text NotAvailable = translatableWithFallback("stonks.message.notAvailable", "\u00a7cNot Available!");
 		public static final Text NotAvailableShort = translatableWithFallback("stonks.message.notAvailable.short", "\u00a7cn/a");
-		public static final Text OfferInfoText$Buy = translatableWithFallback("stonks.message.offerInfoText.buy", "\u00a7a\u00a9lBUY");
+		public static final Text OfferInfoText$Buy = translatableWithFallback("stonks.message.offerInfoText.buy", "\u00a7a\u00a7lBUY");
 		public static final Text OfferInfoText$Sell = translatableWithFallback("stonks.message.offerInfoText.sell", "\u00a7e\u00a7lSELL");
 		public static final Text OfferCancelled(Offer newOffer, int refundUnits, double refundMoney) { return translatableWithFallback("stonks.message.offerCancelled", "Offer cancelled! Refunded %sx %s and %s", units(refundUnits), productName(newOffer.getProduct()), currency(refundMoney)); }
 		public static final Text NoUnitsToInstantSell(Product product) { return translatableWithFallback("stonks.message.noProductsToInstantSell", "\u00a7cYou don't have %s \u00a7cto sell!", product.getProductName()); }

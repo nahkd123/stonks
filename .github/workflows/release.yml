@@ -2,7 +2,7 @@ name: Release on GitHub
 
 on:
   push: 
-    tags: [ "*" ]
+    tags: [ "v*" ]
   workflow_dispatch:
 
 permissions: 
@@ -18,17 +18,22 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build with Gradle (Stonks version ${{ github.action_ref }})
+      - name: Get current tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
+      - name: Build with Gradle (Stonks version ${{ steps.tag.outputs.tag }})
         uses: gradle/gradle-build-action@v2.6.0
         with:
           arguments: |
             build
-            -Pstonks_version=${{ github.action_ref }}
+            -Pstonks_version=${{ steps.tag.outputs.tag }}
             --stacktrace
             --warning-mode=fail
       - uses: actions/upload-artifact@v3
         with:
-          name: "stonks-fabric-${{ github.action_ref }}-release"
+          name: "stonks-fabric-${{ steps.tag.outputs.tag }}-release"
           path: fabric/build/libs/
       - uses: marvinpinto/action-automatic-releases@latest
         with:

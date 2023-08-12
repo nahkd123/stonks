@@ -19,6 +19,11 @@ platformConfig
     // in offer price setup menu.
     topOfferPriceDelta 0.1
 
+    // Category icons
+    // If you don't specify icons here, it will defaults to minecraft:paper
+    categoryIcon foods minecraft:carrot
+    categoryIcon specials minecraft:diamond
+
 // Service
 // You can only have 1 active service for each server
 useService stonks.fabric.service.IntegratedStonksService

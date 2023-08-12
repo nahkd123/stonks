@@ -118,7 +118,7 @@ public class StonksFabric {
 
 			if (child.getKey().equals("platformConfig") || child.getKey().equals("fabric.platformConfig")) {
 				LOGGER.info("Found platform configurations!");
-				config.from(child);
+				config.fromConfig(server, child);
 			}
 		}
 

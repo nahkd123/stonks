@@ -157,6 +157,8 @@ public class MarketMainMenu extends StackedMenu {
 	}
 
 	private void placeCategories(List<Category> categories) {
+		var categoryIcons = StonksFabric.getPlatform(getPlayer()).getPlatformConfig().categoryIcons;
+
 		for (int i = 0; i < getHeight() - 1; i++) {
 			var currentCategoryIndex = categoriesPage * CATEGORIES_PER_PAGE + i;
 			var slot = (i + 1) * getWidth();
@@ -165,7 +167,7 @@ public class MarketMainMenu extends StackedMenu {
 				var category = categories.get(currentCategoryIndex);
 				var selected = currentCategoryIndex == selectedCategoryIndex;
 
-				var a = new GuiElementBuilder(Items.PAPER)
+				var a = new GuiElementBuilder(categoryIcons.getOrDefault(category.getCategoryId(), Items.PAPER))
 					.setName(Text.literal(category.getCategoryName())
 						.styled(s -> s.withColor(Formatting.AQUA)))
 					.addLoreLine(selected

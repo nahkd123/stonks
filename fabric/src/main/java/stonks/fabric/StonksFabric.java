@@ -87,65 +87,71 @@ public class StonksFabric {
 		ScoreboardEconomyAdapter.register();
 		CommonEconomyAdapter.register();
 
-		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-			StonksServiceProvider service = $ -> new StonksMemoryService();
-			var adapters = new ArrayList<StonksFabricAdapterProvider>();
-			var config = new PlatformConfig();
+		// Events
+		ServerLifecycleEvents.SERVER_STARTING.register(StonksFabric::onServerStart);
+		ServerLifecycleEvents.SERVER_STOPPING.register(StonksFabric::onServerStop);
+		ServerTickEvents.END_SERVER_TICK.register(StonksFabric::onServerTick);
 
-			for (var child : getMainConfig().getChildren()) {
-				if (child.getKey().equals("useService")) {
-					var altService = StonksProvidersRegistry.getServiceProvider(child);
-					if (altService != null) service = altService;
-					continue;
-				}
-
-				if (child.getKey().equals("useAdapter")) {
-					var newAdapter = StonksProvidersRegistry.getAdapterProvider(child);
-					if (newAdapter != null) adapters.add(newAdapter);
-					continue;
-				}
-
-				if (child.getKey().equals("platformConfig") || child.getKey().equals("fabric.platformConfig")) {
-					LOGGER.info("Found platform configurations!");
-					config.from(child);
-				}
-			}
-
-			LOGGER.info("Loading Stonks...");
-			((StonksProvider) server).startStonks(
-				config,
-				service,
-				adapters);
-
-			LOGGER.info("Subscribing to service events...");
-			((StonksProvider) server).getStonksService().subscribeToOfferFilledEvents(filled -> {
-				StonksFabricHelper.sendOfferFilledMessage(server, filled);
-			});
-
-			LOGGER.info("Platform configurations:");
-			LOGGER.info("  Decimal points: {} (minimum of ${})",
-				config.decimals,
-				StonksFabricUtils.CURRENCY_FORMATTER.format(1d / Math.pow(10, config.decimals)));
-			LOGGER.info("  Tax: {}", StonksFabricUtils.TAX_FORMATTER.format(config.tax));
-			LOGGER.info("  Top offer delta: ${}",
-				StonksFabricUtils.CURRENCY_FORMATTER.format(config.topOfferPriceDelta));
-		});
-
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-			if (getServiceProvider(server).getStonksService() instanceof LocalStonksService local) {
-				LOGGER.info("Saving data for local service...");
-				local.saveServiceData();
-			}
-		});
-
-		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			((StonksProvider) server).getTasksHandler().tick();
-		});
-
+		// Commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(StonksCommand.ROOT);
 			dispatcher.register(MarketCommand.ROOT);
 		});
+	}
+
+	private static void onServerStart(MinecraftServer server) {
+		StonksServiceProvider service = $ -> new StonksMemoryService();
+		var adapters = new ArrayList<StonksFabricAdapterProvider>();
+		var config = new PlatformConfig();
+
+		for (var child : getMainConfig().getChildren()) {
+			if (child.getKey().equals("useService")) {
+				var altService = StonksProvidersRegistry.getServiceProvider(child);
+				if (altService != null) service = altService;
+				continue;
+			}
+
+			if (child.getKey().equals("useAdapter")) {
+				var newAdapter = StonksProvidersRegistry.getAdapterProvider(child);
+				if (newAdapter != null) adapters.add(newAdapter);
+				continue;
+			}
+
+			if (child.getKey().equals("platformConfig") || child.getKey().equals("fabric.platformConfig")) {
+				LOGGER.info("Found platform configurations!");
+				config.from(child);
+			}
+		}
+
+		LOGGER.info("Loading Stonks...");
+		((StonksProvider) server).startStonks(
+			config,
+			service,
+			adapters);
+
+		LOGGER.info("Subscribing to service events...");
+		((StonksProvider) server).getStonksService().subscribeToOfferFilledEvents(filled -> {
+			StonksFabricHelper.sendOfferFilledMessage(server, filled);
+		});
+
+		LOGGER.info("Platform configurations:");
+		LOGGER.info("  Decimal points: {} (minimum of ${})",
+			config.decimals,
+			StonksFabricUtils.CURRENCY_FORMATTER.format(1d / Math.pow(10, config.decimals)));
+		LOGGER.info("  Tax: {}", StonksFabricUtils.TAX_FORMATTER.format(config.tax));
+		LOGGER.info("  Top offer delta: ${}",
+			StonksFabricUtils.CURRENCY_FORMATTER.format(config.topOfferPriceDelta));
+	}
+
+	private static void onServerStop(MinecraftServer server) {
+		if (getServiceProvider(server).getStonksService() instanceof LocalStonksService local) {
+			LOGGER.info("Saving data for local service...");
+			local.saveServiceData();
+		}
+	}
+
+	private static void onServerTick(MinecraftServer server) {
+		((StonksProvider) server).getTasksHandler().tick();
 	}
 
 	public static StonksProvider getServiceProvider(MinecraftServer server) {

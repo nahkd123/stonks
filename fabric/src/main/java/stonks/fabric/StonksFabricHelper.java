@@ -24,9 +24,11 @@ package stonks.fabric;
 import java.util.Optional;
 
 import nahara.common.tasks.Task;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.menu.MenuText;
@@ -159,5 +161,13 @@ public class StonksFabricHelper {
 							pricePerUnitText),
 						true);
 				});
+	}
+
+	public static void sendOfferFilledMessage(MinecraftServer server, Offer filledOffer) {
+		var player = server.getPlayerManager().getPlayer(filledOffer.getOffererId());
+		if (player == null) return;
+		player.sendMessage(filledOffer.getType() == OfferType.BUY
+			? MenuText.messages$buyOfferFilled(filledOffer)
+			: MenuText.messages$sellOfferFilled(filledOffer));
 	}
 }

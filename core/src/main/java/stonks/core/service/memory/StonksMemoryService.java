@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
@@ -39,6 +40,7 @@ import stonks.core.market.OverviewOffersList;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
+import stonks.core.service.Emittable;
 import stonks.core.service.LocalStonksService;
 
 /**
@@ -87,6 +89,7 @@ public class StonksMemoryService implements LocalStonksService {
 	private List<MemoryCategory> categories = new ArrayList<>();
 	private Map<MemoryProduct, ProductEntry> entries = new HashMap<>();
 	private Map<UUID, List<Offer>> offers = new HashMap<>();
+	private Emittable<Offer> offerFilledEvents = new Emittable<>();
 
 	public List<MemoryCategory> getModifiableCategories() { return categories; }
 
@@ -199,9 +202,9 @@ public class StonksMemoryService implements LocalStonksService {
 
 		switch (type) {
 		case BUY:
-			exec.executeInstantBuy(productEntry.sellOffers.iterator());
+			exec.executeInstantBuy(productEntry.sellOffers.iterator(), offerFilledEvents::emit);
 		case SELL:
-			exec.executeInstantSell(productEntry.buyOffers.iterator());
+			exec.executeInstantSell(productEntry.buyOffers.iterator(), offerFilledEvents::emit);
 		}
 
 		return Task.resolved(new InstantOfferExecuteResult(exec.getCurrentUnits(), exec.getCurrentBalance()));
@@ -221,5 +224,10 @@ public class StonksMemoryService implements LocalStonksService {
 			v.buyOffers.clear();
 			v.sellOffers.clear();
 		});
+	}
+
+	@Override
+	public void subscribeToOfferFilledEvents(Consumer<Offer> consumer) {
+		offerFilledEvents.listen(consumer);
 	}
 }

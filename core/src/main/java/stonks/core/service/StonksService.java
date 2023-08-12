@@ -23,6 +23,7 @@ package stonks.core.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
@@ -116,4 +117,14 @@ public interface StonksService {
 	default Task<InstantOfferExecuteResult> instantSell(Product product, int units) {
 		return instantOffer(product, OfferType.SELL, units, 0d);
 	}
+
+	/**
+	 * <p>
+	 * Subscribe to offer filled events. This will emit fully filled offers to
+	 * consumers.
+	 * </p>
+	 * 
+	 * @param offer The events consumer.
+	 */
+	public void subscribeToOfferFilledEvents(Consumer<Offer> consumer);
 }

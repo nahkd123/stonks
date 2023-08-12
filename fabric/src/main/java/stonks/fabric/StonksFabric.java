@@ -54,7 +54,6 @@ import stonks.fabric.adapter.provided.ScoreboardEconomyAdapter;
 import stonks.fabric.adapter.provided.ScoreboardUnitAdapter;
 import stonks.fabric.command.MarketCommand;
 import stonks.fabric.command.StonksCommand;
-import stonks.fabric.provider.StonksProvider;
 import stonks.fabric.provider.StonksProvidersRegistry;
 import stonks.fabric.service.IntegratedStonksService;
 import stonks.fabric.service.IntegratedUnstableStonksService;
@@ -124,13 +123,13 @@ public class StonksFabric {
 		}
 
 		LOGGER.info("Loading Stonks...");
-		((StonksProvider) server).startStonks(
+		((StonksFabricPlatform) server).startStonks(
 			config,
 			service,
 			adapters);
 
 		LOGGER.info("Subscribing to service events...");
-		((StonksProvider) server).getStonksService().subscribeToOfferFilledEvents(filled -> {
+		((StonksFabricPlatform) server).getStonksService().subscribeToOfferFilledEvents(filled -> {
 			StonksFabricHelper.sendOfferFilledMessage(server, filled);
 		});
 
@@ -144,22 +143,22 @@ public class StonksFabric {
 	}
 
 	private static void onServerStop(MinecraftServer server) {
-		if (getServiceProvider(server).getStonksService() instanceof LocalStonksService local) {
+		if (getPlatform(server).getStonksService() instanceof LocalStonksService local) {
 			LOGGER.info("Saving data for local service...");
 			local.saveServiceData();
 		}
 	}
 
 	private static void onServerTick(MinecraftServer server) {
-		((StonksProvider) server).getTasksHandler().tick();
+		((StonksFabricPlatform) server).getTasksHandler().tick();
 	}
 
-	public static StonksProvider getServiceProvider(MinecraftServer server) {
-		return (StonksProvider) server;
+	public static StonksFabricPlatform getPlatform(MinecraftServer server) {
+		return (StonksFabricPlatform) server;
 	}
 
-	public static StonksProvider getServiceProvider(ServerPlayerEntity player) {
-		return getServiceProvider(player.getServer());
+	public static StonksFabricPlatform getPlatform(ServerPlayerEntity player) {
+		return getPlatform(player.getServer());
 	}
 
 	public static ItemStack getDisplayStack(StonksFabricAdapter adapter, Product product) {

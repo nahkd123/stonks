@@ -48,7 +48,7 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		this.instantPricePerUnit = instantPricePerUnit;
 
 		setTitle(Translations.Menus.InstantBuy._InstantBuy(product));
-		var balance = StonksFabric.getServiceProvider(player).getStonksAdapter().accountBalance(player);
+		var balance = StonksFabric.getPlatform(player).getStonksAdapter().accountBalance(player);
 		setSlot(22, createConfirmButton(balance, Items.GOLD_INGOT));
 	}
 
@@ -78,7 +78,7 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 				: Translations.Menus.InstantBuy.NoBuy)
 			.setCallback((index, type, action, gui) -> {
 				close();
-				var provider = StonksFabric.getServiceProvider(getPlayer());
+				var provider = StonksFabric.getPlatform(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {

@@ -71,7 +71,7 @@ public class OfferInstantBuyAmountInput extends SignGui {
 				return;
 			}
 
-			var balance = StonksFabric.getServiceProvider(getPlayer())
+			var balance = StonksFabric.getPlatform(getPlayer())
 				.getStonksAdapter()
 				.accountBalance(player);
 			var totalPrice = menu.getInstantPricePerUnit() * amount;

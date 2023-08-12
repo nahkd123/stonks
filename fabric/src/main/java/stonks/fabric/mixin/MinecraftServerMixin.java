@@ -33,17 +33,17 @@ import stonks.core.service.LocalStonksService;
 import stonks.core.service.StonksService;
 import stonks.fabric.PlatformConfig;
 import stonks.fabric.StonksFabric;
+import stonks.fabric.StonksFabricPlatform;
 import stonks.fabric.adapter.AdaptersContainer;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterCallback;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
 import stonks.fabric.misc.TasksHandler;
-import stonks.fabric.provider.StonksProvider;
 import stonks.fabric.service.StonksServiceProvider;
 
 @AutoMixin
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin implements StonksProvider {
+public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Unique
 	private StonksService stonks$service;
 	@Unique

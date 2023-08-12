@@ -55,7 +55,7 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			? Translations.Menus.CreateOffer.Title$Buy(product)
 			: Translations.Menus.CreateOffer.Title$Sell(product));
 
-		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
+		setSlot(7, GuiElementBuilder.from(StonksFabric.getPlatform(getPlayer())
 			.getStonksAdapter()
 			.createDisplayStack(product))
 			.setCount(Math.min(Math.max(amount / 64, 1), 64))
@@ -86,7 +86,7 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			? overview.getBuyOffers().compute()
 			: overview.getSellOffers().compute();
 
-		var delta = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().topOfferPriceDelta;
+		var delta = StonksFabric.getPlatform(getPlayer()).getPlatformConfig().topOfferPriceDelta;
 		var topOfferPPU = computed.map(v -> switch (offerType) {
 		case BUY -> v.max();
 		case SELL -> v.min();

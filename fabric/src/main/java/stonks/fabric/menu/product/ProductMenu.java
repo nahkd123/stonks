@@ -55,10 +55,10 @@ public class ProductMenu extends StackedMenu {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		setTitle(Translations.Menus.ProductInfo._ProductInfo(product));
 		this.product = product;
-		this.queryTask = StonksFabric.getServiceProvider(getPlayer()).getStonksCache().getOverview(product).get();
+		this.queryTask = StonksFabric.getPlatform(getPlayer()).getStonksCache().getOverview(product).get();
 
 		setSlot(22, GuiElementBuilder.from(StonksFabric.getDisplayStack(StonksFabric
-			.getServiceProvider(player)
+			.getPlatform(player)
 			.getStonksAdapter(), product)));
 
 		setSlot(19, createInstantOfferButton(OfferType.BUY, queryTask.afterThatDo(v -> {
@@ -103,7 +103,7 @@ public class ProductMenu extends StackedMenu {
 				}
 
 				var topPrice = computed.map(v -> type == OfferType.BUY ? v.min() : v.max());
-				var tax = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig().tax;
+				var tax = StonksFabric.getPlatform(getPlayer()).getPlatformConfig().tax;
 				var out = new GuiElementBuilder(icon)
 					.setName(type == OfferType.BUY
 						? Translations.Menus.ProductInfo.InstantBuy(computed)
@@ -136,7 +136,7 @@ public class ProductMenu extends StackedMenu {
 				} else {
 					close();
 
-					var provider = StonksFabric.getServiceProvider(getPlayer());
+					var provider = StonksFabric.getPlatform(getPlayer());
 					var units = provider.getStonksAdapter().getUnits(getPlayer(), product);
 					if (units <= 0) {
 						getPlayer().sendMessage(Translations.Messages.NoUnitsToInstantSell(product),

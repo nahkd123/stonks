@@ -59,7 +59,7 @@ public class OfferInfoMenu extends StackedMenu {
 	public GuiElementBuilder createClaimAllButton() {
 		var canClaim = offer.canClaim();
 		var unitsToClaim = offer.getAvailableToClaim();
-		var config = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig();
+		var config = StonksFabric.getPlatform(getPlayer()).getPlatformConfig();
 		var tax = config.tax;
 
 		return new GuiElementBuilder(canClaim ? Items.GOLD_INGOT : Items.BARRIER)
@@ -77,9 +77,9 @@ public class OfferInfoMenu extends StackedMenu {
 			.setCallback((index, type, action, gui) -> {
 				if (!canClaim) return;
 
-				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
-				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
-				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
+				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
+				var service = StonksFabric.getPlatform(getPlayer()).getStonksService();
+				var handler = StonksFabric.getPlatform(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Translations.Menus.OfferInfo.ClaimOffer$Claiming));
@@ -116,9 +116,9 @@ public class OfferInfoMenu extends StackedMenu {
 			.addLoreLine(Text.empty())
 			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$ClickToCancel)
 			.setCallback((index, type, action, gui) -> {
-				var adapter = StonksFabric.getServiceProvider(getPlayer()).getStonksAdapter();
-				var service = StonksFabric.getServiceProvider(getPlayer()).getStonksService();
-				var handler = StonksFabric.getServiceProvider(getPlayer()).getTasksHandler();
+				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
+				var service = StonksFabric.getPlatform(getPlayer()).getStonksService();
+				var handler = StonksFabric.getPlatform(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Translations.Menus.OfferInfo.CancelOffer$Cancelling));

@@ -31,7 +31,7 @@ import stonks.fabric.translation.Translations;
 
 public class StonksFabricHelper {
 	public static Task<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
-		var provider = StonksFabric.getServiceProvider(player);
+		var provider = StonksFabric.getPlatform(player);
 
 		// Take out stuffs first
 		if (type == OfferType.BUY) {
@@ -67,7 +67,7 @@ public class StonksFabricHelper {
 						: Translations.Messages.BoughtWithExtras(unitsBought, product, moneySpent, unitsLeft),
 						true);
 				} else {
-					var config = StonksFabric.getServiceProvider(player).getPlatformConfig();
+					var config = StonksFabric.getPlatform(player).getPlatformConfig();
 					var unitsLeft = result.units();
 					var unitsSold = units - unitsLeft;
 					var earnings = config.applyTax(result.balance());
@@ -86,7 +86,7 @@ public class StonksFabricHelper {
 	}
 
 	public static void placeOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double pricePerUnit) {
-		var provider = StonksFabric.getServiceProvider(player);
+		var provider = StonksFabric.getPlatform(player);
 		var adapter = provider.getStonksAdapter();
 		var totalPrice = units * pricePerUnit;
 

@@ -49,7 +49,7 @@ public class ViewOffersMenu extends StackedMenu {
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
 		setTitle(Translations.Menus.ViewOffers.ViewOffers);
-		offersCache = StonksFabric.getServiceProvider(player).getStonksCache().getOffers(player.getUuid());
+		offersCache = StonksFabric.getPlatform(player).getStonksCache().getOffers(player.getUuid());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
 		placePagesNavigations();
@@ -143,7 +143,7 @@ public class ViewOffersMenu extends StackedMenu {
 
 	public static GuiElementBuilder createOfferButton(ServerPlayerEntity player, Offer offer) {
 		return GuiElementBuilder.from(StonksFabric
-			.getServiceProvider(player)
+			.getPlatform(player)
 			.getStonksAdapter()
 			.createDisplayStack(offer.getProduct()))
 			.setName(offer.getType() == OfferType.BUY

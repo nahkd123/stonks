@@ -19,30 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.provider;
+package stonks.fabric;
 
 import java.util.List;
 
 import stonks.core.caching.StonksServiceCache;
+import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
-import stonks.core.service.StonksService;
-import stonks.fabric.PlatformConfig;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
 
-public interface StonksProvider {
-	/**
-	 * <p>
-	 * The service interface. You can make direct service calls with this service
-	 * interface.
-	 * </p>
-	 * 
-	 * @return The service interface.
-	 */
-	public StonksService getStonksService();
-
+public interface StonksFabricPlatform extends StonksPlatform {
 	/**
 	 * <p>
 	 * Obtain the Stonks service cache. You should use this cache instead of

@@ -24,8 +24,8 @@ package stonks.fabric.menu;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import stonks.fabric.StonksFabricPlatform;
 import stonks.fabric.misc.TasksHandler;
-import stonks.fabric.provider.StonksProvider;
 
 public abstract class StackedMenu extends SimpleGui {
 	private StackedMenu previous;
@@ -58,7 +58,7 @@ public abstract class StackedMenu extends SimpleGui {
 	 * <p>
 	 * A local {@link TasksHandler} that's bound to this menu. Does not call
 	 * callbacks if the menu is closed. If you want to handle tasks outside the
-	 * bound of menus, consider using {@link StonksProvider#getTasksHandler()}.
+	 * bound of menus, consider using {@link StonksFabricPlatform#getTasksHandler()}.
 	 * </p>
 	 * 
 	 * @return GUI tasks handler.

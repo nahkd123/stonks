@@ -65,7 +65,7 @@ public class MarketMainMenu extends StackedMenu {
 		var cy = (getHeight() - 1) / 2;
 		setSlot(2 + cx + (1 + cy) * getWidth(), WaitableGuiElement.ANIMATED_LOADING);
 
-		getGuiTasksHandler().handle(StonksFabric.getServiceProvider(player).getStonksCache().getAllCategories(),
+		getGuiTasksHandler().handle(StonksFabric.getPlatform(player).getStonksCache().getAllCategories(),
 			(categories, error) -> {
 				if (error != null) {
 					var icon = new GuiElementBuilder(Items.BARRIER)
@@ -186,7 +186,7 @@ public class MarketMainMenu extends StackedMenu {
 	}
 
 	private void placeCategory(Category category) {
-		var cache = StonksFabric.getServiceProvider(getPlayer()).getStonksCache();
+		var cache = StonksFabric.getPlatform(getPlayer()).getStonksCache();
 
 		for (int y = 0; y < getHeight() - 1; y++) {
 			for (int x = 0; x < getWidth() - 2; x++) {
@@ -206,7 +206,7 @@ public class MarketMainMenu extends StackedMenu {
 
 	private void placeProduct(int slot, StonksServiceCache cache, Category category, Product product) {
 		var dispStack = StonksFabric.getDisplayStack(StonksFabric
-			.getServiceProvider(getPlayer())
+			.getPlatform(getPlayer())
 			.getStonksAdapter(), product);
 
 		setSlot(slot, new WaitableGuiElement<>(cache.getOverview(product).get()) {

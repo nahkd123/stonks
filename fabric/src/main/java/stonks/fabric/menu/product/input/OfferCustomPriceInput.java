@@ -69,7 +69,7 @@ public class OfferCustomPriceInput extends SignGui {
 		}
 
 		try {
-			var base = StonksFabric.getServiceProvider(getPlayer()).getPlatformConfig()
+			var base = StonksFabric.getPlatform(getPlayer()).getPlatformConfig()
 				.processCurrency(Double.parseDouble(input));
 			var price = base * mul;
 
@@ -78,7 +78,7 @@ public class OfferCustomPriceInput extends SignGui {
 				return;
 			}
 
-			var balance = StonksFabric.getServiceProvider(getPlayer())
+			var balance = StonksFabric.getPlatform(getPlayer())
 				.getStonksAdapter()
 				.accountBalance(player);
 			var totalPrice = price * menu.getAmount();

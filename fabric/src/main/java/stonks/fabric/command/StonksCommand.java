@@ -111,7 +111,7 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.then(argument("id", StringArgumentType.string())
 					.suggests((context, builder) -> {
-						var cache = StonksFabric.getServiceProvider(context.getSource().getServer()).getStonksCache();
+						var cache = StonksFabric.getPlatform(context.getSource().getServer()).getStonksCache();
 						return CompletableFuture.supplyAsync(() -> {
 							try {
 								cache.getAllCategories()
@@ -136,7 +136,7 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.executes(ctx -> {
 					var players = EntityArgumentType.getPlayers(ctx, "players");
-					var adapter = StonksFabric.getServiceProvider(ctx.getSource().getServer()).getStonksAdapter();
+					var adapter = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksAdapter();
 
 					for (var p : players) {
 						ctx.getSource().sendMessage(Text.literal("Inspecting ").append(p.getDisplayName()).append(":"));
@@ -154,7 +154,7 @@ public class StonksCommand {
 	private static int giveProducts(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
 		var players = EntityArgumentType.getPlayers(ctx, "players");
 		var id = StringArgumentType.getString(ctx, "id");
-		var provider = StonksFabric.getServiceProvider(ctx.getSource().getServer());
+		var provider = StonksFabric.getPlatform(ctx.getSource().getServer());
 		var cache = provider.getStonksCache();
 		var adapter = provider.getStonksAdapter();
 		cache
@@ -182,7 +182,7 @@ public class StonksCommand {
 
 	private static int viewCategory(CommandContext<ServerCommandSource> ctx) {
 		var id = StringArgumentType.getString(ctx, "id");
-		var cache = StonksFabric.getServiceProvider(ctx.getSource().getServer()).getStonksCache();
+		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getCategoryById(id)
 			.afterThatDo(category -> {
@@ -217,7 +217,7 @@ public class StonksCommand {
 	}
 
 	private static int viewAllCategories(CommandContext<ServerCommandSource> ctx) {
-		var cache = StonksFabric.getServiceProvider(ctx.getSource().getServer()).getStonksCache();
+		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getAllCategories()
 			.afterThatDo(categories -> {

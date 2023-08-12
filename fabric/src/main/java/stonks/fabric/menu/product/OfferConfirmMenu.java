@@ -42,7 +42,7 @@ public class OfferConfirmMenu extends StackedMenu {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		setTitle(Translations.Menus.ConfirmOffer.ConfirmOffer);
 
-		setSlot(7, GuiElementBuilder.from(StonksFabric.getServiceProvider(getPlayer())
+		setSlot(7, GuiElementBuilder.from(StonksFabric.getPlatform(getPlayer())
 			.getStonksAdapter()
 			.createDisplayStack(product))
 			.setCount(Math.min(Math.max(amount / 64, 1), 64))

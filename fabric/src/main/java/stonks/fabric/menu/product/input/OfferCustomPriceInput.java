@@ -85,7 +85,7 @@ public class OfferCustomPriceInput extends SignGui {
 			var totalPrice = price * menu.getAmount();
 
 			if (menu.getOfferType() == OfferType.BUY && totalPrice > balance) {
-				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice));
+				getPlayer().sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
 				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}

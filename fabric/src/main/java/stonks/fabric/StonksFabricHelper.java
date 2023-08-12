@@ -110,7 +110,7 @@ public class StonksFabricHelper {
 			}
 
 			if (currentUnits < units) {
-				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units));
+				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units), true);
 				return;
 			}
 
@@ -122,7 +122,7 @@ public class StonksFabricHelper {
 			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
 				(offer, error) -> {
 					if (error != null) {
-						player.sendMessage(Translations.Messages.ErrorRefunding, true);
+						player.sendMessage(Translations.Messages.ErrorRefunding, false);
 
 						if (type == OfferType.BUY) {
 							adapter.accountDeposit(player, totalPrice);

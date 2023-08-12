@@ -12,7 +12,7 @@ Stonks Core is a platform-independent library that can be used outside Fabric or
     + Some skilled developers might be able to create "distributed system" that shares states between each service.
 
 ## Use cases
-Other than making Stonks for \*insert platform name here\*, you can use Stonks in your "virtual stocks market", or if your brain is big enough: adding service interface to an actual stocks market so you can use Minecraft as market terminal.
+The primary use case for Stonks Core is to add global market for Minecraft, but it's up to you to decide what you want to do with this library.
 
 ## Okay, how do I use it?
 You can take a look at [Using Stonks Core](<Using Stonks Core.md>) documentation.

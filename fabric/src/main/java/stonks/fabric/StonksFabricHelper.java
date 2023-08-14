@@ -35,8 +35,22 @@ public class StonksFabricHelper {
 
 		// Take out stuffs first
 		if (type == OfferType.BUY) {
+			var currentBalance = provider.getStonksAdapter().accountBalance(player);
+			if (currentBalance < balance) {
+				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance), true);
+				return Task
+					.failed(new RuntimeException("2nd check failed: Not enough money (concurrent modification?)"));
+			}
+
 			provider.getStonksAdapter().accountWithdraw(player, balance);
 		} else {
+			var currentUnits = provider.getStonksAdapter().getUnits(player, product);
+			if (currentUnits < units) {
+				player.sendMessage(Translations.Messages.NotEnoughItems(units, currentUnits));
+				return Task
+					.failed(new RuntimeException("2nd check failed: Not enough units (concurrent modification?)"));
+			}
+
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 

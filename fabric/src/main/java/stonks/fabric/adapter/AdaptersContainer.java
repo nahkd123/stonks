@@ -49,42 +49,46 @@ public class AdaptersContainer implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
-		int out;
-		for (var a : adapters) { if ((out = a.getUnits(player, product)) != -1) return out; }
+	public AdapterResponse<Integer> getUnits(ServerPlayerEntity player, Product product) {
+		AdapterResponse<Integer> out;
+		for (var a : adapters) if (!(out = a.getUnits(player, product)).isPass()) return out;
 		return StonksFabricAdapter.super.getUnits(player, product);
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
-		for (var a : adapters) { if (a.addUnitsTo(player, product, amount)) return true; }
+	public AdapterResponse<Void> addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+		AdapterResponse<Void> out;
+		for (var a : adapters) if (!(out = a.addUnitsTo(player, product, amount)).isPass()) return out;
 		return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
-		for (var a : adapters) { if (a.removeUnitsFrom(player, product, amount)) return true; }
+	public AdapterResponse<Void> removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+		AdapterResponse<Void> out;
+		for (var a : adapters) if (!(out = a.removeUnitsFrom(player, product, amount)).isPass()) return out;
 		return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
 	}
 
 	@Override
-	public double accountBalance(ServerPlayerEntity player) {
-		var out = StonksFabricAdapter.super.accountBalance(player);
-		for (var a : adapters) { if ((out = a.accountBalance(player)) >= 0d) return out; }
+	public AdapterResponse<Double> accountBalance(ServerPlayerEntity player) {
+		AdapterResponse<Double> out;
+		for (var a : adapters) if (!(out = a.accountBalance(player)).isPass()) return out;
 		logEconomyWarning(player, 0);
-		return 0d;
+		return StonksFabricAdapter.super.accountBalance(player);
 	}
 
 	@Override
-	public boolean accountDeposit(ServerPlayerEntity player, double money) {
-		for (var a : adapters) { if (a.accountDeposit(player, money)) return true; }
+	public AdapterResponse<Void> accountDeposit(ServerPlayerEntity player, double money) {
+		AdapterResponse<Void> out;
+		for (var a : adapters) if (!(out = a.accountDeposit(player, money)).isPass()) return out;
 		logEconomyWarning(player, money);
 		return StonksFabricAdapter.super.accountDeposit(player, money);
 	}
 
 	@Override
-	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
-		for (var a : adapters) { if (a.accountWithdraw(player, money)) return true; }
+	public AdapterResponse<Void> accountWithdraw(ServerPlayerEntity player, double money) {
+		AdapterResponse<Void> out;
+		for (var a : adapters) if (!(out = a.accountWithdraw(player, money)).isPass()) return out;
 		logEconomyWarning(player, -money);
 		return StonksFabricAdapter.super.accountWithdraw(player, money);
 	}

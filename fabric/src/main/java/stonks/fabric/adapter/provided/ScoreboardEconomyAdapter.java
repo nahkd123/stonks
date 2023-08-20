@@ -27,6 +27,7 @@ import net.minecraft.scoreboard.ScoreboardCriterion.RenderType;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import stonks.fabric.adapter.AdapterResponse;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -64,26 +65,27 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public double accountBalance(ServerPlayerEntity player) {
-		return scoreToMoney(scoreboard.getPlayerScore(player.getEntityName(), getObjective()).getScore());
+	public AdapterResponse<Double> accountBalance(ServerPlayerEntity player) {
+		return AdapterResponse
+			.success(scoreToMoney(scoreboard.getPlayerScore(player.getEntityName(), getObjective()).getScore()));
 	}
 
 	@Override
-	public boolean accountDeposit(ServerPlayerEntity player, double money) {
+	public AdapterResponse<Void> accountDeposit(ServerPlayerEntity player, double money) {
 		var score = scoreboard.getPlayerScore(player.getEntityName(), getObjective());
 		var bal = scoreToMoney(score.getScore());
 		bal += money;
 		score.setScore(moneyToScore(bal));
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	@Override
-	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
+	public AdapterResponse<Void> accountWithdraw(ServerPlayerEntity player, double money) {
 		var score = scoreboard.getPlayerScore(player.getEntityName(), getObjective());
 		var bal = scoreToMoney(score.getScore());
 		bal = Math.max(bal - money, 0d);
 		score.setScore(moneyToScore(bal));
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	public static void register() {

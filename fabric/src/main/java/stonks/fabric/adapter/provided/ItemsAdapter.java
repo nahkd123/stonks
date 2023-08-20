@@ -35,6 +35,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricUtils;
+import stonks.fabric.adapter.AdapterResponse;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -79,9 +80,9 @@ public class ItemsAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
+	public AdapterResponse<Integer> getUnits(ServerPlayerEntity player, Product product) {
 		var refStack = convert(product);
-		if (refStack == null) return StonksFabricAdapter.super.getUnits(player, product);
+		if (refStack == null) return AdapterResponse.pass();
 
 		var inv = player.getInventory();
 		var count = 0;
@@ -92,14 +93,14 @@ public class ItemsAdapter implements StonksFabricAdapter {
 			count += stack.getCount();
 		}
 
-		return count;
+		return AdapterResponse.success(count);
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	public AdapterResponse<Void> addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
 		var refStack = convert(product);
-		if (refStack == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
-		if (amount == 0) return true;
+		if (refStack == null) return AdapterResponse.pass();
+		if (amount == 0) return AdapterResponse.success(null);
 
 		var inv = player.getInventory();
 		var giveStack = refStack.copyWithCount(amount);
@@ -111,14 +112,15 @@ public class ItemsAdapter implements StonksFabricAdapter {
 			e.setOwner(player.getUuid());
 		}
 
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	public AdapterResponse<Void> removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
 		var refStack = convert(product);
-		if (refStack == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
-		if (amount == 0) return true;
+		if (refStack == null) return AdapterResponse.pass();
+		if (amount == 0) return AdapterResponse.success(null);
+		;
 
 		var inv = player.getInventory();
 
@@ -129,10 +131,10 @@ public class ItemsAdapter implements StonksFabricAdapter {
 			var toTake = Math.min(amount, stack.getCount());
 			stack.decrement(toTake);
 			amount -= toTake;
-			if (amount == 0) return true;
+			if (amount == 0) return AdapterResponse.success(null);
 		}
 
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	public static void register() {

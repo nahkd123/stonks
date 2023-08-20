@@ -74,7 +74,8 @@ public class OfferInstantBuyAmountInput extends SignGui {
 
 			var balance = StonksFabric.getPlatform(getPlayer())
 				.getStonksAdapter()
-				.accountBalance(player);
+				.accountBalance(player)
+				.or(0d);
 			var totalPrice = menu.getInstantPricePerUnit() * amount;
 
 			if (balance < totalPrice) {

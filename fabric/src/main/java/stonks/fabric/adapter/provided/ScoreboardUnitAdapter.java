@@ -28,6 +28,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import stonks.core.product.Product;
+import stonks.fabric.adapter.AdapterResponse;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -53,26 +54,26 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
+	public AdapterResponse<Integer> getUnits(ServerPlayerEntity player, Product product) {
 		var obj = getObjective(product);
-		if (obj == null) return StonksFabricAdapter.super.getUnits(player, product);
-		return scoreboard.getPlayerScore(player.getEntityName(), obj).getScore();
+		if (obj == null) return AdapterResponse.pass();
+		return AdapterResponse.success(scoreboard.getPlayerScore(player.getEntityName(), obj).getScore());
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	public AdapterResponse<Void> addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
-		if (obj == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
+		if (obj == null) return AdapterResponse.pass();
 		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(amount);
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	public AdapterResponse<Void> removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
-		if (obj == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
+		if (obj == null) return AdapterResponse.pass();
 		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(-amount);
-		return true;
+		return AdapterResponse.success(null);
 	}
 
 	public static void register() {

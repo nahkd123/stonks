@@ -81,7 +81,8 @@ public class OfferCustomPriceInput extends SignGui {
 
 			var balance = StonksFabric.getPlatform(getPlayer())
 				.getStonksAdapter()
-				.accountBalance(player);
+				.accountBalance(player)
+				.or(0d);
 			var totalPrice = price * menu.getAmount();
 
 			if (menu.getOfferType() == OfferType.BUY && totalPrice > balance) {

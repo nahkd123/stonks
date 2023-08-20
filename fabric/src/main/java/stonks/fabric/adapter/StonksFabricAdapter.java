@@ -39,10 +39,10 @@ public interface StonksFabricAdapter {
 	 * 
 	 * @param player  Player to check.
 	 * @param product Product type.
-	 * @return Number of units. Negative value if this adapter does not support.
+	 * @return Number of units.
 	 */
-	default int getUnits(ServerPlayerEntity player, Product product) {
-		return -1;
+	default AdapterResponse<Integer> getUnits(ServerPlayerEntity player, Product product) {
+		return AdapterResponse.pass();
 	}
 
 	/**
@@ -53,12 +53,12 @@ public interface StonksFabricAdapter {
 	 * @param player  Player that will receive the product.
 	 * @param product Product type.
 	 * @param amount  How many units to add.
-	 * @return true if this adapter managed to put {@link Product} to player.
+	 * @return Nothing.
 	 * @implNote You can reconstruct product data by reading value from
 	 *           {@link Product#getProductConstructionData()}.
 	 */
-	default boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
-		return false;
+	default AdapterResponse<Void> addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+		return AdapterResponse.pass();
 	}
 
 	/**
@@ -69,10 +69,10 @@ public interface StonksFabricAdapter {
 	 * @param player  Player that will have their products taken away.
 	 * @param product Product type.
 	 * @param amount  How many units to take.
-	 * @return true if this adapter managed to take out {@link Product} from player.
+	 * @return Nothing.
 	 */
-	default boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
-		return false;
+	default AdapterResponse<Void> removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+		return AdapterResponse.pass();
 	}
 
 	default ItemStack createDisplayStack(Product product) {
@@ -85,11 +85,10 @@ public interface StonksFabricAdapter {
 	 * </p>
 	 * 
 	 * @param player Player to obtain their balance in primary account.
-	 * @return Negative value if this adapter failed to obtain balance, positive
-	 *         value (including zero) if this adapter managed to obtain balance.
+	 * @return Player's balance in primary account.
 	 */
-	default double accountBalance(ServerPlayerEntity player) {
-		return -1d;
+	default AdapterResponse<Double> accountBalance(ServerPlayerEntity player) {
+		return AdapterResponse.pass();
 	}
 
 	/**
@@ -99,11 +98,10 @@ public interface StonksFabricAdapter {
 	 * 
 	 * @param player Player that will receive money to their primary account.
 	 * @param money  Amount of money to receive.
-	 * @return true if deposit successful. false will allow other adapters to
-	 *         deposit.
+	 * @return Nothing.
 	 */
-	default boolean accountDeposit(ServerPlayerEntity player, double money) {
-		return false;
+	default AdapterResponse<Void> accountDeposit(ServerPlayerEntity player, double money) {
+		return AdapterResponse.pass();
 	}
 
 	/**
@@ -113,10 +111,9 @@ public interface StonksFabricAdapter {
 	 * 
 	 * @param player Player that will have their primary account withdrawn.
 	 * @param money  Amount of money to withdraw.
-	 * @return true if withdraw successful. false will allow other adapters to
-	 *         withdraw.
+	 * @return Nothing.
 	 */
-	default boolean accountWithdraw(ServerPlayerEntity player, double money) {
-		return false;
+	default AdapterResponse<Void> accountWithdraw(ServerPlayerEntity player, double money) {
+		return AdapterResponse.pass();
 	}
 }

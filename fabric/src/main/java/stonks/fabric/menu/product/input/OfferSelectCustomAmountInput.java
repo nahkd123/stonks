@@ -77,7 +77,8 @@ public class OfferSelectCustomAmountInput extends SignGui {
 
 			var currentAmount = StonksFabric.getPlatform(getPlayer())
 				.getStonksAdapter()
-				.getUnits(getPlayer(), getMenu().getProduct());
+				.getUnits(getPlayer(), getMenu().getProduct())
+				.or(0);
 			if (menu.getOfferType() == OfferType.SELL && amount > currentAmount) {
 				getPlayer().sendMessage(Translations.Messages.NotEnoughItems(currentAmount, amount), true);
 				return;

@@ -25,6 +25,7 @@ import eu.pb4.common.economy.api.CommonEconomy;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import stonks.fabric.StonksFabric;
+import stonks.fabric.adapter.AdapterResponse;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -46,28 +47,26 @@ public class CommonEconomyAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public double accountBalance(ServerPlayerEntity player) {
+	public AdapterResponse<Double> accountBalance(ServerPlayerEntity player) {
 		var playerAccount = CommonEconomy.getAccount(player, account);
-		if (playerAccount == null) return StonksFabricAdapter.super.accountBalance(player);
-		return toDouble(playerAccount.balance());
+		if (playerAccount == null) return AdapterResponse.pass();
+		return AdapterResponse.success(toDouble(playerAccount.balance()));
 	}
 
 	@Override
-	public boolean accountDeposit(ServerPlayerEntity player, double money) {
+	public AdapterResponse<Void> accountDeposit(ServerPlayerEntity player, double money) {
 		var playerAccount = CommonEconomy.getAccount(player, account);
-		if (playerAccount == null) return StonksFabricAdapter.super.accountDeposit(player, money);
+		if (playerAccount == null) return AdapterResponse.pass();
 		var txn = playerAccount.increaseBalance(fromDouble(money));
-		if (txn.isSuccessful()) return true;
-		return StonksFabricAdapter.super.accountDeposit(player, money);
+		return txn.isSuccessful() ? AdapterResponse.success(null) : AdapterResponse.failed(txn.message());
 	}
 
 	@Override
-	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
+	public AdapterResponse<Void> accountWithdraw(ServerPlayerEntity player, double money) {
 		var playerAccount = CommonEconomy.getAccount(player, account);
-		if (playerAccount == null) return StonksFabricAdapter.super.accountWithdraw(player, money);
+		if (playerAccount == null) return AdapterResponse.pass();
 		var txn = playerAccount.decreaseBalance(fromDouble(money));
-		if (txn.isSuccessful()) return true;
-		return StonksFabricAdapter.super.accountWithdraw(player, money);
+		return txn.isSuccessful() ? AdapterResponse.success(null) : AdapterResponse.failed(txn.message());
 	}
 
 	public static void register() {

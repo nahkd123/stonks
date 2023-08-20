@@ -142,10 +142,14 @@ public class StonksCommand {
 						ctx.getSource().sendMessage(Text.literal("Inspecting ").append(p.getDisplayName()).append(":"));
 
 						var balance = adapter.accountBalance(p);
+						var balanceText = balance.isSuccess()
+							? StonksFabricUtils.currencyText(Optional.of(balance.result()), true)
+							: balance.isFailed() ? balance.message()
+							: Text.literal("No economy adapter found!").styled(s -> s.withColor(Formatting.RED));
 						ctx.getSource().sendMessage(Text.literal(" - ")
 							.styled(s -> s.withColor(Formatting.GRAY))
 							.append(Text.literal("Account Balance: ").styled(s -> s.withColor(Formatting.WHITE)))
-							.append(StonksFabricUtils.currencyText(Optional.of(balance), true)));
+							.append(balanceText));
 					}
 					return 1;
 				}));

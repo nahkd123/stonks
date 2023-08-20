@@ -53,9 +53,14 @@ public final class Translations {
 		public static final Text Loading(String v) { return translatableWithFallback("stonks.menu.icon.loading", "\u00a77Please wait %s", v); }
 	}
 	public static final class Errors {
-		public static final Text Errors = translatableWithFallback("stonks.menu.error", "\u00a7cAn error occured!");
-		public static final Text CategoriesList = translatableWithFallback("stonks.menu.error.categoriesList", "\u00a77Failed to get categories list");
-		public static final Text QuickPriceDetails = translatableWithFallback("stonks.menu.error.quickPriceDetails", "\u00a77Failed to query quick price details");
+		public static final Text Errors = translatableWithFallback("stonks.error", "\u00a7cAn error occured!");
+		public static final Text CategoriesList = translatableWithFallback("stonks.error.categoriesList", "\u00a77Failed to get categories list");
+		public static final Text QuickPriceDetails = translatableWithFallback("stonks.error.quickPriceDetails", "\u00a77Failed to query quick price details");
+
+		public static final Text GetBalanceFailed = translatableWithFallback("stonks.error.getBalanceFailed", "\u00a7cFailed to get your account balance!");
+		public static final Text GetItemsFailed = translatableWithFallback("stonks.error.getItemsFailed", "\u00a7cFailed to get amount of items in your inventory!");
+		public static final Text WithdrawFailed = translatableWithFallback("stonks.error.withdrawFailed", "\u00a7cFailed to take money from your account!");
+		public static final Text TakeItemsFailed = translatableWithFallback("stonks.error.takeItemsFailed", "\u00a7cFailed to take items from you!");
 	}
 	public static final class Menus {
 		public static final class MainMenu {

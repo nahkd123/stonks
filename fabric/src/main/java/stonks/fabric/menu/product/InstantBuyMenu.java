@@ -58,7 +58,7 @@ public class InstantBuyMenu extends StackedMenu {
 	public double getInstantPricePerUnit() { return instantPricePerUnit; }
 
 	public void placeBuyButtons() {
-		var balance = StonksFabric.getPlatform(player).getStonksAdapter().accountBalance(player);
+		var balance = StonksFabric.getPlatform(player).getStonksAdapter().accountBalance(player).or(0d);
 		setSlot(19, createInstantBuyButton(balance, 1, Items.GOLD_NUGGET));
 		setSlot(20, createInstantBuyButton(balance, 16, Items.GOLD_INGOT));
 		setSlot(21, createInstantBuyButton(balance, 64, Items.GOLD_INGOT));
@@ -106,7 +106,7 @@ public class InstantBuyMenu extends StackedMenu {
 				var provider = StonksFabric.getPlatform(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
-				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
+				if (adapter.accountBalance(getPlayer()).or(0d) < moneyToSpend) {
 					getPlayer().sendMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;

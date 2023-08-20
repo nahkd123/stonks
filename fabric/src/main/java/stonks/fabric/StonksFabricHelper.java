@@ -36,22 +36,40 @@ public class StonksFabricHelper {
 		// Take out stuffs first
 		if (type == OfferType.BUY) {
 			var currentBalance = provider.getStonksAdapter().accountBalance(player);
-			if (currentBalance < balance) {
-				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance), true);
+			if (!currentBalance.isSuccess()) {
+				player.sendMessage(Translations.Errors.GetBalanceFailed, true);
+				return Task.failed(new RuntimeException("Failed to get balance for " + player.getUuid()));
+			}
+
+			if (currentBalance.result() < balance) {
+				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance.result()), true);
 				return Task
 					.failed(new RuntimeException("2nd check failed: Not enough money (concurrent modification?)"));
 			}
 
-			provider.getStonksAdapter().accountWithdraw(player, balance);
+			var withdrawResult = provider.getStonksAdapter().accountWithdraw(player, balance);
+			if (!withdrawResult.isSuccess()) {
+				player.sendMessage(Translations.Errors.WithdrawFailed, true);
+				return Task.failed(new RuntimeException("Failed to withdraw from " + player.getUuid()));
+			}
 		} else {
 			var currentUnits = provider.getStonksAdapter().getUnits(player, product);
-			if (currentUnits < units) {
-				player.sendMessage(Translations.Messages.NotEnoughItems(units, currentUnits));
+			if (!currentUnits.isSuccess()) {
+				player.sendMessage(Translations.Errors.GetItemsFailed, true);
+				return Task.failed(new RuntimeException("Failed to count products from " + player.getUuid()));
+			}
+
+			if (currentUnits.result() < units) {
+				player.sendMessage(Translations.Messages.NotEnoughItems(units, currentUnits.result()));
 				return Task
 					.failed(new RuntimeException("2nd check failed: Not enough units (concurrent modification?)"));
 			}
 
-			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
+			var removeResult = provider.getStonksAdapter().removeUnitsFrom(player, product, units);
+			if (!removeResult.isSuccess()) {
+				player.sendMessage(Translations.Errors.TakeItemsFailed, true);
+				return Task.failed(new RuntimeException("Failed to remove products from " + player.getUuid()));
+			}
 		}
 
 		player.sendMessage(Translations.Messages.PleaseWait, true);
@@ -73,6 +91,7 @@ public class StonksFabricHelper {
 					var moneyLeft = result.balance();
 					var moneySpent = balance - moneyLeft;
 
+					// TODO handle failures
 					provider.getStonksAdapter().accountDeposit(player, moneyLeft);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsBought);
 
@@ -86,6 +105,7 @@ public class StonksFabricHelper {
 					var unitsSold = units - unitsLeft;
 					var earnings = config.applyTax(result.balance());
 
+					// TODO handle failures
 					provider.getStonksAdapter().accountDeposit(player, earnings);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsLeft);
 
@@ -108,23 +128,30 @@ public class StonksFabricHelper {
 
 		if (type == OfferType.BUY) {
 			var balance = adapter.accountBalance(player);
+			if (!balance.isSuccess()) {
+				player.sendMessage(Translations.Errors.GetBalanceFailed, true);
+				StonksFabric.LOGGER.error("Unable to obtain balance for {}. Have you added adapter for this yet?",
+					player.getUuid());
+				return;
+			}
 
-			if (balance < totalPrice) {
-				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
+			if (balance.result() < totalPrice) {
+				player.sendMessage(Translations.Messages.NotEnoughMoney(balance.result(), totalPrice), true);
 				return;
 			}
 
 			adapter.accountWithdraw(player, totalPrice);
 		} else {
 			var currentUnits = adapter.getUnits(player, product);
-			if (currentUnits == -1) {
+			if (!currentUnits.isSuccess()) {
+				player.sendMessage(Translations.Errors.GetItemsFailed, true);
 				StonksFabric.LOGGER.error("Unable to process {} product. Have you added adapter for this yet?",
 					product.getProductId());
 				return;
 			}
 
-			if (currentUnits < units) {
-				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units), true);
+			if (currentUnits.result() < units) {
+				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits.result(), units), true);
 				return;
 			}
 

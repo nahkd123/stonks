@@ -138,10 +138,9 @@ public class ProductMenu extends StackedMenu {
 					close();
 
 					var provider = StonksFabric.getPlatform(getPlayer());
-					var units = provider.getStonksAdapter().getUnits(getPlayer(), product);
+					var units = provider.getStonksAdapter().getUnits(getPlayer(), product).or(0);
 					if (units <= 0) {
-						getPlayer().sendMessage(Translations.Messages.NoUnitsToInstantSell(product),
-							true);
+						getPlayer().sendMessage(Translations.Messages.NoUnitsToInstantSell(product), true);
 						return;
 					}
 

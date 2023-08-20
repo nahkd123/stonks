@@ -57,7 +57,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 		case SELL -> new Item[] { Items.GOLD_NUGGET, Items.GOLD_INGOT, Items.GOLD_BLOCK };
 		};
 
-		setSlot(7, StonksFabric.getPlatform(getPlayer()).getStonksAdapter().createDisplayStack(product));
+		var displayStack = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().createDisplayStack(product);
+		if (displayStack != null) setSlot(7, displayStack);
 
 		setSlot(19, createOfferSelectButton(64, icons[0]));
 		setSlot(20, createOfferSelectButton(256, icons[1]));

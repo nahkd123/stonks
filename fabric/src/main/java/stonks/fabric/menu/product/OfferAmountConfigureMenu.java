@@ -90,7 +90,7 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 	private GuiElementBuilder createOfferSelectButton(int amount, Item icon) {
 		// Only for selling
 		var fillAll = amount == -1;
-		var currentUnits = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().getUnits(player, product).or(0);
+		var currentUnits = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().getUnits(player, product);
 		if (fillAll) amount = currentUnits;
 		var disabled = offerType == OfferType.SELL && (amount == 0 || currentUnits < amount);
 		var amount2 = amount;

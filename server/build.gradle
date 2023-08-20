@@ -1,0 +1,8 @@
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    api project(':core')
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

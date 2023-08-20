@@ -57,7 +57,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 		case SELL -> new Item[] { Items.GOLD_NUGGET, Items.GOLD_INGOT, Items.GOLD_BLOCK };
 		};
 
-		setSlot(7, StonksFabric.getPlatform(getPlayer()).getStonksAdapter().createDisplayStack(product));
+		var displayStack = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().createDisplayStack(product);
+		if (displayStack != null) setSlot(7, displayStack);
 
 		setSlot(19, createOfferSelectButton(64, icons[0]));
 		setSlot(20, createOfferSelectButton(256, icons[1]));
@@ -89,7 +90,7 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 	private GuiElementBuilder createOfferSelectButton(int amount, Item icon) {
 		// Only for selling
 		var fillAll = amount == -1;
-		var currentUnits = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().getUnits(player, product);
+		var currentUnits = StonksFabric.getPlatform(getPlayer()).getStonksAdapter().getUnits(player, product).or(0);
 		if (fillAll) amount = currentUnits;
 		var disabled = offerType == OfferType.SELL && (amount == 0 || currentUnits < amount);
 		var amount2 = amount;

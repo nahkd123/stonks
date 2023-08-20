@@ -55,9 +55,13 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			? Translations.Menus.CreateOffer.Title$Buy(product)
 			: Translations.Menus.CreateOffer.Title$Sell(product));
 
-		setSlot(7, GuiElementBuilder.from(StonksFabric.getPlatform(getPlayer())
+		var displayStack = StonksFabric.getPlatform(getPlayer())
 			.getStonksAdapter()
-			.createDisplayStack(product))
+			.createDisplayStack(product);
+		var builder = displayStack != null
+			? GuiElementBuilder.from(displayStack)
+			: new GuiElementBuilder(Items.BARRIER);
+		setSlot(7, builder
 			.setCount(Math.min(Math.max(amount / 64, 1), 64))
 			.setName(Text.literal(amount + "x " + product.getProductName()) // TODO
 				.styled(s -> s.withColor(Formatting.AQUA)))

@@ -33,12 +33,14 @@ import stonks.core.net.listener.ConnectionClosedListener;
 import stonks.core.net.listener.IncomingRawPacketsListener;
 
 public class Connection {
+	public static final int MAX_PACKET_LENGTH = 32768;
+
 	private Queue<ByteBuffer> outgoingQueue = new ConcurrentLinkedQueue<>();
 	private List<IncomingRawPacketsListener> rawPacketsListeners = new ArrayList<>();
 	private List<ConnectionClosedListener> closeListeners = new ArrayList<>();
 
 	// Packet specification
-	// 2 bytes: Packet length (always uncompressed). Maximum length of 32767.
+	// 4 bytes: Packet length (always uncompressed). Maximum length of 2^31 - 1.
 	// [length] bytes: Packet content
 	private ByteBuffer header;
 	private ByteBuffer content;
@@ -46,8 +48,8 @@ public class Connection {
 	private boolean closeNeeded = false, isClosed = false;
 
 	protected Connection() {
-		header = ByteBuffer.allocateDirect(2);
-		content = ByteBuffer.allocateDirect(32767);
+		header = ByteBuffer.allocateDirect(4);
+		content = ByteBuffer.allocateDirect(MAX_PACKET_LENGTH);
 	}
 
 	protected void handleRead(SocketChannel socket) throws IOException {
@@ -67,9 +69,9 @@ public class Connection {
 
 			if (!header.hasRemaining()) {
 				header.flip();
-				var length = header.getShort();
-				if (length < 0) {
-					// Likely over 32767, because Java doesn't have unsigned short
+				var length = header.getInt();
+				System.out.println(length);
+				if (length < 0 || length > MAX_PACKET_LENGTH) {
 					requestClose();
 					return;
 				}
@@ -111,7 +113,7 @@ public class Connection {
 		while (!outgoingQueue.isEmpty()) {
 			var content = outgoingQueue.poll();
 			header.clear();
-			header.putShort((short) content.limit());
+			header.putInt((short) content.limit());
 			header.flip();
 			socket.write(header);
 
@@ -171,6 +173,9 @@ public class Connection {
 	protected void setClosed(boolean isClosed) { this.isClosed = isClosed; }
 
 	public void sendRawPacket(ByteBuffer buffer) {
+		if (buffer.limit() > MAX_PACKET_LENGTH)
+			throw new IllegalArgumentException("exceed maximum packet size: " + buffer.limit() + "/"
+				+ MAX_PACKET_LENGTH);
 		outgoingQueue.add(buffer);
 	}
 

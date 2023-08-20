@@ -19,55 +19,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.core.net;
+package stonks.core.service.remote.message;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
+import java.nio.ByteBuffer;
 
-import stonks.core.net.listener.NewConnectionsListener;
+public interface Message {
+	public String getMessageId();
 
-public class ClientConnection extends Connection {
-	private SocketChannel client;
-	private NewConnectionsListener handler;
+	public void onMessageSerialize(DataOutput output) throws IOException;
 
-	public ClientConnection(SocketChannel client, NewConnectionsListener handler) throws IOException {
-		this.client = client;
-		this.handler = handler;
-		this.client.configureBlocking(false);
+	default ByteBuffer createRawPacket() {
+		var ba = new ByteArrayOutputStream();
+		var dataOutput = new DataOutputStream(ba);
+
+		try {
+			dataOutput.writeUTF(getMessageId());
+			onMessageSerialize(dataOutput);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return ByteBuffer.wrap(ba.toByteArray());
 	}
 
-	public void startOnCurrentThread() throws IOException {
-		while (!client.finishConnect()) { if (isCloseNeeded()) return; }
-		handler.onNewConnection(this);
-
-		do {
-			handleRead(client);
-			handleWrite(client);
-
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				// Interrupted while sleeping
-				break;
-			}
-
-			if (Thread.currentThread().isInterrupted()) break;
-		} while (!isCloseNeeded());
-
-		setClosed(true);
-		emitClose();
-		client.close();
-	}
-
-	public Thread createThread() {
-		var thread = new Thread(() -> {
-			try {
-				startOnCurrentThread();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-		thread.setName("Client Networking Thread");
-		return thread;
+	@FunctionalInterface
+	public static interface MessageDeserializer {
+		public Message deserialize(DataInput input) throws IOException;
 	}
 }

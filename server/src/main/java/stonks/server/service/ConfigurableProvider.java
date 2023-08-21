@@ -19,20 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.service;
 
-import java.io.IOException;
+import nahara.common.configurations.Config;
+import stonks.core.service.StonksService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
-
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
-
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
-	}
+@FunctionalInterface
+public interface ConfigurableProvider {
+	public StonksService configure(Config config);
 }

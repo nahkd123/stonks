@@ -19,20 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.cli.converter;
 
-import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnixDomainSocketAddress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import picocli.CommandLine.ITypeConverter;
 
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
-
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
-
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
+public class SocketAddressConverter implements ITypeConverter<SocketAddress> {
+	@Override
+	public SocketAddress convert(String value) throws Exception {
+		var splits = value.split("\\:", 2);
+		switch (splits[0]) {
+		case "inet":
+			var splits2 = splits[1].split("\\:", 2);
+			return new InetSocketAddress(splits2[0], Integer.parseInt(splits2[1]));
+		case "socket":
+			return UnixDomainSocketAddress.of(splits[1]);
+		default:
+			throw new IllegalArgumentException("Unknown address: " + value);
+		}
 	}
 }

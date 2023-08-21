@@ -1,6 +1,10 @@
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     api project(':core')
+    implementation 'org.slf4j:slf4j-api:2.0.7'
+    implementation 'org.slf4j:slf4j-simple:2.0.7'
+    implementation 'info.picocli:picocli:4.7.4'
+    implementation naharaToolkit('nahara-common-configurations')
 }
 
 tasks.named('test') {

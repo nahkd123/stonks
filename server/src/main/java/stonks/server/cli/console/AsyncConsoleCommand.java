@@ -19,20 +19,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.cli.console;
 
-import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.concurrent.Callable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nahara.common.tasks.AsyncException;
+import nahara.common.tasks.Task;
 
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
+public interface AsyncConsoleCommand<T> extends Callable<Integer> {
+	public Task<T> getTask() throws Exception;
 
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
+	public void onSuccess(T obj) throws Exception;
 
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
+	public void onFailure(Throwable t) throws Exception;
+
+	public static final DecimalFormat MS_FORMATTER = new DecimalFormat("#,##0.##");
+
+	@Override
+	default Integer call() throws Exception {
+		long start = System.nanoTime();
+
+		try {
+			var obj = getTask().await();
+			onSuccess(obj);
+		} catch (AsyncException e) {
+			onFailure(e.getCause());
+		}
+
+		long duration = System.nanoTime() - start;
+		ConsoleInstance.LOGGER.info("Task completed in {}ms", MS_FORMATTER.format(duration / 1_000_000d));
+		return 0;
 	}
 }

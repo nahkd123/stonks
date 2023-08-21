@@ -19,20 +19,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.cli;
 
-import java.io.IOException;
+import nahara.common.configurations.Config;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import stonks.server.cli.converter.ConfigConverter;
+import stonks.server.cli.converter.ConfigurableProviderConverter;
+import stonks.server.service.ConfigurableProvider;
+import stonks.server.service.ServiceProviders;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+@Command(name = "stonks-server", subcommands = {
+	ServerCommand.class,
+	ClientCommand.class,
+})
+public class MainCommand {
+	@Option(names = { "--provider", "-P" },
+		converter = ConfigurableProviderConverter.class,
+		description = "Specify a service provider to use. Default is \"stonks:memory\".")
+	public ConfigurableProvider provider = ServiceProviders.MEMORY;
 
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
-
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
-
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
-	}
+	@Option(names = { "--config", "-C" },
+		converter = ConfigConverter.class,
+		description = "Specify configuration file for service provider.")
+	public Config configuration = new Config();
 }

@@ -19,20 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.cli.converter;
 
-import java.io.IOException;
+import picocli.CommandLine.ITypeConverter;
+import stonks.server.service.ConfigurableProvider;
+import stonks.server.service.ServiceProviders;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
-
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
-
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
+public class ConfigurableProviderConverter implements ITypeConverter<ConfigurableProvider> {
+	@Override
+	public ConfigurableProvider convert(String value) throws Exception {
+		return ServiceProviders.getProviders().get(value);
 	}
 }

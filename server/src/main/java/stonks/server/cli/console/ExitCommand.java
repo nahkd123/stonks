@@ -19,20 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.server;
+package stonks.server.cli.console;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
-import picocli.CommandLine;
-import stonks.server.cli.MainCommand;
+@Command(name = "exit", description = "Exit console")
+public class ExitCommand implements Callable<Integer> {
+	@ParentCommand
+	public ConsoleInstance parent;
 
-public class Main {
-	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
-
-	public static void main(String[] args) throws IOException {
-		System.exit(new CommandLine(new MainCommand()).execute(args));
+	@Override
+	public Integer call() throws Exception {
+		parent.shouldStopConsole = true;
+		return 0;
 	}
 }

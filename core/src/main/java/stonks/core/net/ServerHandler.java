@@ -68,7 +68,19 @@ public class ServerHandler {
 		server.register(selector, SelectionKey.OP_ACCEPT);
 
 		while (isRunning) selectLoop();
+
 		// TODO logger or emit events
+		for (var key : selector.keys()) {
+			var attachment = key.attachment();
+
+			if (attachment != null && attachment instanceof Connection conn) {
+				// We close all connections
+				conn.setClosed(true);
+				conn.emitClose();
+				close(key, conn);
+				conn.closeAttachment();
+			}
+		}
 	}
 
 	public Thread createThread() {

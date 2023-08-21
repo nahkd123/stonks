@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 import nahara.common.tasks.ManualTask;
@@ -42,9 +43,11 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
+import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
+import stonks.core.service.remote.message.MessageS2CAddOffer;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
@@ -131,6 +134,10 @@ public class StonksRemoteService implements StonksService {
 		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(id -> {
 			return productsLookupMap.get(id);
 		}));
+		// TODO <--
+		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(id -> {
+			return productsLookupMap.get(id);
+		}));
 
 		messagesHandler.handleConnection(connection);
 	}
@@ -213,8 +220,23 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public Task<Offer> listOffer(UUID offerer, Product product, OfferType type, int units, double pricePerUnit) {
-		// TODO Auto-generated method stub
-		return null;
+		return queryAllCategories().andThen($ -> {
+			var task = new ManualTask<Offer>();
+			var rid = ThreadLocalRandom.current().nextLong();
+			var message = new MessageC2SAddOffer(offerer, product.getProductId(), type, units, pricePerUnit, rid);
+			connection.sendRawPacket(message.createRawPacket());
+			messagesHandler.waitForMessage(MessageS2CAddOffer.class,
+				v -> v.getResponseId() == rid,
+				msg -> {
+					if (msg.message().getErrorMessage().isPresent()) {
+						task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+						return;
+					}
+
+					task.resolveSuccess(msg.message().getOffer());
+				});
+			return task;
+		});
 	}
 
 	@Override

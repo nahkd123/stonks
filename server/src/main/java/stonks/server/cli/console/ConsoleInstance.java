@@ -36,6 +36,8 @@ import stonks.core.service.StonksService;
 		ListProductsCommand.class,
 		ProductOverviewCommand.class,
 		ListOffersCommand.class,
+		// TODO
+		AddOfferCommand.class,
 	})
 public class ConsoleInstance {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Console");

@@ -103,7 +103,7 @@ public class MessageS2COffersList implements Message {
 		for (var e : offers) serializeOffer(e, output);
 	}
 
-	private static void serializeOffer(Offer offer, DataOutput output) throws IOException {
+	public static void serializeOffer(Offer offer, DataOutput output) throws IOException {
 		output.writeLong(offer.getOfferId().getMostSignificantBits());
 		output.writeLong(offer.getOfferId().getLeastSignificantBits());
 		output.writeLong(offer.getOffererId().getMostSignificantBits());
@@ -116,7 +116,7 @@ public class MessageS2COffersList implements Message {
 		output.writeDouble(offer.getPricePerUnit());
 	}
 
-	private static Offer deserializeOffer(Function<String, Product> products, DataInput input) throws IOException {
+	public static Offer deserializeOffer(Function<String, Product> products, DataInput input) throws IOException {
 		var offerIdMsb = input.readLong();
 		var offerIdLsb = input.readLong();
 		var offerId = new UUID(offerIdMsb, offerIdLsb);

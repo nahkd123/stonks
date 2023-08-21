@@ -39,9 +39,11 @@ import stonks.core.net.ServerHandler;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.core.service.StonksService;
+import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
+import stonks.core.service.remote.message.MessageS2CAddOffer;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
@@ -154,6 +156,34 @@ public class StonksRemoteServer {
 				var list = (List<Offer>) result.getSuccess();
 				msg.connection().sendRawPacket(new MessageS2COffersList(msg.message().getOfferer(), list)
 					.createRawPacket());
+			});
+		});
+
+		messagesHandler.registerDeserializer(MessageC2SAddOffer.ID, MessageC2SAddOffer::new);
+		messagesHandler.listenForMessage(MessageC2SAddOffer.class, msg -> {
+			var rid = msg.message().getResponseId();
+
+			wait(productsQueryTask, $ -> {
+				var product = productsLookupMap.get(msg.message().getProductId());
+
+				if (product == null) {
+					var message = new MessageS2CQueryProductOverview(msg.message().getProductId(), "Product not found");
+					msg.connection().sendRawPacket(message.createRawPacket());
+					return;
+				}
+
+				wait(service.listOffer(msg.message().getOfferer(), product, msg.message().getType(),
+					msg.message().getUnits(), msg.message().getPricePerUnit()), result -> {
+						if (!result.isSuccess()) {
+							var message = new MessageS2CAddOffer(rid, "An error occured");
+							result.getFailure().printStackTrace();
+							msg.connection().sendRawPacket(message.createRawPacket());
+							return;
+						}
+
+						msg.connection().sendRawPacket(new MessageS2CAddOffer(rid, result.getSuccess())
+							.createRawPacket());
+					});
 			});
 		});
 	}

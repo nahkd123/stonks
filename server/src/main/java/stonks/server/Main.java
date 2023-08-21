@@ -22,6 +22,8 @@
 package stonks.server;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import stonks.server.cli.MainCommand;
 
 public class Main {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Main");
+	public static final UUID DEFAULT_USER_UUID = UUID.nameUUIDFromBytes("Stonks".getBytes(StandardCharsets.UTF_8));
 
 	public static void main(String[] args) throws IOException {
 		System.exit(new CommandLine(new MainCommand()).execute(args));

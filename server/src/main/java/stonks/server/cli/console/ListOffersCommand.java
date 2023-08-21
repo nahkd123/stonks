@@ -26,18 +26,19 @@ import java.util.UUID;
 
 import nahara.common.tasks.Task;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import stonks.core.market.Offer;
 import stonks.core.service.remote.RemoteServiceException;
+import stonks.server.Main;
 
 @Command(name = "list-offers", description = "List all offers that was created by someone.")
 public class ListOffersCommand implements AsyncConsoleCommand<List<Offer>> {
 	@ParentCommand
 	public ConsoleInstance parent;
 
-	@Parameters(paramLabel = "UUID", description = "UUID of the user.")
-	public UUID uuid;
+	@Option(names = { "--uuid", "-U" }, description = "User's unique ID. Leave blank for default UUID.")
+	public UUID uuid = Main.DEFAULT_USER_UUID;
 
 	@Override
 	public Task<List<Offer>> getTask() throws Exception { return parent.service.getOffers(uuid); }

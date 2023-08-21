@@ -70,7 +70,6 @@ public class Connection {
 			if (!header.hasRemaining()) {
 				header.flip();
 				var length = header.getInt();
-				System.out.println(length);
 				if (length < 0 || length > MAX_PACKET_LENGTH) {
 					requestClose();
 					return;

@@ -23,19 +23,24 @@ package stonks.core.service.remote;
 
 import java.io.IOException;
 import java.nio.channels.ServerSocketChannel;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 import nahara.common.tasks.Task;
 import nahara.common.tasks.TaskResult;
+import stonks.core.market.ProductMarketOverview;
 import stonks.core.net.Connection;
 import stonks.core.net.ServerHandler;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.core.service.StonksService;
+import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
+import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
 import stonks.core.service.remote.message.MessagesHandler;
 
@@ -48,6 +53,8 @@ public class StonksRemoteServer {
 	}
 
 	private Queue<WaitingTask> waiting = new ConcurrentLinkedQueue<>();
+	private Map<String, Product> productsLookupMap = new HashMap<>();
+	private Task<List<Category>> productsQueryTask;
 
 	@SuppressWarnings("unchecked")
 	public StonksRemoteServer(StonksService service, ServerSocketChannel channel) throws IOException {
@@ -60,10 +67,24 @@ public class StonksRemoteServer {
 			}
 		};
 
+		// We query all products
+		productsQueryTask = service.queryAllCategories()
+			.afterThatDo(categories -> {
+				productsLookupMap.clear();
+
+				for (var category : categories) {
+					for (var product : category.getProducts())
+						productsLookupMap.put(product.getProductId(), product);
+				}
+
+				return categories;
+			});
+
 		messagesHandler = new MessagesHandler();
+
 		messagesHandler.registerDeserializer(MessageC2SQueryProducts.ID, MessageC2SQueryProducts::new);
 		messagesHandler.listenForMessage(MessageC2SQueryProducts.class, msg -> {
-			waiting.add(new WaitingTask(service.queryAllCategories(), result -> {
+			waiting.add(new WaitingTask(productsQueryTask, result -> {
 				if (!result.isSuccess()) {
 					msg.connection()
 						.sendRawPacket(new MessageS2CQueryProductsPartial("Query failed").createRawPacket());
@@ -90,6 +111,31 @@ public class StonksRemoteServer {
 					msg.connection()
 						.sendRawPacket(new MessageS2CQueryProductsPartial(last, true).createRawPacket());
 				}
+			}));
+		});
+
+		messagesHandler.registerDeserializer(MessageC2SQueryProductOverview.ID, MessageC2SQueryProductOverview::new);
+		messagesHandler.listenForMessage(MessageC2SQueryProductOverview.class, msg -> {
+			waiting.add(new WaitingTask(productsQueryTask, $ -> {
+				var product = productsLookupMap.get(msg.message().getProductId());
+
+				if (product == null) {
+					var message = new MessageS2CQueryProductOverview(msg.message().getProductId(), "Product not found");
+					msg.connection().sendRawPacket(message.createRawPacket());
+					return;
+				}
+
+				waiting.add(new WaitingTask(service.queryProductMarketOverview(product), result -> {
+					if (!result.isSuccess()) {
+						var message = new MessageS2CQueryProductOverview(product.getProductId(), "Query failed");
+						result.getFailure().printStackTrace();
+						msg.connection().sendRawPacket(message.createRawPacket());
+						return;
+					}
+
+					var overview = (ProductMarketOverview) result.getSuccess();
+					msg.connection().sendRawPacket(new MessageS2CQueryProductOverview(overview).createRawPacket());
+				}));
 			}));
 		});
 	}

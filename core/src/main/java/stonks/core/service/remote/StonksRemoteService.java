@@ -22,7 +22,9 @@
 package stonks.core.service.remote;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -32,6 +34,7 @@ import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
+import stonks.core.market.OverviewOffersList;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.net.Connection;
 import stonks.core.product.Category;
@@ -39,7 +42,9 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
+import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
+import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
 import stonks.core.service.remote.message.MessagesHandler;
 
@@ -67,29 +72,33 @@ import stonks.core.service.remote.message.MessagesHandler;
  */
 public class StonksRemoteService implements StonksService {
 	private List<Category> cachedCategories;
-	private List<Category> scanningCategories;
 	private Connection connection;
 	private MessagesHandler messagesHandler;
 
 	private ManualTask<List<Category>> categoriesQueryTask;
+	private List<Category> scanningCategories;
+	private Map<String, Product> productsLookupMap = new HashMap<>();
+	private Map<Product, ManualTask<ProductMarketOverview>> overviewQueryTasks = new HashMap<>();
 
 	public StonksRemoteService(Connection connection) {
 		this.connection = connection;
 
 		// TODO
 		messagesHandler = new MessagesHandler();
+
 		messagesHandler.registerDeserializer(MessageS2CQueryProductsPartial.ID, MessageS2CQueryProductsPartial::new);
 		messagesHandler.listenForMessage(MessageS2CQueryProductsPartial.class, msg -> {
 			if (msg.message().getErrorMessage().isPresent()) {
-				// TODO use different exception
-				categoriesQueryTask.resolveFailure(new RuntimeException(msg.message().getErrorMessage().get()));
+				categoriesQueryTask.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
 				scanningCategories = null;
 				return;
 			}
 
-			// cachedCategories = msg.message().getCategories();
-			// categoriesQueryTask.resolveSuccess(msg.message().getCategories());
-			if (scanningCategories == null) scanningCategories = new ArrayList<>();
+			if (scanningCategories == null) {
+				scanningCategories = new ArrayList<>();
+				productsLookupMap = new HashMap<>();
+			}
+
 			var category = scanningCategories.stream()
 				.filter(v -> v.getCategoryId().equals(msg.message().getCategoryId()))
 				.findAny();
@@ -103,13 +112,40 @@ public class StonksRemoteService implements StonksService {
 			var pId = msg.message().getProductId();
 			var pName = msg.message().getProductName();
 			var pCData = msg.message().getConstructionData();
-			if (pId.length() != 0) list.add(new MemoryProduct((MemoryCategory) category.get(), pId, pName, pCData));
+
+			if (pId.length() != 0) {
+				var product = new MemoryProduct((MemoryCategory) category.get(), pId, pName, pCData);
+				list.add(product);
+				productsLookupMap.put(pId, product);
+			}
 
 			if (msg.message().isFinished()) {
 				cachedCategories = scanningCategories;
 				categoriesQueryTask.resolveSuccess(scanningCategories);
 				scanningCategories = null;
 			}
+		});
+
+		messagesHandler.registerDeserializer(MessageS2CQueryProductOverview.ID, MessageS2CQueryProductOverview::new);
+		messagesHandler.listenForMessage(MessageS2CQueryProductOverview.class, msg -> {
+			var product = productsLookupMap.get(msg.message().getProductId());
+			if (product == null) {
+				// TODO log warning message
+				return;
+			}
+
+			var task = overviewQueryTasks.get(product);
+			overviewQueryTasks.remove(product);
+
+			if (msg.message().getErrorMessage().isPresent()) {
+				task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+				return;
+			}
+
+			var buyOffers = new OverviewOffersList(OfferType.BUY, msg.message().getBuyOffers());
+			var sellOffers = new OverviewOffersList(OfferType.SELL, msg.message().getSellOffers());
+			var overview = new ProductMarketOverview(product, buyOffers, sellOffers);
+			task.resolveSuccess(overview);
 		});
 
 		messagesHandler.handleConnection(connection);
@@ -143,8 +179,14 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public Task<ProductMarketOverview> queryProductMarketOverview(Product product) {
-		// TODO Auto-generated method stub
-		return null;
+		var task = overviewQueryTasks.get(product);
+
+		if (task == null) {
+			overviewQueryTasks.put(product, task = new ManualTask<>());
+			connection.sendRawPacket(new MessageC2SQueryProductOverview(product).createRawPacket());
+		}
+
+		return task;
 	}
 
 	@Override

@@ -27,7 +27,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import stonks.core.net.Connection;
 import stonks.core.service.Emittable;
@@ -35,6 +38,12 @@ import stonks.core.service.Emittable;
 public class MessagesHandler {
 	private Map<String, Message.MessageDeserializer> deserializers = new HashMap<>();
 	private Emittable<ConnectionMessage<?>> messagesEmitter = new Emittable<>();
+
+	// Response queue
+	private static record WaitingResponse<T extends Message>(Class<T> clazz, Predicate<T> isValid, Consumer<ConnectionMessage<T>> callback) {
+	}
+
+	private Queue<WaitingResponse<?>> waiting = new ConcurrentLinkedQueue<>();
 
 	public void registerDeserializer(String id, Message.MessageDeserializer deserializer) {
 		deserializers.put(id, deserializer);
@@ -64,11 +73,28 @@ public class MessagesHandler {
 		});
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void handleConnection(Connection conn) {
 		conn.listenRawPackets((connection, raw) -> {
 			var message = this.deserialize(raw);
 			if (message == null) return;
-			messagesEmitter.emit(new ConnectionMessage<>(connection, message));
+
+			var wrapped = new ConnectionMessage<>(connection, message);
+			messagesEmitter.emit(wrapped);
+			this.waiting.removeIf(waiting -> {
+				boolean b = waiting.clazz == message.getClass() && ((Predicate) waiting.isValid).test(message);
+				System.out.println(b);
+				if (b) {
+					waiting.callback.accept((ConnectionMessage) wrapped);
+					return true;
+				}
+
+				return false;
+			});
 		});
+	}
+
+	public <T extends Message> void waitForMessage(Class<T> type, Predicate<T> filter, Consumer<ConnectionMessage<T>> cb) {
+		waiting.add(new WaitingResponse<>(type, filter, cb));
 	}
 }

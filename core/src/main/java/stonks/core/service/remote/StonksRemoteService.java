@@ -80,8 +80,6 @@ public class StonksRemoteService implements StonksService {
 	private ManualTask<List<Category>> categoriesQueryTask;
 	private List<Category> scanningCategories;
 	private Map<String, Product> productsLookupMap = new HashMap<>();
-	private Map<Product, ManualTask<ProductMarketOverview>> overviewQueryTasks = new HashMap<>();
-	private Map<UUID, ManualTask<List<Offer>>> listingTasks = new HashMap<>();
 
 	public StonksRemoteService(Connection connection) {
 		this.connection = connection;
@@ -130,41 +128,9 @@ public class StonksRemoteService implements StonksService {
 		});
 
 		messagesHandler.registerDeserializer(MessageS2CQueryProductOverview.ID, MessageS2CQueryProductOverview::new);
-		messagesHandler.listenForMessage(MessageS2CQueryProductOverview.class, msg -> {
-			var product = productsLookupMap.get(msg.message().getProductId());
-			if (product == null) {
-				// TODO log warning message
-				return;
-			}
-
-			var task = overviewQueryTasks.get(product);
-			overviewQueryTasks.remove(product);
-
-			if (msg.message().getErrorMessage().isPresent()) {
-				task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
-				return;
-			}
-
-			var buyOffers = new OverviewOffersList(OfferType.BUY, msg.message().getBuyOffers());
-			var sellOffers = new OverviewOffersList(OfferType.SELL, msg.message().getSellOffers());
-			var overview = new ProductMarketOverview(product, buyOffers, sellOffers);
-			task.resolveSuccess(overview);
-		});
-
 		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(id -> {
 			return productsLookupMap.get(id);
 		}));
-		messagesHandler.listenForMessage(MessageS2COffersList.class, msg -> {
-			var task = listingTasks.get(msg.message().getOfferer());
-			listingTasks.remove(msg.message().getOfferer());
-
-			if (msg.message().getErrorMessage().isPresent()) {
-				task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
-				return;
-			}
-
-			task.resolveSuccess(msg.message().getOffers());
-		});
 
 		messagesHandler.handleConnection(connection);
 	}
@@ -197,26 +163,38 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public Task<ProductMarketOverview> queryProductMarketOverview(Product product) {
-		var task = overviewQueryTasks.get(product);
+		var task = new ManualTask<ProductMarketOverview>();
+		connection.sendRawPacket(new MessageC2SQueryProductOverview(product).createRawPacket());
+		messagesHandler.waitForMessage(MessageS2CQueryProductOverview.class,
+			v -> v.getProductId().equals(product.getProductId()),
+			msg -> {
+				if (msg.message().getErrorMessage().isPresent()) {
+					task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+					return;
+				}
 
-		if (task == null) {
-			overviewQueryTasks.put(product, task = new ManualTask<>());
-			connection.sendRawPacket(new MessageC2SQueryProductOverview(product).createRawPacket());
-		}
-
+				var buyOffers = new OverviewOffersList(OfferType.BUY, msg.message().getBuyOffers());
+				var sellOffers = new OverviewOffersList(OfferType.SELL, msg.message().getSellOffers());
+				task.resolveSuccess(new ProductMarketOverview(product, buyOffers, sellOffers));
+			});
 		return task;
 	}
 
 	@Override
 	public Task<List<Offer>> getOffers(UUID offerer) {
 		return queryAllCategories().andThen($ -> {
-			var task = listingTasks.get(offerer);
+			var task = new ManualTask<List<Offer>>();
+			connection.sendRawPacket(new MessageC2SGetOffers(offerer).createRawPacket());
+			messagesHandler.waitForMessage(MessageS2COffersList.class,
+				v -> v.getOfferer().equals(offerer),
+				msg -> {
+					if (msg.message().getErrorMessage().isPresent()) {
+						task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+						return;
+					}
 
-			if (task == null) {
-				listingTasks.put(offerer, task = new ManualTask<>());
-				connection.sendRawPacket(new MessageC2SGetOffers(offerer).createRawPacket());
-			}
-
+					task.resolveSuccess(msg.message().getOffers());
+				});
 			return task;
 		});
 	}

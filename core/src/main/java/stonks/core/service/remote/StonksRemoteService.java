@@ -42,8 +42,10 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
+import stonks.core.service.remote.message.MessageC2SGetOffers;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
+import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
 import stonks.core.service.remote.message.MessagesHandler;
@@ -79,6 +81,7 @@ public class StonksRemoteService implements StonksService {
 	private List<Category> scanningCategories;
 	private Map<String, Product> productsLookupMap = new HashMap<>();
 	private Map<Product, ManualTask<ProductMarketOverview>> overviewQueryTasks = new HashMap<>();
+	private Map<UUID, ManualTask<List<Offer>>> listingTasks = new HashMap<>();
 
 	public StonksRemoteService(Connection connection) {
 		this.connection = connection;
@@ -148,6 +151,21 @@ public class StonksRemoteService implements StonksService {
 			task.resolveSuccess(overview);
 		});
 
+		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(id -> {
+			return productsLookupMap.get(id);
+		}));
+		messagesHandler.listenForMessage(MessageS2COffersList.class, msg -> {
+			var task = listingTasks.get(msg.message().getOfferer());
+			listingTasks.remove(msg.message().getOfferer());
+
+			if (msg.message().getErrorMessage().isPresent()) {
+				task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+				return;
+			}
+
+			task.resolveSuccess(msg.message().getOffers());
+		});
+
 		messagesHandler.handleConnection(connection);
 	}
 
@@ -191,8 +209,16 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public Task<List<Offer>> getOffers(UUID offerer) {
-		// TODO Auto-generated method stub
-		return null;
+		return queryAllCategories().andThen($ -> {
+			var task = listingTasks.get(offerer);
+
+			if (task == null) {
+				listingTasks.put(offerer, task = new ManualTask<>());
+				connection.sendRawPacket(new MessageC2SGetOffers(offerer).createRawPacket());
+			}
+
+			return task;
+		});
 	}
 
 	@Override

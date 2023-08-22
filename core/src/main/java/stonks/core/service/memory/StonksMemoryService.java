@@ -203,8 +203,10 @@ public class StonksMemoryService implements LocalStonksService {
 		switch (type) {
 		case BUY:
 			exec.executeInstantBuy(productEntry.sellOffers.iterator(), offerFilledEvents::emit);
+			break;
 		case SELL:
 			exec.executeInstantSell(productEntry.buyOffers.iterator(), offerFilledEvents::emit);
+			break;
 		}
 
 		return Task.resolved(new InstantOfferExecuteResult(exec.getCurrentUnits(), exec.getCurrentBalance()));

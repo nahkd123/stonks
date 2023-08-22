@@ -67,21 +67,23 @@ public interface StonksService {
 	 * Claim specified offer.
 	 * </p>
 	 * 
-	 * @param offer Offer to claim.
+	 * @param offerer User's ID.
+	 * @param offer   Offer ID to claim.
 	 * @return The new offer object with latest information.
 	 */
-	public Task<Offer> claimOffer(Offer offer);
+	public Task<Offer> claimOffer(UUID offerer, UUID offerId);
 
 	/**
 	 * <p>
 	 * Cancel offer.
 	 * </p>
 	 * 
-	 * @param offer Offer to cancel.
+	 * @param offerer User's ID.
+	 * @param offer   Offer ID to cancel.
 	 * @return The new offer with latest information on how much units was filled
 	 *         and how much units can be refunded.
 	 */
-	public Task<Offer> cancelOffer(Offer offer);
+	public Task<Offer> cancelOffer(UUID offerer, UUID offerId);
 
 	/**
 	 * <p>

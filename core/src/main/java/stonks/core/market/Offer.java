@@ -101,6 +101,10 @@ public class Offer {
 		return toClaim;
 	}
 
+	public Offer createCopy() {
+		return new Offer(offerId, offerer, product, type, totalUnits, claimedUnits, filledUnits, pricePerUnit);
+	}
+
 	public static final int SERIALIZE_VERSION_NULL = 0;
 	public static final int SERIALIZE_VERSION_1 = 1;
 

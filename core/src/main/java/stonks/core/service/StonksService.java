@@ -32,7 +32,25 @@ import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
+import stonks.core.service.memory.StonksMemoryService;
+import stonks.core.service.remote.StonksRemoteService;
 
+/**
+ * <p>
+ * The interface for accessing Stonks service.
+ * </p>
+ * <p>
+ * Each method that returns {@link Task} is a service call, which will be
+ * resolved in the service thread. For {@link StonksMemoryService}, it will be
+ * resolved in the thread that called the method. For
+ * {@link StonksRemoteService}, it will be resolved in networking thread.
+ * </p>
+ * <p>
+ * Method {@link #subscribeToOfferFilledEvents(Consumer)} will call your
+ * callback functions in service thread. That means your callback will be called
+ * in networking thread if you are using {@link StonksRemoteService}.
+ * </p>
+ */
 public interface StonksService {
 	/**
 	 * <p>

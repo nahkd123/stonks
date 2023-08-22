@@ -81,6 +81,8 @@ public class ServerHandler {
 				conn.closeAttachment();
 			}
 		}
+
+		selector = null;
 	}
 
 	public Thread createThread() {
@@ -94,6 +96,8 @@ public class ServerHandler {
 		thread.setName("Server Networking Thread");
 		return thread;
 	}
+
+	public Selector getSelector() { return selector; }
 
 	protected void selectLoop() throws IOException {
 		selector.select();

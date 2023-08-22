@@ -49,6 +49,7 @@ import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
 import stonks.core.service.remote.message.MessageS2CInstantOffer;
+import stonks.core.service.remote.message.MessageS2COfferFilled;
 import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
@@ -64,6 +65,7 @@ public class StonksRemoteServer {
 	}
 
 	private Queue<WaitingTask<?>> waiting = new ConcurrentLinkedQueue<>();
+	private Queue<Offer> filledOffersQueue = new ConcurrentLinkedQueue<>();
 	private Map<String, Product> productsLookupMap = new HashMap<>();
 	private Task<List<Category>> productsQueryTask;
 
@@ -246,6 +248,10 @@ public class StonksRemoteServer {
 					});
 			});
 		});
+
+		service.subscribeToOfferFilledEvents(offer -> {
+			filledOffersQueue.add(offer);
+		});
 	}
 
 	public StonksService getService() { return service; }
@@ -268,6 +274,15 @@ public class StonksRemoteServer {
 			if (now.isEmpty()) continue;
 			iter.remove();
 			waiting.onFinished().accept((TaskResult) now.get());
+		}
+
+		while (!filledOffersQueue.isEmpty()) {
+			var head = filledOffersQueue.poll();
+
+			for (var k : this.server.getSelector().keys()) {
+				if (k.attachment() == null || !(k.attachment() instanceof Connection c)) continue;
+				c.sendRawPacket(new MessageS2COfferFilled(head).createRawPacket());
+			}
 		}
 	}
 

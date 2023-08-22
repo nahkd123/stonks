@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,6 +55,7 @@ import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
 import stonks.core.service.remote.message.MessageS2CInstantOffer;
+import stonks.core.service.remote.message.MessageS2COfferFilled;
 import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
@@ -89,6 +92,7 @@ public class StonksRemoteService implements StonksService {
 	private ManualTask<List<Category>> categoriesQueryTask;
 	private List<Category> scanningCategories;
 	private Map<String, Product> productsLookupMap = new HashMap<>();
+	private Queue<Consumer<Offer>> subscribers = new ConcurrentLinkedQueue<>();
 
 	public StonksRemoteService(Connection connection) {
 		this.connection = connection;
@@ -101,6 +105,7 @@ public class StonksRemoteService implements StonksService {
 		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(pLum));
 		messagesHandler.registerDeserializer(MessageS2COfferOption.ID, MessageS2COfferOption.createDeserializer(pLum));
 		messagesHandler.registerDeserializer(MessageS2CInstantOffer.ID, MessageS2CInstantOffer::new);
+		messagesHandler.registerDeserializer(MessageS2COfferFilled.ID, MessageS2COfferFilled.createDeserializer(pLum));
 		messagesHandler.handleConnection(connection);
 
 		messagesHandler.listenForMessage(MessageS2CQueryProductsPartial.class, msg -> {
@@ -140,6 +145,11 @@ public class StonksRemoteService implements StonksService {
 				categoriesQueryTask.resolveSuccess(scanningCategories);
 				scanningCategories = null;
 			}
+		});
+
+		messagesHandler.listenForMessage(MessageS2COfferFilled.class, msg -> {
+			if (msg.message().getOffer() == null) return; // Products list not initialized yet
+			subscribers.forEach(s -> s.accept(msg.message().getOffer()));
 		});
 	}
 
@@ -278,7 +288,6 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public void subscribeToOfferFilledEvents(Consumer<Offer> consumer) {
-		// TODO Auto-generated method stub
-
+		subscribers.add(consumer);
 	}
 }

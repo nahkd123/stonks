@@ -51,6 +51,17 @@ public class ConsoleInstance {
 	}
 
 	public void startInCurrentThread() {
+		service.subscribeToOfferFilledEvents(offer -> {
+			if (shouldStopConsole) return;
+			LOGGER.info("[{}] Offer filled for {}! {} {}x {} for ${}/ea",
+				offer.getOfferId(),
+				offer.getOffererId(),
+				offer.getType(),
+				offer.getTotalUnits(),
+				offer.getProduct().getProductId(),
+				offer.getPricePerUnit());
+		});
+
 		var console = System.console();
 
 		if (console == null) {

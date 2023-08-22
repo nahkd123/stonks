@@ -42,6 +42,7 @@ import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.core.service.Emittable;
 import stonks.core.service.LocalStonksService;
+import stonks.core.service.ServiceException;
 
 /**
  * <p>
@@ -127,36 +128,43 @@ public class StonksMemoryService implements LocalStonksService {
 	}
 
 	@Override
-	public Task<Offer> claimOffer(Offer offer) {
-		var playerOffers = offers.get(offer.getOffererId());
-		if (playerOffers == null) return Task.resolved(offer);
+	public Task<Offer> claimOffer(UUID offerer, UUID offerId) {
+		var playerOffers = offers.get(offerer);
+		if (playerOffers == null)
+			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
 
 		var result = playerOffers.stream()
-			.filter(v -> v.getOfferId().equals(offer.getOfferId()))
+			.filter(v -> v.getOfferId().equals(offerId))
 			.findFirst();
+		if (result.isEmpty())
+			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
 
-		if (result.isPresent()) {
-			result.get().claimOffer();
-			offer.setClaimedUnits(result.get().getClaimedUnits());
-			offer.setFilledUnits(result.get().getFilledUnits());
-			if (result.get().isFullyClaimed())
-				playerOffers.removeIf(v -> v.getOfferId().equals(result.get().getOfferId()));
-		}
-
-		return Task.resolved(offer);
+		result.get().claimOffer();
+		if (result.get().isFullyClaimed())
+			playerOffers.removeIf(v -> v.getOfferId().equals(result.get().getOfferId()));
+		return Task.resolved(result.get().createCopy());
 	}
 
 	@Override
-	public Task<Offer> cancelOffer(Offer offer) {
-		var playerOffers = offers.get(offer.getOffererId());
-		if (playerOffers == null) return Task.resolved(offer); // TODO should we throw?
-		playerOffers.removeIf(v -> v.getOfferId().equals(offer.getOfferId()));
+	public Task<Offer> cancelOffer(UUID offerer, UUID offerId) {
+		var playerOffers = offers.get(offerer);
+		if (playerOffers == null)
+			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
 
-		var productEntry = entries.get(offer.getProduct());
-		if (productEntry == null) return Task.resolved(offer);
-		(offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers)
-			.removeIf(v -> v.getOfferId().equals(offer.getOfferId()));
-		return Task.resolved(offer);
+		var result = playerOffers.stream()
+			.filter(v -> v.getOfferId().equals(offerId))
+			.findFirst();
+		if (result.isEmpty())
+			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
+
+		playerOffers.removeIf(v -> v.getOfferId().equals(offerId));
+
+		var productEntry = entries.get(result.get().getProduct());
+		var copy = result.get().createCopy();
+		if (productEntry == null) return Task.resolved(copy);
+		(copy.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers)
+			.removeIf(v -> v.getOfferId().equals(offerId));
+		return Task.resolved(copy);
 	}
 
 	@Override

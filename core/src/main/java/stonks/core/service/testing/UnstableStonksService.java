@@ -87,13 +87,13 @@ public class UnstableStonksService implements StonksService {
 	}
 
 	@Override
-	public Task<Offer> claimOffer(Offer offer) {
-		return wrapTask(underlying.claimOffer(offer));
+	public Task<Offer> claimOffer(UUID offerer, UUID offerId) {
+		return wrapTask(underlying.claimOffer(offerer, offerId));
 	}
 
 	@Override
-	public Task<Offer> cancelOffer(Offer offer) {
-		return wrapTask(underlying.cancelOffer(offer));
+	public Task<Offer> cancelOffer(UUID offerer, UUID offerId) {
+		return wrapTask(underlying.cancelOffer(offerer, offerId));
 	}
 
 	@Override

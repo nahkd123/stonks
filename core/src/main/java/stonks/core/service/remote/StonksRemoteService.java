@@ -207,13 +207,13 @@ public class StonksRemoteService implements StonksService {
 	}
 
 	@Override
-	public Task<Offer> claimOffer(Offer offer) {
+	public Task<Offer> claimOffer(UUID offerer, UUID offerId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Task<Offer> cancelOffer(Offer offer) {
+	public Task<Offer> cancelOffer(UUID offerer, UUID offerId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

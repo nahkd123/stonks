@@ -46,11 +46,13 @@ import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
 import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
+import stonks.core.service.remote.message.MessageC2SInstantOffer;
 import stonks.core.service.remote.message.MessageC2SOfferOption;
 import stonks.core.service.remote.message.MessageC2SOfferOption.Type;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
+import stonks.core.service.remote.message.MessageS2CInstantOffer;
 import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
@@ -91,10 +93,16 @@ public class StonksRemoteService implements StonksService {
 	public StonksRemoteService(Connection connection) {
 		this.connection = connection;
 
-		// TODO
 		messagesHandler = new MessagesHandler();
-
+		Function<String, Product> pLum = id -> productsLookupMap.get(id); // pLum == products lookup map
 		messagesHandler.registerDeserializer(MessageS2CQueryProductsPartial.ID, MessageS2CQueryProductsPartial::new);
+		messagesHandler.registerDeserializer(MessageS2CQueryProductOverview.ID, MessageS2CQueryProductOverview::new);
+		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(pLum));
+		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(pLum));
+		messagesHandler.registerDeserializer(MessageS2COfferOption.ID, MessageS2COfferOption.createDeserializer(pLum));
+		messagesHandler.registerDeserializer(MessageS2CInstantOffer.ID, MessageS2CInstantOffer::new);
+		messagesHandler.handleConnection(connection);
+
 		messagesHandler.listenForMessage(MessageS2CQueryProductsPartial.class, msg -> {
 			if (msg.message().getErrorMessage().isPresent()) {
 				categoriesQueryTask.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
@@ -133,14 +141,6 @@ public class StonksRemoteService implements StonksService {
 				scanningCategories = null;
 			}
 		});
-
-		Function<String, Product> pLum = id -> productsLookupMap.get(id); // pLum == products lookup map
-		messagesHandler.registerDeserializer(MessageS2CQueryProductOverview.ID, MessageS2CQueryProductOverview::new);
-		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(pLum));
-		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(pLum));
-		messagesHandler.registerDeserializer(MessageS2COfferOption.ID, MessageS2COfferOption.createDeserializer(pLum));
-
-		messagesHandler.handleConnection(connection);
 	}
 
 	public void clearRemoteCache() {
@@ -259,8 +259,21 @@ public class StonksRemoteService implements StonksService {
 
 	@Override
 	public Task<InstantOfferExecuteResult> instantOffer(Product product, OfferType type, int units, double balance) {
-		// TODO Auto-generated method stub
-		return null;
+		var task = new ManualTask<InstantOfferExecuteResult>();
+		var rid = ThreadLocalRandom.current().nextLong();
+		connection.sendRawPacket(new MessageC2SInstantOffer(rid, product.getProductId(), type, units, balance)
+			.createRawPacket());
+		messagesHandler.waitForMessage(MessageS2CInstantOffer.class,
+			v -> v.getResponseId() == rid,
+			msg -> {
+				if (msg.message().getErrorMessage().isPresent()) {
+					task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+					return;
+				}
+
+				task.resolveSuccess(msg.message().getResult());
+			});
+		return task;
 	}
 
 	@Override

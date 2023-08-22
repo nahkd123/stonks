@@ -43,10 +43,12 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
+import stonks.core.service.remote.message.MessageC2SInstantOffer;
 import stonks.core.service.remote.message.MessageC2SOfferOption;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
+import stonks.core.service.remote.message.MessageS2CInstantOffer;
 import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
@@ -214,6 +216,34 @@ public class StonksRemoteServer {
 				}
 
 				msg.connection().sendRawPacket(new MessageS2COfferOption(rid, result.getSuccess()).createRawPacket());
+			});
+		});
+
+		messagesHandler.registerDeserializer(MessageC2SInstantOffer.ID, MessageC2SInstantOffer::new);
+		messagesHandler.listenForMessage(MessageC2SInstantOffer.class, msg -> {
+			var rid = msg.message().getResponseId();
+			wait(productsQueryTask, $ -> {
+				var product = productsLookupMap.get(msg.message().getProductId());
+
+				if (product == null) {
+					var message = new MessageS2CQueryProductOverview(msg.message().getProductId(), "Product not found");
+					msg.connection().sendRawPacket(message.createRawPacket());
+					return;
+				}
+
+				wait(service.instantOffer(product, msg.message().getType(), msg.message().getUnits(),
+					msg.message().getBalance()), result -> {
+						if (!result.isSuccess()) {
+							msg.connection()
+								.sendRawPacket(new MessageS2CInstantOffer(rid, "An error occured").createRawPacket());
+							result.getFailure().printStackTrace();
+							return;
+						}
+
+						var execResult = result.getSuccess();
+						var message = new MessageS2CInstantOffer(rid, execResult.units(), execResult.balance());
+						msg.connection().sendRawPacket(message.createRawPacket());
+					});
 			});
 		});
 	}

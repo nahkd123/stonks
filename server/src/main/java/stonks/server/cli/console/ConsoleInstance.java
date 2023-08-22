@@ -39,6 +39,7 @@ import stonks.core.service.StonksService;
 		AddOfferCommand.class,
 		ClaimOfferCommand.class,
 		CancelOfferCommand.class,
+		InstantOfferCommand.class,
 	})
 public class ConsoleInstance {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Console");

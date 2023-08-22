@@ -21,39 +21,41 @@
  */
 package stonks.server.cli.console;
 
-import java.util.List;
+import java.util.UUID;
 
 import nahara.common.tasks.Task;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
-import stonks.core.product.Category;
+import stonks.core.market.Offer;
 import stonks.core.service.ServiceException;
+import stonks.server.Main;
 
-@Command(name = "list-products", description = "List all products from service.")
-public class ListProductsCommand implements AsyncConsoleCommand<List<Category>> {
+@Command(name = "claim-offer", description = "Claim offer.")
+public class ClaimOfferCommand implements AsyncConsoleCommand<Offer> {
 	@ParentCommand
 	public ConsoleInstance parent;
 
-	@Override
-	public Task<List<Category>> getTask() throws Exception { return parent.service.queryAllCategories(); }
+	@Option(names = { "--uuid", "-U" }, description = "User's unique ID. Leave blank for default UUID.")
+	public UUID uuid = Main.DEFAULT_USER_UUID;
+
+	@Parameters(paramLabel = "ID", description = "ID of the offer to claim.")
+	public UUID offerId;
 
 	@Override
-	public void onSuccess(List<Category> obj) throws Exception {
-		ConsoleInstance.LOGGER.info("Found {} categories:", obj.size());
+	public Task<Offer> getTask() throws Exception { return parent.service.claimOffer(uuid, offerId); }
 
-		for (var category : obj) {
-			ConsoleInstance.LOGGER.info("* Category: {} (Name = {})", category.getCategoryId(),
-				category.getCategoryName());
-			for (var product : category.getProducts()) {
-				ConsoleInstance.LOGGER.info("  * Product: {} (Name = {})", product.getProductId(),
-					product.getProductName());
-			}
-		}
+	@Override
+	public void onSuccess(Offer obj) throws Exception {
+		ConsoleInstance.LOGGER.info("Claimed offer successfully!");
+		ConsoleInstance.LOGGER.info("Current progress: {} / {} / {} (Claimed / Filled / Total)",
+			obj.getClaimedUnits(), obj.getFilledUnits(), obj.getTotalUnits());
 	}
 
 	@Override
 	public void onFailure(Throwable t) throws Exception {
 		if (!(t instanceof ServiceException)) t.printStackTrace();
-		ConsoleInstance.LOGGER.error("Failed to query categories: " + t.getMessage());
+		ConsoleInstance.LOGGER.error("Failed to claim offer: " + t.getMessage());
 	}
 }

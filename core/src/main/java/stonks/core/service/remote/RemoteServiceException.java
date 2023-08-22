@@ -23,7 +23,9 @@ package stonks.core.service.remote;
 
 import java.io.Serial;
 
-public class RemoteServiceException extends RuntimeException {
+import stonks.core.service.ServiceException;
+
+public class RemoteServiceException extends ServiceException {
 	@Serial
 	private static final long serialVersionUID = -3996422054534353037L;
 

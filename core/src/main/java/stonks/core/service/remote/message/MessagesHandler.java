@@ -82,9 +82,7 @@ public class MessagesHandler {
 			var wrapped = new ConnectionMessage<>(connection, message);
 			messagesEmitter.emit(wrapped);
 			this.waiting.removeIf(waiting -> {
-				boolean b = waiting.clazz == message.getClass() && ((Predicate) waiting.isValid).test(message);
-				System.out.println(b);
-				if (b) {
+				if (waiting.clazz == message.getClass() && ((Predicate) waiting.isValid).test(message)) {
 					waiting.callback.accept((ConnectionMessage) wrapped);
 					return true;
 				}

@@ -29,7 +29,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import stonks.core.market.Offer;
-import stonks.core.service.remote.RemoteServiceException;
+import stonks.core.service.ServiceException;
 import stonks.server.Main;
 
 @Command(name = "list-offers", description = "List all offers that was created by someone.")
@@ -59,7 +59,7 @@ public class ListOffersCommand implements AsyncConsoleCommand<List<Offer>> {
 
 	@Override
 	public void onFailure(Throwable t) throws Exception {
-		if (!(t instanceof RemoteServiceException)) t.printStackTrace();
+		if (!(t instanceof ServiceException)) t.printStackTrace();
 		ConsoleInstance.LOGGER.error("Failed to list offers: " + t.getMessage());
 	}
 }

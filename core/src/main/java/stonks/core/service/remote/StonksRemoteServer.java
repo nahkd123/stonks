@@ -27,7 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import nahara.common.tasks.Task;
@@ -41,9 +43,11 @@ import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
+import stonks.core.service.remote.message.MessageC2SOfferOption;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
+import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
@@ -184,6 +188,32 @@ public class StonksRemoteServer {
 						msg.connection().sendRawPacket(new MessageS2CAddOffer(rid, result.getSuccess())
 							.createRawPacket());
 					});
+			});
+		});
+
+		messagesHandler.registerDeserializer(MessageC2SOfferOption.ID, MessageC2SOfferOption::new);
+		messagesHandler.listenForMessage(MessageC2SOfferOption.class, msg -> {
+			var rid = msg.message().getResponseId();
+			BiFunction<UUID, UUID, Task<Offer>> action = switch (msg.message().getType()) {
+			case CLAIM -> service::claimOffer;
+			case CANCEL -> service::cancelOffer;
+			default -> null;
+			};
+
+			if (action == null) {
+				msg.connection().sendRawPacket(new MessageS2COfferOption(rid, "Unknown option type").createRawPacket());
+				return;
+			}
+
+			wait(action.apply(msg.message().getUserId(), msg.message().getOfferId()), result -> {
+				if (!result.isSuccess()) {
+					msg.connection()
+						.sendRawPacket(new MessageS2COfferOption(rid, "An error occured").createRawPacket());
+					result.getFailure().printStackTrace();
+					return;
+				}
+
+				msg.connection().sendRawPacket(new MessageS2COfferOption(rid, result.getSuccess()).createRawPacket());
 			});
 		});
 	}

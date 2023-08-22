@@ -27,6 +27,7 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import stonks.core.market.OverviewOffersList;
 import stonks.core.market.ProductMarketOverview;
+import stonks.core.service.ServiceException;
 import stonks.core.service.remote.RemoteServiceException;
 
 @Command(name = "product", description = "View product overview.")
@@ -82,7 +83,7 @@ public class ProductOverviewCommand implements AsyncConsoleCommand<ProductMarket
 
 	@Override
 	public void onFailure(Throwable t) throws Exception {
-		if (!(t instanceof RemoteServiceException)) t.printStackTrace();
+		if (!(t instanceof ServiceException)) t.printStackTrace();
 		ConsoleInstance.LOGGER.error("Failed to query product overview: " + t.getMessage());
 	}
 }

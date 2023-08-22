@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import nahara.common.tasks.ManualTask;
 import nahara.common.tasks.Task;
@@ -45,9 +46,12 @@ import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
 import stonks.core.service.remote.message.MessageC2SAddOffer;
 import stonks.core.service.remote.message.MessageC2SGetOffers;
+import stonks.core.service.remote.message.MessageC2SOfferOption;
+import stonks.core.service.remote.message.MessageC2SOfferOption.Type;
 import stonks.core.service.remote.message.MessageC2SQueryProductOverview;
 import stonks.core.service.remote.message.MessageC2SQueryProducts;
 import stonks.core.service.remote.message.MessageS2CAddOffer;
+import stonks.core.service.remote.message.MessageS2COfferOption;
 import stonks.core.service.remote.message.MessageS2COffersList;
 import stonks.core.service.remote.message.MessageS2CQueryProductOverview;
 import stonks.core.service.remote.message.MessageS2CQueryProductsPartial;
@@ -130,14 +134,11 @@ public class StonksRemoteService implements StonksService {
 			}
 		});
 
+		Function<String, Product> pLum = id -> productsLookupMap.get(id); // pLum == products lookup map
 		messagesHandler.registerDeserializer(MessageS2CQueryProductOverview.ID, MessageS2CQueryProductOverview::new);
-		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(id -> {
-			return productsLookupMap.get(id);
-		}));
-		// TODO <--
-		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(id -> {
-			return productsLookupMap.get(id);
-		}));
+		messagesHandler.registerDeserializer(MessageS2COffersList.ID, MessageS2COffersList.createDeserializer(pLum));
+		messagesHandler.registerDeserializer(MessageS2CAddOffer.ID, MessageS2CAddOffer.createDeserializer(pLum));
+		messagesHandler.registerDeserializer(MessageS2COfferOption.ID, MessageS2COfferOption.createDeserializer(pLum));
 
 		messagesHandler.handleConnection(connection);
 	}
@@ -206,16 +207,33 @@ public class StonksRemoteService implements StonksService {
 		});
 	}
 
+	protected Task<Offer> offerOption(UUID offerer, UUID offerId, MessageC2SOfferOption.Type type) {
+		return queryAllCategories().andThen($ -> {
+			var task = new ManualTask<Offer>();
+			var rid = ThreadLocalRandom.current().nextLong();
+			connection.sendRawPacket(new MessageC2SOfferOption(rid, offerer, offerId, type).createRawPacket());
+			messagesHandler.waitForMessage(MessageS2COfferOption.class,
+				v -> v.getResponseId() == rid,
+				msg -> {
+					if (msg.message().getErrorMessage().isPresent()) {
+						task.resolveFailure(new RemoteServiceException(msg.message().getErrorMessage().get()));
+						return;
+					}
+
+					task.resolveSuccess(msg.message().getOffer());
+				});
+			return task;
+		});
+	}
+
 	@Override
 	public Task<Offer> claimOffer(UUID offerer, UUID offerId) {
-		// TODO Auto-generated method stub
-		return null;
+		return offerOption(offerer, offerId, Type.CLAIM);
 	}
 
 	@Override
 	public Task<Offer> cancelOffer(UUID offerer, UUID offerId) {
-		// TODO Auto-generated method stub
-		return null;
+		return offerOption(offerer, offerId, Type.CANCEL);
 	}
 
 	@Override

@@ -39,8 +39,8 @@ public class OfferSelectCustomAmountInput extends SignGui {
 		super(player);
 		this.menu = menu;
 
-		setSignType(Blocks.DARK_OAK_SIGN);
-		setColor(DyeColor.WHITE);
+		setSignType(Blocks.ACACIA_WALL_SIGN);
+		setColor(DyeColor.BLACK);
 		setLine(0, Text.empty());
 		setLine(1, Translations.SignInputs.Separator);
 		setLine(2, Translations.SignInputs.AmountInput);

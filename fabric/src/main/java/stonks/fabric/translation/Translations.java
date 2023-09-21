@@ -181,13 +181,13 @@ public final class Translations {
 		}
 	}
 	public static final class SignInputs {
-		public static final Text Separator = translatableWithFallback("stonks.signInput.separator", "--------");
-		public static final Text PriceInput = translatableWithFallback("stonks.signInput.priceInput", "Specify your price per unit");
-		public static final Text AmountInput = translatableWithFallback("stonks.signInput.amountInput", "Specify your amount");
-		public static final Text CurrentBuyTarget(int amount, Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentBuyTargetWithAmount", "You're buying %sx %s", amount, product.getProductName()); }
-		public static final Text CurrentSellTarget(int amount, Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentSellTargetWithAmount", "You're selling %sx %s", amount, product.getProductName()); }
-		public static final Text CurrentBuyTarget(Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentBuyTarget", "You're buying %s", product.getProductName()); }
-		public static final Text CurrentSellTarget(Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentSellTarget", "You're selling %s", product.getProductName()); }
+		public static final Text Separator = translatableWithFallback("stonks.signInput.separator", "\u00a7f--------");
+		public static final Text PriceInput = translatableWithFallback("stonks.signInput.priceInput", "\u00a7fSpecify your price per unit");
+		public static final Text AmountInput = translatableWithFallback("stonks.signInput.amountInput", "\u00a7fSpecify your amount");
+		public static final Text CurrentBuyTarget(int amount, Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentBuyTargetWithAmount", "\u00a7fYou're buying %sx %s", amount, product.getProductName()); }
+		public static final Text CurrentSellTarget(int amount, Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentSellTargetWithAmount", "\u00a7fYou're selling %sx %s", amount, product.getProductName()); }
+		public static final Text CurrentBuyTarget(Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentBuyTarget", "\u00a7fYou're buying %s", product.getProductName()); }
+		public static final Text CurrentSellTarget(Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentSellTarget", "\u00a7fYou're selling %s", product.getProductName()); }
 	}
 	public static final class Messages {
 		public static final Text OfferClaimFailed = translatableWithFallback("stonks.message.offerClaimFailed", "\u00a7cAn error occured. Claim failed!");

@@ -46,10 +46,17 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 		if (!str.startsWith(PREFIX)) return null;
 
 		var objectiveName = str.substring(PREFIX.length());
-		if (scoreboard.containsObjective(objectiveName)) return scoreboard.getObjective(objectiveName);
-		return scoreboard.addObjective(objectiveName,
-			ScoreboardCriterion.DUMMY, Text.literal(objectiveName),
-			RenderType.INTEGER);
+		var objective = scoreboard.getNullableObjective(objectiveName);
+
+		if (objective == null) {
+			return scoreboard.addObjective(
+				objectiveName,
+				ScoreboardCriterion.DUMMY,
+				Text.literal(objectiveName),
+				RenderType.INTEGER);
+		} else {
+			return objective;
+		}
 	}
 
 	@Override

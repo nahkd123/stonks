@@ -181,7 +181,7 @@ public final class Translations {
 		}
 	}
 	public static final class SignInputs {
-		public static final Text Separator = translatableWithFallback("stonks.signInput.separator", "--------");
+		public static final Text Separator = translatableWithFallback("stonks.signInput.separator", "\u00a7f--------");
 		public static final Text PriceInput = translatableWithFallback("stonks.signInput.priceInput", "Specify your price per unit");
 		public static final Text AmountInput = translatableWithFallback("stonks.signInput.amountInput", "Specify your amount");
 		public static final Text CurrentBuyTarget(int amount, Product product) { return translatableWithFallback("stonks.signInput.priceInput.currentBuyTargetWithAmount", "You're buying %sx %s", amount, product.getProductName()); }

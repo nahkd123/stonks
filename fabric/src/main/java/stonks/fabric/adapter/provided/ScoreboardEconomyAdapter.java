@@ -44,14 +44,16 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 	public Scoreboard getScoreboard() { return scoreboard; }
 
 	public ScoreboardObjective getObjective() {
-		if (!scoreboard.containsObjective(objectiveName)) {
+		var objective = scoreboard.getNullableObjective(objectiveName);
+
+		if (objective == null) {
 			return scoreboard.addObjective(
 				objectiveName,
 				ScoreboardCriterion.DUMMY,
 				Text.literal(objectiveName),
 				RenderType.INTEGER);
 		} else {
-			return scoreboard.getObjective(objectiveName);
+			return objective;
 		}
 	}
 

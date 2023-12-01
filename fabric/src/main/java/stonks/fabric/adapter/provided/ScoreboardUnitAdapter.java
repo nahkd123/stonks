@@ -53,7 +53,9 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 				objectiveName,
 				ScoreboardCriterion.DUMMY,
 				Text.literal(objectiveName),
-				RenderType.INTEGER);
+				RenderType.INTEGER,
+				false,
+				null);
 		} else {
 			return objective;
 		}
@@ -63,14 +65,14 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 	public int getUnits(ServerPlayerEntity player, Product product) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.getUnits(player, product);
-		return scoreboard.getPlayerScore(player.getEntityName(), obj).getScore();
+		return scoreboard.getOrCreateScore(player, obj).getScore();
 	}
 
 	@Override
 	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
-		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(amount);
+		scoreboard.getOrCreateScore(player, obj).incrementScore(amount);
 		return true;
 	}
 
@@ -78,7 +80,7 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
-		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(-amount);
+		scoreboard.getOrCreateScore(player, obj).incrementScore(-amount);
 		return true;
 	}
 

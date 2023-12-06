@@ -15,7 +15,7 @@ All releases can be found in [Releases page](https://github.com/nahkd123/stonks/
 ### Development builds
 You can grab development builds [here](https://github.com/nahkd123/stonks/actions/workflows/gradle.yml?query=branch:main/1.20.x+is:success). Click on latest workflow run, scroll down to Artifacts section and click on ``Fabric Artifacts`` to download. Then copy ``stonks-fabric-[MOD VERSION]+[GAME VERSION].jar`` to your ``mods/`` folder/directory.
 
-> **Small note**: The link about includes filter for success development builds only. Click on "Actions" tab to see everything.
+> **Small note**: The link above includes filter for success development builds only. Click on "Actions" tab to see everything.
 
 ## Documentations
 For documentations, please [see here](https://nahkd123.github.io/stonks/).

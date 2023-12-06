@@ -47,24 +47,33 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 		if (!str.startsWith(PREFIX)) return null;
 
 		var objectiveName = str.substring(PREFIX.length());
-		if (scoreboard.containsObjective(objectiveName)) return scoreboard.getObjective(objectiveName);
-		return scoreboard.addObjective(objectiveName,
-			ScoreboardCriterion.DUMMY, Text.literal(objectiveName),
-			RenderType.INTEGER);
+		var objective = scoreboard.getNullableObjective(objectiveName);
+
+		if (objective == null) {
+			return scoreboard.addObjective(
+				objectiveName,
+				ScoreboardCriterion.DUMMY,
+				Text.literal(objectiveName),
+				RenderType.INTEGER,
+				false,
+				null);
+		} else {
+			return objective;
+		}
 	}
 
 	@Override
 	public AdapterResponse<Integer> getUnits(ServerPlayerEntity player, Product product) {
 		var obj = getObjective(product);
 		if (obj == null) return AdapterResponse.pass();
-		return AdapterResponse.success(scoreboard.getPlayerScore(player.getEntityName(), obj).getScore());
+		return AdapterResponse.success(scoreboard.getOrCreateScore(player, obj).getScore());
 	}
 
 	@Override
 	public AdapterResponse<Void> addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return AdapterResponse.pass();
-		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(amount);
+		scoreboard.getOrCreateScore(player, obj).incrementScore(amount);
 		return AdapterResponse.success(null);
 	}
 
@@ -72,7 +81,7 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 	public AdapterResponse<Void> removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return AdapterResponse.pass();
-		scoreboard.getPlayerScore(player.getEntityName(), obj).incrementScore(-amount);
+		scoreboard.getOrCreateScore(player, obj).incrementScore(-amount);
 		return AdapterResponse.success(null);
 	}
 

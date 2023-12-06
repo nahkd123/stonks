@@ -15,6 +15,6 @@
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="stonks2-fabric"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="nogui"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Stonks2 - Fabric"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dfabric.dli.config=${workspace_loc:/stonks2/fabric/.gradle/loom-cache/launch.cfg} -Dfabric.dli.env=server -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotServer"/>
-    <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:stonks2/fabric/run}"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dfabric.dli.config=${workspace_loc:/stonks/fabric/.gradle/loom-cache/launch.cfg} -Dfabric.dli.env=server -Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotServer"/>
+    <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:stonks/fabric/run}"/>
 </launchConfiguration>

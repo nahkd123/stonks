@@ -51,7 +51,9 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 				objectiveName,
 				ScoreboardCriterion.DUMMY,
 				Text.literal(objectiveName),
-				RenderType.INTEGER);
+				RenderType.INTEGER,
+				false,
+				null);
 		} else {
 			return objective;
 		}
@@ -67,12 +69,12 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 
 	@Override
 	public double accountBalance(ServerPlayerEntity player) {
-		return scoreToMoney(scoreboard.getPlayerScore(player.getEntityName(), getObjective()).getScore());
+		return scoreToMoney(scoreboard.getScore(player, getObjective()).getScore());
 	}
 
 	@Override
 	public boolean accountDeposit(ServerPlayerEntity player, double money) {
-		var score = scoreboard.getPlayerScore(player.getEntityName(), getObjective());
+		var score = scoreboard.getOrCreateScore(player, getObjective());
 		var bal = scoreToMoney(score.getScore());
 		bal += money;
 		score.setScore(moneyToScore(bal));
@@ -81,7 +83,7 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 
 	@Override
 	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
-		var score = scoreboard.getPlayerScore(player.getEntityName(), getObjective());
+		var score = scoreboard.getOrCreateScore(player, getObjective());
 		var bal = scoreToMoney(score.getScore());
 		bal = Math.max(bal - money, 0d);
 		score.setScore(moneyToScore(bal));

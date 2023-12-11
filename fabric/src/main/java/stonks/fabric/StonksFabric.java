@@ -70,7 +70,7 @@ import stonks.fabric.service.StonksServiceProvider;
 	license = "MIT")
 @Dependencies({
 	@Dependency(value = "fabricloader", version = ">=${loader_version}"),
-	@Dependency(value = "minecraft", version = "~1.20"),
+	@Dependency(value = "minecraft", version = ">=${minecraft_version}"),
 	@Dependency(value = "java", version = ">=17"),
 	@Dependency(value = "fabric-api", version = ">=${fabric_version}")
 })

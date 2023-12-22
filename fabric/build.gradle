@@ -33,6 +33,7 @@ dependencies {
     modImplementation include("eu.pb4:sgui:$rootProject.sgui_version")
     modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")
     api include(project(':core'))
+    api include(project(':minecraft'))
     api include(naharaToolkit('nahara-common-tasks'))
     api include(naharaToolkit('nahara-common-configurations'))
 }

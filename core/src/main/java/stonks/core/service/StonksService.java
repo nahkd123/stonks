@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import io.github.nahkd123.stonks.market.impl.legacy.LegacyMarketService;
 import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
 import stonks.core.market.Offer;
@@ -33,6 +34,23 @@ import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
 
+/**
+ * <p>
+ * The Stonks service interface. You can perform service calls with this
+ * interface. Note that when initializing the service, it must (or actually, it
+ * <i>shouldn't</i>) throw any exceptions and it will only initiate the
+ * connection when a service call is made.
+ * </p>
+ * <p>
+ * Connection failures should be held until another service call is made. Once a
+ * call is performed, the failures will be thrown as exception.
+ * </p>
+ * <p>
+ * Note that this service interface might be removed in the future as the
+ * current interface is way too janky.
+ * </p>
+ */
+@Deprecated
 public interface StonksService {
 	/**
 	 * <p>
@@ -61,6 +79,20 @@ public interface StonksService {
 	 * @return A list of offers.
 	 */
 	public Task<List<Offer>> getOffers(UUID offerer);
+
+	/**
+	 * <p>
+	 * Get offer by offer ID.
+	 * </p>
+	 * <p>
+	 * This method was added to support {@link LegacyMarketService#queryOrder(UUID)}
+	 * </p>
+	 * 
+	 * @param id The id of the offer.
+	 * @return The offer with matching id.
+	 * @since Stonks 2.1.0
+	 */
+	public Task<Offer> getOfferById(UUID id);
 
 	/**
 	 * <p>

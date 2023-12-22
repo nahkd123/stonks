@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) 2023 nahkd
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+package io.github.nahkd123.stonks.minecraft.text;
+
+public enum ClickEventAction {
+	OPEN_URL("open_url"),
+	RUN_COMMAND("run_command"),
+	SUGGEST_COMMAND("suggest_command"),
+	CHANGE_PAGE("change_page"),
+	COPY_TO_CLIPBOARD("copy_to_clipboard");
+
+	private String jsonType;
+
+	private ClickEventAction(String jsonType) {
+		this.jsonType = jsonType;
+	}
+
+	public String getJsonType() { return jsonType; }
+}

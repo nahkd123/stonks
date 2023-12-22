@@ -120,7 +120,6 @@ public class ItemsAdapter implements StonksFabricAdapter {
 		var refStack = convert(product);
 		if (refStack == null) return AdapterResponse.pass();
 		if (amount == 0) return AdapterResponse.success(null);
-		;
 
 		var inv = player.getInventory();
 

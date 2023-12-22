@@ -89,13 +89,13 @@ public class StonksMemoryService implements LocalStonksService {
 
 	private List<MemoryCategory> categories = new ArrayList<>();
 	private Map<MemoryProduct, ProductEntry> entries = new HashMap<>();
-	private Map<UUID, List<Offer>> offers = new HashMap<>();
+	private Map<UUID, List<Offer>> offersByUser = new HashMap<>();
 	private Emittable<Offer> offerFilledEvents = new Emittable<>();
 
 	public List<MemoryCategory> getModifiableCategories() { return categories; }
 
 	public Iterator<Offer> offersIterator() {
-		return offers.values().stream().flatMap(v -> v.stream()).iterator();
+		return offersByUser.values().stream().flatMap(v -> v.stream()).iterator();
 	}
 
 	@Override
@@ -122,14 +122,26 @@ public class StonksMemoryService implements LocalStonksService {
 
 	@Override
 	public Task<List<Offer>> getOffers(UUID offerer) {
-		var offers = this.offers.get(offerer);
-		if (offers == null) this.offers.put(offerer, offers = new ArrayList<>());
+		var offers = this.offersByUser.get(offerer);
+		if (offers == null) this.offersByUser.put(offerer, offers = new ArrayList<>());
 		return Task.resolved(Collections.unmodifiableList(offers));
 	}
 
 	@Override
+	public Task<Offer> getOfferById(UUID id) {
+		Iterator<Offer> iter = offersIterator();
+
+		while (iter.hasNext()) {
+			Offer next = iter.next();
+			if (next.getOfferId().equals(id)) return Task.resolved(next);
+		}
+
+		return Task.resolved(null);
+	}
+
+	@Override
 	public Task<Offer> claimOffer(UUID offerer, UUID offerId) {
-		var playerOffers = offers.get(offerer);
+		var playerOffers = offersByUser.get(offerer);
 		if (playerOffers == null)
 			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
 
@@ -147,7 +159,7 @@ public class StonksMemoryService implements LocalStonksService {
 
 	@Override
 	public Task<Offer> cancelOffer(UUID offerer, UUID offerId) {
-		var playerOffers = offers.get(offerer);
+		var playerOffers = offersByUser.get(offerer);
 		if (playerOffers == null)
 			return Task.failed(new ServiceException("User " + offerer + " does not have offer with ID " + offerId));
 
@@ -180,8 +192,8 @@ public class StonksMemoryService implements LocalStonksService {
 			throw new IllegalArgumentException("StonksMemoryService: Unknown product id: "
 				+ offer.getProduct().getProductId());
 
-		var playerOffers = this.offers.get(offer.getOffererId());
-		if (playerOffers == null) this.offers.put(offer.getOffererId(), playerOffers = new ArrayList<>());
+		var playerOffers = this.offersByUser.get(offer.getOffererId());
+		if (playerOffers == null) this.offersByUser.put(offer.getOffererId(), playerOffers = new ArrayList<>());
 
 		var list = offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers;
 		var searchResult = Collections.binarySearch(list, offer,
@@ -229,7 +241,7 @@ public class StonksMemoryService implements LocalStonksService {
 	@Override
 	public void loadServiceData() {
 		// Clear all
-		offers.clear();
+		offersByUser.clear();
 		entries.values().forEach(v -> {
 			v.buyOffers.clear();
 			v.sellOffers.clear();

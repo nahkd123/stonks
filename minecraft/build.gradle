@@ -1,0 +1,15 @@
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    implementation project(':core')
+}
+
+processResources {
+    inputs.property "version", rootProject.stonks_version
+    filesMatching('fabric.mod.json') {
+        expand "version": rootProject.stonks_version
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

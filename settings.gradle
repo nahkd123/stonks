@@ -11,3 +11,4 @@ plugins {
 
 include 'core'
 include 'fabric'
+include 'minecraft'

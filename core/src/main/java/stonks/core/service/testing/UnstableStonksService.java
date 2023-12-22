@@ -42,6 +42,7 @@ import stonks.core.service.StonksService;
  * unexpected results from service.
  * </p>
  */
+@Deprecated
 public class UnstableStonksService implements StonksService {
 	private StonksService underlying;
 	private double failRate;
@@ -84,6 +85,11 @@ public class UnstableStonksService implements StonksService {
 	@Override
 	public Task<List<Offer>> getOffers(UUID offerer) {
 		return wrapTask(underlying.getOffers(offerer));
+	}
+
+	@Override
+	public Task<Offer> getOfferById(UUID id) {
+		return wrapTask(underlying.getOfferById(id));
 	}
 
 	@Override

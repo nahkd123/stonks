@@ -30,6 +30,7 @@ public class Emittable<T> {
 	private boolean isEmitting = false;
 	private List<T> pendingObjects;
 	private List<Consumer<T>> pendingConsumers;
+	private List<Consumer<T>> pendingRemoval;
 
 	public void listen(Consumer<T> consumer) {
 		if (!isEmitting) {
@@ -39,6 +40,16 @@ public class Emittable<T> {
 
 		if (pendingConsumers == null) pendingConsumers = new ArrayList<>();
 		pendingConsumers.add(consumer);
+	}
+
+	public void remove(Consumer<T> consumer) {
+		if (!isEmitting) {
+			consumers.remove(consumer);
+			return;
+		}
+
+		if (pendingRemoval == null) pendingRemoval = new ArrayList<>();
+		pendingRemoval.add(consumer);
 	}
 
 	public void emit(T obj) {
@@ -65,6 +76,11 @@ public class Emittable<T> {
 					}
 
 					pendingConsumers = null;
+				}
+
+				if (pendingRemoval != null) {
+					for (var c : pendingRemoval) consumers.remove(c);
+					pendingRemoval = null;
 				}
 
 				if (pendingObjects != null && pendingObjects.size() > 0) {

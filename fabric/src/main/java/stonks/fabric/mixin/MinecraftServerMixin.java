@@ -26,6 +26,8 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
+import io.github.nahkd123.stonks.minecraft.fabric.FabricServer;
+import io.github.nahkd123.stonks.minecraft.fabric.ModernStonksFabric;
 import nahara.modkit.annotations.v1.AutoMixin;
 import net.minecraft.server.MinecraftServer;
 import stonks.core.caching.StonksServiceCache;
@@ -57,6 +59,8 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	private PlatformConfig stonks$config;
 	@Unique
 	private StonksSounds stonks$sounds;
+	@Unique
+	private FabricServer stonks$modernWrapper;
 
 	@Override
 	public StonksService getStonksService() { return stonks$service; }
@@ -75,6 +79,9 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 
 	@Override
 	public StonksSounds getSounds() { return stonks$sounds; }
+
+	@Override
+	public FabricServer getModernWrapper() { return stonks$modernWrapper; }
 
 	@Override
 	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters) {
@@ -98,5 +105,8 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 			StonksFabric.LOGGER.info("Local service found! Loading data...");
 			localService.loadServiceData();
 		}
+
+		stonks$modernWrapper = new FabricServer(ModernStonksFabric
+			.getPlatform(), (MinecraftServer) (Object) this);
 	}
 }

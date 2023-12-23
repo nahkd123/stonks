@@ -1,0 +1,13 @@
+{
+    "schemaVersion": 1,
+    "id": "stonks-minecraft",
+    "version": "${version}",
+    "name": "Stonks2 for Minecraft (Library)",
+    "description": "An universal library for Minecraft platforms (Bukkit, Fabric, Sponge, etc.)",
+    "custom": {
+        "modmenu": {
+            "parent": "stonks-fabric",
+            "badges": ["library"]
+        }
+    }
+}

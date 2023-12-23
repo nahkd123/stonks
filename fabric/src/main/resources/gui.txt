@@ -1,0 +1,74 @@
+// Stonks vNext GUI configuration
+// You can configure almost all GUIs with this configuration file!
+
+main
+    // The title of the GUI. Usually displayed on top of the chest GUI.
+    title Market
+
+    // The menu type. This supports modded screen handlers!
+    type minecraft:generic_9x6
+
+    // Define a new button. In this case, we want static button
+    button stonks:static
+        // You can fill the buttons using "fill (x1, y1) to (x2, y2)" (inclusive bounds)
+        // or you can use "fill (x, y)"
+        // The "fill" syntax: fill (x1, y1) to (x2, y2) [reversed-x] [reversed-y]
+        // The "reversed-?" in "fill" is for "indexed buttons", like stonks:dynamic with category native button
+        // The default indexing direction is from left to right first, then from top to bottom
+        fill (1, 1) to (9, 1)
+        fill (2, 2) to (2, 6)
+        fill (9, 2) to (9, 6)
+        item minecraft:black_stained_glass_pane{display:{Name:'{"text":""}'}}
+        amount 1
+
+    button stonks:lazy_loaded
+        fill (1, 2) to (1, 6)
+        nativeButton category
+        onLoading stonks:static
+            item minecraft:clock{display:{Name:'{"text":"Loading...","color":"gray","italic":false}'}}
+            amount 1
+        onPresent stonks:dynamic
+            type minecraft:paper
+            name [color:gray]>>[/] [color:aqua]{category.name}[/]
+            lore [color:yellow]Click[/] [color:gray]to open[/]
+        onError stonks:static
+            item minecraft:barrier{display:{Name:'{"text":"Error!","color":"red","italic":false}'}}
+            amount 1
+
+    button stonks:lazy_loaded
+        fill (3, 2) to (9, 6)
+        nativeButton product
+        onLoading stonks:static
+            item minecraft:clock{display:{Name:'{"text":"Loading...","color":"gray","italic":false}'}}
+            amount 1
+        onPresent stonks:dynamic
+            type native
+            name [color:aqua]{product.name}[/]
+            lore
+            lore [color:gray]Instant buy price: [/][color:yellow]{product.instant.buy}[/]
+            lore [color:gray]Instant sell price: [/][color:yellow]{product.instant.sell}[/]
+            lore
+            lore [color:yellow]Click[/] [color:gray]to open[/]
+        onError stonks:static
+            item minecraft:barrier{display:{Name:'{"text":"Error!","color":"red","italic":false}'}}
+            amount 1
+
+product
+    title Market > {product.name}
+    type minecraft:generic_9x4
+
+    button stonks:static
+        fill (1, 1) to (9, 1)
+        item minecraft:black_stained_glass_pane{display:{Name:'{"text":""}'}}
+        amount 1
+
+    button stonks:static
+        fill (2, 1)
+        nativeButton back
+        item minecraft:arrow{display:{Name:'[{"text":"<-- ","color":"gray","italic":false},{"text":"Back","color":"white","italic":false}]'}}
+        amount 1
+
+    button stonks:dynamic
+        fill (5, 3)
+        nativeButton product
+        type native

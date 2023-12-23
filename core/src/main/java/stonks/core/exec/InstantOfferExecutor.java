@@ -45,7 +45,8 @@ public class InstantOfferExecutor {
 
 	/**
 	 * <p>
-	 * Execute instant buy.
+	 * Execute instant buy. Current balance is how much user spent and current units
+	 * is how much units to buy.
 	 * </p>
 	 * 
 	 * @param sellOffersIterator   An iterator of sorted sell offers. This method
@@ -77,7 +78,8 @@ public class InstantOfferExecutor {
 
 	/**
 	 * <p>
-	 * Execute instant sell.
+	 * Execute instant sell. Current balance should be 0 to store earnings and
+	 * current units is how much units to sell.
 	 * </p>
 	 * 
 	 * @param buyOffersIterator    An iterator of sorted buy offers. This method may

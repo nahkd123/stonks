@@ -23,6 +23,7 @@ package stonks.fabric;
 
 import java.util.List;
 
+import io.github.nahkd123.stonks.minecraft.fabric.FabricServer;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
@@ -81,6 +82,8 @@ public interface StonksFabricPlatform extends StonksPlatform {
 	 * @return The sounds handler.
 	 */
 	public StonksSounds getSounds();
+
+	public FabricServer getModernWrapper();
 
 	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters);
 }

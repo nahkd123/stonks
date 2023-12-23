@@ -80,7 +80,7 @@ public class TextProxy implements TextComponent {
 				: s.withColor(color instanceof MinecraftTextColor mtc
 					? mtc.getUnderlying()
 					: net.minecraft.text.TextColor.parse(color.asJsonColor()).result().orElse(null)));
-		return null;
+		return this;
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class TextProxy implements TextComponent {
 	@Override
 	public TextComponent withClickEvent(ClickEvent event) {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override

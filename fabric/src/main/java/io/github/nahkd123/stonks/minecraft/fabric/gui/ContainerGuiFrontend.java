@@ -48,8 +48,9 @@ public class ContainerGuiFrontend extends SimpleGui {
 	}
 
 	public void refresh() {
-		setTitle(template.title.apply(this) instanceof TextProxy p ? p.getUnderlying() : null);
+		if (template == null) return;
 
+		setTitle(template.title.apply(this) instanceof TextProxy p ? p.getUnderlying() : null);
 		for (ButtonTemplate buttonTemplate : template.buttons) {
 			buttonTemplate.forEachInFillRects((x, y, ordinal) -> {
 				int index = (y - 1) * getWidth() + (x - 1);

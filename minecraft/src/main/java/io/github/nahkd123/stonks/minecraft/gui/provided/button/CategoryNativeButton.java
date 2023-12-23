@@ -31,7 +31,7 @@ import io.github.nahkd123.stonks.minecraft.gui.provided.gui.AbstractContainerGui
 import io.github.nahkd123.stonks.minecraft.gui.provided.gui.MainContainerGui;
 import io.github.nahkd123.stonks.minecraft.text.TextComponent;
 import io.github.nahkd123.stonks.minecraft.text.TextFactory;
-import io.github.nahkd123.stonks.minecraft.utils.TriStates;
+import io.github.nahkd123.stonks.minecraft.utils.LazyTexts;
 import io.github.nahkd123.stonks.utils.lazy.LazyLoader;
 import io.github.nahkd123.stonks.utils.lazy.LoadState;
 
@@ -54,9 +54,10 @@ public class CategoryNativeButton implements LazyLoadedNativeButton<Category> {
 		if (cache.load() != LoadState.SUCCESS) return;
 		if (getLoader().get() == null) return;
 
-		MainContainerGui main = gui instanceof MainContainerGui m ? m : new MainContainerGui(gui.getServer(), ordinal);
+		MainContainerGui main = gui instanceof MainContainerGui m
+			? m
+			: new MainContainerGui(gui, gui.getServer(), ordinal);
 		main.setCategoryIndex(ordinal);
-		// TODO
 
 		if (!(gui instanceof MainContainerGui)) player.openGui(main);
 	}
@@ -64,10 +65,10 @@ public class CategoryNativeButton implements LazyLoadedNativeButton<Category> {
 	@Override
 	public TextComponent replacePlaceholder(TextFactory factory, String name) {
 		return switch (name) {
-		case "category.id" -> TriStates.of(getLoader().map(v -> factory.literal(v.getId())), factory);
-		case "category.name" -> TriStates.of(getLoader().map(v -> factory.literal(v.getDisplayName())), factory);
-		case "category.productsCount" -> TriStates
-			.of(getLoader().map(v -> factory.literal(Integer.toString(v.getProducts().size()))), factory);
+		case "category.id" -> LazyTexts.loading(getLoader().map(v -> factory.literal(v.getId())), factory);
+		case "category.name" -> LazyTexts.loading(getLoader().map(v -> factory.literal(v.getDisplayName())), factory);
+		case "category.productsCount" -> LazyTexts
+			.loading(getLoader().map(v -> factory.literal(Integer.toString(v.getProducts().size()))), factory);
 		default -> null;
 		};
 	}

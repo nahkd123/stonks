@@ -58,7 +58,7 @@ public class DevelopmentCommand {
 		.then(literal("openmoderngui").executes(context -> {
 			ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
 			FabricServer server = FabricServer.of(context.getSource().getServer());
-			server.getPlayerByUUID(player.getUuid()).openGui(new MainContainerGui(server, 0));
+			server.getPlayerByUUID(player.getUuid()).openGui(new MainContainerGui(null, server, 0));
 			return 1;
 		}));
 }

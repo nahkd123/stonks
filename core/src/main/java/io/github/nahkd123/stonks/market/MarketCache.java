@@ -21,16 +21,30 @@
  */
 package io.github.nahkd123.stonks.market;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
+import io.github.nahkd123.stonks.market.catalogue.Product;
 import io.github.nahkd123.stonks.market.catalogue.ProductsCatalogue;
+import io.github.nahkd123.stonks.market.summary.ProductSummary;
 import io.github.nahkd123.stonks.utils.lazy.CachingLazyLoader;
 
 public class MarketCache {
 	public final MarketService service;
 	public final CachingLazyLoader<ProductsCatalogue> productsCatalogue;
+	public final Map<String, CachingLazyLoader<ProductSummary>> productSummaries = new WeakHashMap<>();
 
 	public MarketCache(MarketService service) {
 		this.service = service;
 		this.productsCatalogue = new CachingLazyLoader<>(() -> service.queryCatalogue()
 			.thenApply(r -> r.data()), 60_000);
+	}
+
+	public CachingLazyLoader<ProductSummary> getSummary(Product product) {
+		CachingLazyLoader<ProductSummary> cache = productSummaries.get(product.getId());
+		if (cache == null) productSummaries.put(product.getId(), cache = new CachingLazyLoader<>(() -> service
+			.querySummary(product)
+			.thenApply(r -> r.data()), 10_000));
+		return cache;
 	}
 }

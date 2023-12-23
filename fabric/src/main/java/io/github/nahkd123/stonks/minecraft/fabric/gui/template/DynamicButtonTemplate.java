@@ -166,7 +166,7 @@ public class DynamicButtonTemplate implements ButtonTemplate {
 
 			config.firstChild("amount").flatMap(s -> s.getValue(Integer::parseInt)).ifPresent(v -> template.amount = v);
 			config.firstChild("name").flatMap(Config::getValue).ifPresent(v -> template.name = v);
-			template.lore = config.children("lore").flatMap(c -> c.getValue().stream()).toList();
+			template.lore = config.children("lore").map(c -> c.getValue().orElse("")).toList();
 			// TODO more fun stuffs here!
 			return template;
 		}

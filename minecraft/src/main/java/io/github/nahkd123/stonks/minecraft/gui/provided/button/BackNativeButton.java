@@ -19,35 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.nahkd123.stonks.minecraft.gui.provided.gui;
+package io.github.nahkd123.stonks.minecraft.gui.provided.button;
 
-import io.github.nahkd123.stonks.market.catalogue.Category;
-import io.github.nahkd123.stonks.minecraft.MinecraftServer;
+import io.github.nahkd123.stonks.minecraft.Player;
+import io.github.nahkd123.stonks.minecraft.gui.ClickType;
 import io.github.nahkd123.stonks.minecraft.gui.ContainerGui;
+import io.github.nahkd123.stonks.minecraft.gui.NativeButton;
+import io.github.nahkd123.stonks.minecraft.gui.provided.gui.AbstractContainerGui;
 import io.github.nahkd123.stonks.minecraft.text.TextComponent;
 import io.github.nahkd123.stonks.minecraft.text.TextFactory;
-import io.github.nahkd123.stonks.utils.lazy.LazyLoader;
 
-public class MainContainerGui extends AbstractContainerGui {
-	private int categoryIndex;
+public class BackNativeButton implements NativeButton {
+	public static final String ID = "back";
 
-	public MainContainerGui(ContainerGui previous, MinecraftServer server, int categoryIndex) {
-		super(previous, server, "main");
-		this.categoryIndex = categoryIndex;
-	}
+	public BackNativeButton(AbstractContainerGui gui, int ordinal) {}
 
-	public int getCategoryIndex() { return categoryIndex; }
+	public BackNativeButton() {}
 
-	public void setCategoryIndex(int categoryIndex) { this.categoryIndex = categoryIndex; }
-
-	public LazyLoader<Category> getCategoryCache() {
-		return getServer().getMarketCache().productsCatalogue
-			.map(c -> categoryIndex < c.getCategories().size() ? c.getCategories().get(categoryIndex) : null);
+	@Override
+	public void onClick(ContainerGui gui, Player player, ClickType type) {
+		player.openGui(gui.getPrevious());
 	}
 
 	@Override
 	public TextComponent replacePlaceholder(TextFactory factory, String name) {
-		// TODO
 		return null;
 	}
 }

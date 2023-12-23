@@ -27,6 +27,7 @@ import java.util.Map;
 import io.github.nahkd123.stonks.minecraft.MinecraftServer;
 import io.github.nahkd123.stonks.minecraft.gui.ContainerGui;
 import io.github.nahkd123.stonks.minecraft.gui.NativeButton;
+import io.github.nahkd123.stonks.minecraft.gui.provided.button.BackNativeButton;
 import io.github.nahkd123.stonks.minecraft.gui.provided.button.CategoryNativeButton;
 import io.github.nahkd123.stonks.minecraft.gui.provided.button.CloseNativeButton;
 import io.github.nahkd123.stonks.minecraft.gui.provided.button.ProductNativeButton;
@@ -41,17 +42,22 @@ public abstract class AbstractContainerGui implements ContainerGui {
 
 	static {
 		GLOBAL_REGISTRY.put(CloseNativeButton.ID, CloseNativeButton::new);
+		GLOBAL_REGISTRY.put(BackNativeButton.ID, BackNativeButton::new);
 		GLOBAL_REGISTRY.put(CategoryNativeButton.ID, CategoryNativeButton::new);
 		GLOBAL_REGISTRY.put(ProductNativeButton.ID, ProductNativeButton::new);
 	}
 
+	private ContainerGui previous;
 	private MinecraftServer server;
 	private String id;
 
-	public AbstractContainerGui(MinecraftServer server, String id) {
+	public AbstractContainerGui(ContainerGui previous, MinecraftServer server, String id) {
+		this.previous = previous;
 		this.server = server;
 		this.id = id;
 	}
+
+	public ContainerGui getPrevious() { return previous; }
 
 	@Override
 	public String getId() { return id; }

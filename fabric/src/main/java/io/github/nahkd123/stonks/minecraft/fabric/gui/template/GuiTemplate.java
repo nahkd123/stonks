@@ -46,7 +46,7 @@ public class GuiTemplate {
 		config.firstChild("title").flatMap(Config::getValue).ifPresent(title -> {
 			this.title = frontend -> {
 				TextFactory textFactory = frontend.getBackend().getTextFactory();
-				return FriendlyParser.parse(textFactory, title, null); // TODO placeholder here
+				return FriendlyParser.parse(textFactory, title, frontend.getBackend());
 			};
 		});
 

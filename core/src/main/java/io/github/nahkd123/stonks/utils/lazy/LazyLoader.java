@@ -86,6 +86,10 @@ public interface LazyLoader<T> {
 		return new LazyMapper<>(this, mapper);
 	}
 
+	default <B> LazyFlatMapper<T, B> flatMap(Function<T, LazyLoader<B>> mapper) {
+		return new LazyFlatMapper<>(this, mapper);
+	}
+
 	public static <T> LazyLoader<T> wrap(CompletableFuture<T> future) {
 		return new CompletableFutureLazyLoader<>(future);
 	}

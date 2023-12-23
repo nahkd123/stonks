@@ -26,6 +26,8 @@ import io.github.nahkd123.stonks.minecraft.text.TextFactory;
 import io.github.nahkd123.stonks.minecraft.text.placeholder.Placeholders;
 
 public interface ContainerGui extends Placeholders {
+	public ContainerGui getPrevious();
+
 	public MinecraftServer getServer();
 
 	public String getId();

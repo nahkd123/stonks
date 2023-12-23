@@ -19,17 +19,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.nahkd123.stonks.minecraft.utils;
+package io.github.nahkd123.stonks.utils.lazy;
 
-import io.github.nahkd123.stonks.minecraft.text.LegacyColor;
-import io.github.nahkd123.stonks.minecraft.text.TextComponent;
-import io.github.nahkd123.stonks.minecraft.text.TextFactory;
-import io.github.nahkd123.stonks.utils.lazy.LazyLoader;
+import java.util.function.Function;
 
-public class TriStates {
-	public static TextComponent of(LazyLoader<TextComponent> loader, TextFactory factory) {
-		return loader.getTriState(
-			() -> factory.literal("Loading...").withColor(factory.legacyColor(LegacyColor.GRAY)),
-			t -> factory.literal("Error!").withColor(factory.legacyColor(LegacyColor.RED)));
+public class LazyFlatMapper<A, B> implements LazyLoader<B> {
+	private LazyLoader<A> loader;
+	private Function<A, LazyLoader<B>> mapper;
+
+	public LazyFlatMapper(LazyLoader<A> loader, Function<A, LazyLoader<B>> mapper) {
+		this.loader = loader;
+		this.mapper = mapper;
+	}
+
+	@Override
+	public LoadState load() {
+		return switch (loader.load()) {
+		case LOADING -> LoadState.LOADING;
+		case FAILED -> LoadState.FAILED;
+		case SUCCESS -> mapper.apply(loader.get()).load();
+		};
+	}
+
+	@Override
+	public Throwable getFailure() {
+		return switch (loader.load()) {
+		case LOADING -> null;
+		case FAILED -> loader.getFailure();
+		case SUCCESS -> mapper.apply(loader.get()).getFailure();
+		};
+	}
+
+	@Override
+	public B get() throws IllegalStateException {
+		return switch (loader.load()) {
+		case LOADING -> throw new IllegalStateException("The loader is still loading!");
+		case FAILED -> throw new IllegalStateException(loader.getFailure());
+		case SUCCESS -> mapper.apply(loader.get()).get();
+		};
 	}
 }

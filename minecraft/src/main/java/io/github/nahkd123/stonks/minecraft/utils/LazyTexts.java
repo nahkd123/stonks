@@ -19,35 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.nahkd123.stonks.minecraft.gui.provided.gui;
+package io.github.nahkd123.stonks.minecraft.utils;
 
-import io.github.nahkd123.stonks.market.catalogue.Category;
-import io.github.nahkd123.stonks.minecraft.MinecraftServer;
-import io.github.nahkd123.stonks.minecraft.gui.ContainerGui;
+import io.github.nahkd123.stonks.minecraft.text.LegacyColor;
 import io.github.nahkd123.stonks.minecraft.text.TextComponent;
 import io.github.nahkd123.stonks.minecraft.text.TextFactory;
 import io.github.nahkd123.stonks.utils.lazy.LazyLoader;
+import io.github.nahkd123.stonks.utils.lazy.LoadState;
 
-public class MainContainerGui extends AbstractContainerGui {
-	private int categoryIndex;
-
-	public MainContainerGui(ContainerGui previous, MinecraftServer server, int categoryIndex) {
-		super(previous, server, "main");
-		this.categoryIndex = categoryIndex;
-	}
-
-	public int getCategoryIndex() { return categoryIndex; }
-
-	public void setCategoryIndex(int categoryIndex) { this.categoryIndex = categoryIndex; }
-
-	public LazyLoader<Category> getCategoryCache() {
-		return getServer().getMarketCache().productsCatalogue
-			.map(c -> categoryIndex < c.getCategories().size() ? c.getCategories().get(categoryIndex) : null);
-	}
-
-	@Override
-	public TextComponent replacePlaceholder(TextFactory factory, String name) {
-		// TODO
-		return null;
+public class LazyTexts {
+	/**
+	 * <p>
+	 * Get the text component depending on the current loading state. If the loading
+	 * state is {@link LoadState#SUCCESS}, it will returns the value. Returns
+	 * "Loading..." if the state is {@link LoadState#LOADING} and "Error!" if the
+	 * state is {@link LoadState#FAILED}.
+	 * </p>
+	 * 
+	 * @param loader  The loader.
+	 * @param factory The text components factory.
+	 * @return The text component.
+	 */
+	public static TextComponent loading(LazyLoader<TextComponent> loader, TextFactory factory) {
+		return loader.getTriState(
+			() -> factory.literal("Loading...").withColor(factory.legacyColor(LegacyColor.GRAY)),
+			t -> factory.literal("Error!").withColor(factory.legacyColor(LegacyColor.RED)));
 	}
 }

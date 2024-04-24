@@ -12,9 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -31,7 +31,7 @@ jobs:
             -Pstonks_version=${{ steps.tag.outputs.tag }}
             --stacktrace
             --warning-mode=fail
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: "stonks-fabric-${{ steps.tag.outputs.tag }}-release"
           path: fabric/build/libs/

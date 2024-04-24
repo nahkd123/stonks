@@ -26,7 +26,6 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-import nahara.modkit.annotations.v1.AutoMixin;
 import net.minecraft.server.MinecraftServer;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.service.LocalStonksService;
@@ -42,7 +41,6 @@ import stonks.fabric.misc.StonksSounds;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
 
-@AutoMixin
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Unique

@@ -34,7 +34,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -54,7 +53,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 		var str = product.getProductConstructionData();
 		if (str == null) return null;
 
-		// String format: "item [namespace:]<id>[{<nbt>}]"
+		// String format: "item [namespace:]<id>[<component>][{<nbt>}]"
 		if (str.startsWith(PREFIX)) {
 			str = str.substring(PREFIX.length());
 
@@ -88,7 +87,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		for (int i = 0; i < inv.size(); i++) {
 			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !StonksFabricUtils.compareStack(refStack, stack)) continue;
+			if (stack.isEmpty() || !ItemStack.areEqual(refStack, stack)) continue;
 			count += stack.getCount();
 		}
 
@@ -103,7 +102,6 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		var inv = player.getInventory();
 		var giveStack = refStack.copyWithCount(amount);
-		if (!giveStack.hasNbt() || giveStack.getNbt().isEmpty()) giveStack.setNbt(null); // Fix stacking issue
 
 		if (!inv.insertStack(giveStack)) {
 			var e = player.dropItem(giveStack, false);
@@ -124,7 +122,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		for (int i = 0; i < inv.size(); i++) {
 			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !StonksFabricUtils.compareStack(refStack, stack)) continue;
+			if (stack.isEmpty() || !ItemStack.areEqual(refStack, stack)) continue;
 
 			var toTake = Math.min(amount, stack.getCount());
 			stack.decrement(toTake);

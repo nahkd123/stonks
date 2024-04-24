@@ -22,12 +22,8 @@
 package stonks.fabric;
 
 import java.text.DecimalFormat;
-import java.util.Objects;
 import java.util.Optional;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -61,17 +57,6 @@ public class StonksFabricUtils {
 		return Text.literal(s);
 	}
 
-	public static String createStringFor(ItemStack stack, MinecraftServer server) {
-		var reg = server.getRegistryManager().getOptional(RegistryKeys.ITEM);
-		if (reg.isEmpty()) return null;
-		var key = reg.get().getKey(stack.getItem()).map(v -> v.getValue().toString());
-		if (key.isEmpty()) return null;
-
-		var out = key.get();
-		if (stack.hasNbt()) out += stack.getNbt().asString();
-		return out;
-	}
-
 	public static final DecimalFormat CURRENCY_FORMATTER = new DecimalFormat("#,##0.##");
 	public static final DecimalFormat TAX_FORMATTER = new DecimalFormat("#,##0.##%");
 
@@ -93,16 +78,5 @@ public class StonksFabricUtils {
 			: Translations.Messages.OfferInfoText$Sell;
 		return Translations.Messages.OfferInfoText(typeText, offer.totalAvailableUnits(), offer.offers(),
 			offer.pricePerUnit());
-	}
-
-	public static boolean compareStack(ItemStack a, ItemStack b) {
-		if (a.isEmpty()) return b.isEmpty();
-		if (b.isEmpty()) return a.isEmpty();
-		if (!a.isOf(b.getItem())) return false;
-		var nbtA = a.getNbt();
-		if (nbtA != null && nbtA.isEmpty()) nbtA = null;
-		var nbtB = b.getNbt();
-		if (nbtB != null && nbtB.isEmpty()) nbtB = null;
-		return Objects.equals(nbtA, nbtB);
 	}
 }

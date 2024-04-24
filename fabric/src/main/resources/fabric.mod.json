@@ -1,0 +1,23 @@
+{
+    "schemaVersion": 1,
+    "id": "stonks",
+    "name": "Stonks2",
+    "version": "${stonks_version}",
+    "description": "Stonks2 for Fabric",
+    "environment": "*",
+    "license": "MIT",
+    "icon": "assets/stonks/icon.png",
+    "authors": ["nahkd123"],
+    "entrypoints": {
+        "main": ["stonks.fabric.StonksFabric::init"],
+        "client": [],
+        "server": []
+    },
+    "mixins": ["stonks.mixins.json"],
+    "depends": {
+        "fabricloader": ">=0.15.10",
+        "minecraft": ">=1.20.5",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}

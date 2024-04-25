@@ -21,6 +21,7 @@
  */
 package stonks.fabric.adapter.provided;
 
+import net.minecraft.scoreboard.ReadableScoreboardScore;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardCriterion.RenderType;
@@ -69,7 +70,8 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 
 	@Override
 	public double accountBalance(ServerPlayerEntity player) {
-		return scoreToMoney(scoreboard.getScore(player, getObjective()).getScore());
+		ReadableScoreboardScore scoreEntry = scoreboard.getScore(player, getObjective());
+		return scoreToMoney(scoreEntry != null ? scoreEntry.getScore() : 0);
 	}
 
 	@Override

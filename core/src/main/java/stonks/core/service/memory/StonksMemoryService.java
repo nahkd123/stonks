@@ -22,15 +22,17 @@
 package stonks.core.service.memory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
 import stonks.core.exec.InstantOfferExecutor;
 import stonks.core.market.Offer;
@@ -88,26 +90,27 @@ public class StonksMemoryService implements LocalStonksService {
 
 	private List<MemoryCategory> categories = new ArrayList<>();
 	private Map<MemoryProduct, ProductEntry> entries = new HashMap<>();
-	private Map<UUID, List<Offer>> offers = new HashMap<>();
+	private Map<UUID, List<Offer>> userOffers = new HashMap<>();
+	private Map<UUID, Offer> offers = new HashMap<>();
 	private Emittable<Offer> offerFilledEvents = new Emittable<>();
 
 	public List<MemoryCategory> getModifiableCategories() { return categories; }
 
 	public Iterator<Offer> offersIterator() {
-		return offers.values().stream().flatMap(v -> v.stream()).iterator();
+		return offers.values().iterator();
 	}
 
 	@Override
-	public Task<List<Category>> queryAllCategories() {
-		return Task.resolved(Collections.unmodifiableList(categories));
+	public CompletableFuture<List<Category>> queryAllCategoriesAsync() {
+		return CompletableFuture.completedFuture(Collections.unmodifiableList(categories));
 	}
 
 	@Override
-	public Task<ProductMarketOverview> queryProductMarketOverview(Product product) {
+	public CompletableFuture<ProductMarketOverview> queryMarketOverviewAsync(Product product) {
 		try {
-			return Task.resolved(getProductEntry(product).calculateOverview());
+			return CompletableFuture.completedFuture(getProductEntry(product).calculateOverview());
 		} catch (Throwable t) {
-			return Task.failed(t);
+			return CompletableFuture.failedFuture(t);
 		}
 	}
 
@@ -120,50 +123,71 @@ public class StonksMemoryService implements LocalStonksService {
 	}
 
 	@Override
-	public Task<List<Offer>> getOffers(UUID offerer) {
-		var offers = this.offers.get(offerer);
-		if (offers == null) this.offers.put(offerer, offers = new ArrayList<>());
-		return Task.resolved(Collections.unmodifiableList(offers));
+	public CompletableFuture<List<Offer>> getOffersFromUserAsync(UUID offerer) {
+		var userOffers = this.userOffers.get(offerer);
+		if (userOffers == null) this.userOffers.put(offerer, userOffers = new ArrayList<>());
+		return CompletableFuture.completedFuture(Collections.unmodifiableList(userOffers));
 	}
 
 	@Override
-	public Task<Offer> claimOffer(Offer offer) {
-		var playerOffers = offers.get(offer.getOffererId());
-		if (playerOffers == null) return Task.resolved(offer);
+	public CompletableFuture<Map<UUID, Offer>> getOffersAsync(Collection<UUID> offerIds) {
+		return CompletableFuture.completedFuture(getOffersSync(offerIds));
+	}
 
-		var result = playerOffers.stream()
-			.filter(v -> v.getOfferId().equals(offer.getOfferId()))
-			.findFirst();
+	private Map<UUID, Offer> getOffersSync(Collection<UUID> offerIds) {
+		return offerIds.stream()
+			.map(id -> offers.get(id))
+			.filter(e -> e != null)
+			.collect(Collectors.toMap(e -> e.getOfferId(), e -> e.createCopy()));
+	}
 
-		if (result.isPresent()) {
-			result.get().claimOffer();
-			offer.setClaimedUnits(result.get().getClaimedUnits());
-			offer.setFilledUnits(result.get().getFilledUnits());
-			if (result.get().isFullyClaimed())
-				playerOffers.removeIf(v -> v.getOfferId().equals(result.get().getOfferId()));
+	@Override
+	public CompletableFuture<Map<UUID, Offer>> claimOffersAsync(Collection<UUID> offerIds) {
+		Map<UUID, Offer> offers = new HashMap<>();
+
+		for (UUID offerId : offerIds) {
+			Offer serviceOfferData = this.offers.get(offerId);
+			if (serviceOfferData == null) continue;
+
+			serviceOfferData.claimOffer();
+			offers.put(offerId, serviceOfferData.createCopy());
+
+			if (serviceOfferData.isFullyClaimed()) {
+				List<Offer> user = userOffers.computeIfAbsent(serviceOfferData.getOffererId(), $ -> new ArrayList<>());
+				user.removeIf(v -> v.getOfferId().equals(offerId));
+				this.offers.remove(offerId);
+			}
 		}
 
-		return Task.resolved(offer);
+		return CompletableFuture.completedFuture(offers);
 	}
 
 	@Override
-	public Task<Offer> cancelOffer(Offer offer) {
-		var playerOffers = offers.get(offer.getOffererId());
-		if (playerOffers == null) return Task.resolved(offer); // TODO should we throw?
-		playerOffers.removeIf(v -> v.getOfferId().equals(offer.getOfferId()));
+	public CompletableFuture<Map<UUID, Offer>> cancelOffersAsync(Collection<UUID> offerIds) {
+		Map<UUID, Offer> offers = new HashMap<>();
 
-		var productEntry = entries.get(offer.getProduct());
-		if (productEntry == null) return Task.resolved(offer);
-		(offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers)
-			.removeIf(v -> v.getOfferId().equals(offer.getOfferId()));
-		return Task.resolved(offer);
+		for (UUID offerId : offerIds) {
+			Offer serviceOfferData = this.offers.get(offerId);
+			if (serviceOfferData == null) continue;
+
+			List<Offer> user = userOffers.computeIfAbsent(serviceOfferData.getOffererId(), $ -> new ArrayList<>());
+			user.removeIf(v -> v.getOfferId().equals(offerId));
+			this.offers.remove(offerId);
+			offers.put(offerId, serviceOfferData.createCopy());
+
+			ProductEntry product = entries.get(serviceOfferData.getProduct());
+			(serviceOfferData.getType() == OfferType.BUY ? product.buyOffers : product.sellOffers)
+				.removeIf(v -> v.getOfferId().equals(offerId));
+		}
+
+		return CompletableFuture.completedFuture(offers);
 	}
 
 	@Override
-	public Task<Offer> listOffer(UUID offerer, Product product, OfferType type, int units, double pricePerUnit) {
-		var offer = new Offer(UUID.randomUUID(), offerer, product, type, units, 0, 0, pricePerUnit);
+	public CompletableFuture<Offer> listOfferAsync(UUID user, Product product, OfferType type, int units, double pricePerUnit) {
+		var offer = new Offer(UUID.randomUUID(), user, product, type, units, 0, 0, pricePerUnit);
 		insertOffer(offer);
-		return Task.resolved(offer);
+		return CompletableFuture.completedFuture(offer);
 	}
 
 	protected void insertOffer(Offer offer) {
@@ -172,9 +196,7 @@ public class StonksMemoryService implements LocalStonksService {
 			throw new IllegalArgumentException("StonksMemoryService: Unknown product id: "
 				+ offer.getProduct().getProductId());
 
-		var playerOffers = this.offers.get(offer.getOffererId());
-		if (playerOffers == null) this.offers.put(offer.getOffererId(), playerOffers = new ArrayList<>());
-
+		var playerOffers = this.userOffers.computeIfAbsent(offer.getOffererId(), $ -> new ArrayList<>());
 		var list = offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers;
 		var searchResult = Collections.binarySearch(list, offer,
 			(a, b) -> offer.getType().getOfferPriceComparator().compare(a.getPricePerUnit(), b.getPricePerUnit()));
@@ -191,10 +213,11 @@ public class StonksMemoryService implements LocalStonksService {
 		}
 
 		playerOffers.add(offer);
+		offers.put(offer.getOfferId(), offer);
 	}
 
 	@Override
-	public Task<InstantOfferExecuteResult> instantOffer(Product product, OfferType type, int units, double balance) {
+	public CompletableFuture<InstantOfferExecuteResult> instantOfferAsync(Product product, OfferType type, int units, double balance) {
 		var productEntry = getProductEntry(product);
 		if (productEntry == null)
 			throw new IllegalArgumentException("StonksMemoryService: Unknown product id: " + product.getProductId());
@@ -209,7 +232,8 @@ public class StonksMemoryService implements LocalStonksService {
 			break;
 		}
 
-		return Task.resolved(new InstantOfferExecuteResult(exec.getCurrentUnits(), exec.getCurrentBalance()));
+		return CompletableFuture
+			.completedFuture(new InstantOfferExecuteResult(exec.getCurrentUnits(), exec.getCurrentBalance()));
 	}
 
 	@Override
@@ -222,6 +246,7 @@ public class StonksMemoryService implements LocalStonksService {
 	public void loadServiceData() {
 		// Clear all
 		offers.clear();
+		userOffers.clear();
 		entries.values().forEach(v -> {
 			v.buyOffers.clear();
 			v.sellOffers.clear();

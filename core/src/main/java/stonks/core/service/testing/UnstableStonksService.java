@@ -21,13 +21,15 @@
  */
 package stonks.core.service.testing;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
-import nahara.common.tasks.Task;
 import stonks.core.exec.InstantOfferExecuteResult;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
@@ -55,55 +57,63 @@ public class UnstableStonksService implements StonksService {
 
 	public StonksService getUnderlying() { return underlying; }
 
-	protected <T> Task<T> wrapTask(Task<T> task) {
+	private <T> CompletableFuture<T> wrapStage(CompletionStage<T> stage) {
 		var rng = new Random();
 		var shouldFail = rng.nextDouble() < failRate;
 		var waitMs = rng.nextLong(maxLag);
 
-		return task
-			.andThen(t -> Task.async(() -> {
-				Thread.sleep(rng.nextLong(waitMs));
-				return t;
-			}, ForkJoinPool.commonPool()))
-			.afterThatDo(t -> {
+		return stage
+			.thenApplyAsync(result -> {
+				try {
+					Thread.sleep(rng.nextLong(waitMs));
+				} catch (InterruptedException e) {
+					// Silently ignore
+				}
+
 				if (shouldFail) throw new UnstableException("Simulated failure (" + UnstableStonksService.class + ")");
-				return t;
-			});
+				return result;
+			})
+			.toCompletableFuture();
 	}
 
 	@Override
-	public Task<List<Category>> queryAllCategories() {
-		return wrapTask(underlying.queryAllCategories());
+	public CompletableFuture<List<Category>> queryAllCategoriesAsync() {
+		return wrapStage(underlying.queryAllCategoriesAsync());
 	}
 
 	@Override
-	public Task<ProductMarketOverview> queryProductMarketOverview(Product product) {
-		return wrapTask(underlying.queryProductMarketOverview(product));
+	public CompletableFuture<ProductMarketOverview> queryMarketOverviewAsync(Product product) {
+		return wrapStage(underlying.queryMarketOverviewAsync(product));
 	}
 
 	@Override
-	public Task<List<Offer>> getOffers(UUID offerer) {
-		return wrapTask(underlying.getOffers(offerer));
+	public CompletableFuture<List<Offer>> getOffersFromUserAsync(UUID offerer) {
+		return wrapStage(underlying.getOffersFromUserAsync(offerer));
 	}
 
 	@Override
-	public Task<Offer> claimOffer(Offer offer) {
-		return wrapTask(underlying.claimOffer(offer));
+	public CompletableFuture<Map<UUID, Offer>> getOffersAsync(Collection<UUID> offerIds) {
+		return wrapStage(underlying.getOffersAsync(offerIds));
 	}
 
 	@Override
-	public Task<Offer> cancelOffer(Offer offer) {
-		return wrapTask(underlying.cancelOffer(offer));
+	public CompletableFuture<Map<UUID, Offer>> claimOffersAsync(Collection<UUID> offerIds) {
+		return wrapStage(underlying.claimOffersAsync(offerIds));
 	}
 
 	@Override
-	public Task<Offer> listOffer(UUID offerer, Product product, OfferType type, int units, double pricePerUnit) {
-		return wrapTask(underlying.listOffer(offerer, product, type, units, pricePerUnit));
+	public CompletableFuture<Map<UUID, Offer>> cancelOffersAsync(Collection<UUID> offerIds) {
+		return wrapStage(underlying.cancelOffersAsync(offerIds));
 	}
 
 	@Override
-	public Task<InstantOfferExecuteResult> instantOffer(Product product, OfferType type, int units, double balance) {
-		return wrapTask(underlying.instantOffer(product, type, units, balance));
+	public CompletableFuture<Offer> listOfferAsync(UUID user, Product product, OfferType type, int units, double pricePerUnit) {
+		return wrapStage(underlying.listOfferAsync(user, product, type, units, pricePerUnit));
+	}
+
+	@Override
+	public CompletableFuture<InstantOfferExecuteResult> instantOfferAsync(Product product, OfferType type, int units, double balance) {
+		return wrapStage(underlying.instantOfferAsync(product, type, units, balance));
 	}
 
 	@Override

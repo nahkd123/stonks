@@ -43,7 +43,7 @@ public class OverviewOffersList {
 	 * Get an overview of top offers.
 	 * </p>
 	 * <p>
-	 * For sell offers, this will sort by lowest PPU to highest PPU.
+	 * For sell offers, this will sort from lowest PPU to highest PPU.
 	 * </p>
 	 * 
 	 * @return A sorted list.

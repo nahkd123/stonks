@@ -55,6 +55,10 @@ public class Offer {
 		this.pricePerUnit = pricePerUnit;
 	}
 
+	public Offer createCopy() {
+		return new Offer(offerId, offerer, product, type, totalUnits, claimedUnits, filledUnits, pricePerUnit);
+	}
+
 	public UUID getOfferId() { return offerId; }
 
 	public UUID getOffererId() { return offerer; }
@@ -157,5 +161,14 @@ public class Offer {
 
 	private static UUID readUUID(DataInput in) throws IOException {
 		return new UUID(in.readLong(), in.readLong());
+	}
+
+	@Override
+	public String toString() {
+		return "Offer["
+			+ "id=" + offerId + " by " + offerer + ", "
+			+ "x" + totalUnits + " " + product + " @ " + pricePerUnit + "/ea, "
+			+ "filled=" + filledUnits + ", "
+			+ "claimed=" + claimedUnits + "]";
 	}
 }

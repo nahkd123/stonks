@@ -46,6 +46,7 @@ public class Cached<T> {
 		return this;
 	}
 
+	@Deprecated(forRemoval = true)
 	public Task<T> get() {
 		if (pendingTask != null) {
 			if (pendingTask.get().isPresent()) {

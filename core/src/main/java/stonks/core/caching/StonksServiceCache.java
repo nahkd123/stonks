@@ -49,6 +49,7 @@ public class StonksServiceCache {
 
 	public StonksService getService() { return service; }
 
+	@Deprecated(forRemoval = true)
 	public Task<List<Category>> getAllCategories() {
 		if (categories == null) return categories = service.queryAllCategories()
 			.afterThatDo(categories -> {

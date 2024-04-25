@@ -68,7 +68,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
 			.setName(Translations.Menus.CreateOffer.CustomAmount)
-			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(Text.literal(product.getProductName())
+				.styled(s -> s.withColor(Formatting.GRAY).withItalic(false)))
 			.addLoreLine(Text.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.ClickForAmount)
 			.setCallback((index, type, action, gui) -> new OfferSelectCustomAmountInput(player, this).open()));
@@ -102,7 +103,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 
 		return new GuiElementBuilder(disabled ? Items.BARRIER : icon, Math.min(Math.max(amount / 64, 1), 64))
 			.setName(buttonName)
-			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
+			.addLoreLine(Text.literal(product.getProductName())
+				.styled(s -> s.withColor(Formatting.GRAY).withItalic(false)))
 			.addLoreLine(Text.empty())
 			.addLoreLine(disabled
 				? Translations.Menus.CreateOffer.NoOfferForYou

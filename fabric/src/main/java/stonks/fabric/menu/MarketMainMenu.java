@@ -228,7 +228,7 @@ public class MarketMainMenu extends StackedMenu {
 				return GuiElementBuilder.from(dispStack)
 					.setLore(new ArrayList<>()) // Clear all lore
 					.addLoreLine(Text.literal(category.getCategoryName())
-						.styled(s -> s.withColor(Formatting.DARK_GRAY)))
+						.styled(s -> s.withColor(Formatting.DARK_GRAY).withItalic(false)))
 					.addLoreLine(Text.empty())
 					.addLoreLine(Translations.Menus.MainMenu.product$instantBuy(instantBuyPrice))
 					.addLoreLine(Translations.Menus.MainMenu.product$instantSell(instantSellPrice))

@@ -28,7 +28,7 @@ import stonks.fabric.translation.Translations;
 
 public class MenuIcons {
 	public static final GuiElementBuilder BORDER = new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE)
-		.setName(Translations.Icons.Border);
+		.hideTooltip();
 
 	public static final GuiElementBuilder BACK = new GuiElementBuilder(Items.ARROW)
 		.setName(Translations.Icons.PreviousMenu)

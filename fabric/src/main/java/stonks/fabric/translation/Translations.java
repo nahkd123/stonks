@@ -36,6 +36,7 @@ import stonks.fabric.StonksFabricUtils;
 public final class Translations {
 	// @formatter:off
 	public static final class Icons {
+		@Deprecated(forRemoval = true)
 		public static final Text Border = translatableWithFallback("stonks.menu.icon.border", " ");
 		public static final Text PreviousMenu = translatableWithFallback("stonks.menu.icon.previousMenu", "\u00a77<-- \u00a7aBack");
 		public static final Text MainMenu = translatableWithFallback("stonks.menu.icon.mainMenu", "\u00a7eMarket menu");
@@ -77,13 +78,13 @@ public final class Translations {
 			public static final Text Offer$Buy(Offer offer) { return translatableWithFallback("stonks.menu.viewOffers.offer.buy", "\u00a7a\u00a7lBUY OFFER: %s", productName(offer.getProduct())); }
 			public static final Text Offer$Sell(Offer offer) { return translatableWithFallback("stonks.menu.viewOffers.offer.sell", "\u00a7e\u00a7lSELL OFFER: %s", productName(offer.getProduct())); }
 			public static final Text Offer$Progress(Offer offer) {
-				return translatableWithFallback("stonks.menu.viewOffers.offer.progress", "\u00a77Progress: %s %s/%s/%s",
+				return translatableWithFallback("stonks.menu.viewOffers.offer.progress", "\u00a77Progress: %s %s\u00a77/%s\u00a77/%s",
 					StonksFabricUtils.progressBar(20, Formatting.DARK_GRAY,
 						new double[] { offer.getClaimedUnits() / (double) offer.getTotalUnits(), offer.getFilledUnits() / (double) offer.getTotalUnits() },
 						new Formatting[] { Formatting.GREEN, Formatting.YELLOW }),
-					Text.literal(Integer.toString(offer.getClaimedUnits())).styled(s -> s.withColor(Formatting.GREEN)),
-					Text.literal(Integer.toString(offer.getFilledUnits())).styled(s -> s.withColor(Formatting.YELLOW)),
-					Text.literal(Integer.toString(offer.getTotalUnits())).styled(s -> s.withColor(Formatting.WHITE)));
+					Text.literal(Integer.toString(offer.getClaimedUnits())).styled(s -> s.withColor(Formatting.GREEN).withItalic(false)),
+					Text.literal(Integer.toString(offer.getFilledUnits())).styled(s -> s.withColor(Formatting.YELLOW).withItalic(false)),
+					Text.literal(Integer.toString(offer.getTotalUnits())).styled(s -> s.withColor(Formatting.WHITE).withItalic(false)));
 			}
 			public static final Text Offer$PricePerUnit(Offer offer) { return translatableWithFallback("stonks.menu.viewOffers.offer.pricePerUnit", "\u00a77Price per unit: %s", currency(offer.getPricePerUnit())); }
 			public static final Text Offer$TotalPrice(Offer offer) { return translatableWithFallback("stonks.menu.viewOffers.offer.totalPrice", "\u00a77Total price: %s", currency(offer.getPricePerUnit() * offer.getTotalUnits())); }
@@ -212,7 +213,7 @@ public final class Translations {
 		public static final Text SoldWithExtras(int amount, Product product, double moneySpend, int unitsLeft) { return translatableWithFallback("stonks.message.soldWithExtras", "Sold %sx %s for %s with %s units can't be sold", units(amount), productName(product), currency(moneySpend), units(unitsLeft)); }
 		public static final Text PlacedBuyOffer(int units, Product product, double totalPrice, double pricePerUnit) { return translatableWithFallback("stonks.message.placedBuyOffer", "Placed buy offer: %sx %s for %s @ %s/each", units(units), productName(product), currency(totalPrice), currency(pricePerUnit)); }
 		public static final Text PlacedSellOffer(int units, Product product, double totalPrice, double pricePerUnit) { return translatableWithFallback("stonks.message.placedSellOffer", "Placed sell offer: %sx %s for %s @ %s/each", units(units), productName(product), currency(totalPrice), currency(pricePerUnit)); }
-		public static final Text Currency(double val) { return translatableWithFallback("stonks.message.currency", "\u00a7e$%s", Text.literal(StonksFabricUtils.CURRENCY_FORMATTER.format(val)).styled(s -> s.withColor(Formatting.YELLOW))); }
+		public static final Text Currency(double val) { return translatableWithFallback("stonks.message.currency", "\u00a7e$%s", Text.literal(StonksFabricUtils.CURRENCY_FORMATTER.format(val)).styled(s -> s.withColor(Formatting.YELLOW).withItalic(false))); }
 		public static final Text OfferInfoText(Text typeText, int totalAvailable, int offers, double pricePerUnit) { return translatableWithFallback("stonks.message.offerInfoText", "\u00a77%s %s\u00a77x from %s \u00a77offers for %s\u00a77/each", typeText, units(totalAvailable), units(offers), currency(pricePerUnit)); }
 		public static final Text BuyOfferFilled(Offer offer) { return translatableWithFallback("stonks.message.buyOfferFilled", "\u00a77\u00a7l[\u00a7eStonks\u00a77\u00a7l]\u00a7r Your %sx %s buy offer has been filled!", units(offer.getTotalUnits()), productName(offer.getProduct())); }
 		public static final Text SellOfferFilled(Offer offer) { return translatableWithFallback("stonks.message.sellOfferFilled", "\u00a77\u00a7l[\u00a7eStonks\u00a77\u00a7l]\u00a7r Your %sx %s sell offer has been filled!", units(offer.getTotalUnits()), productName(offer.getProduct())); }
@@ -220,11 +221,11 @@ public final class Translations {
 	// @formatter:on
 
 	public static Text units(int units) {
-		return Text.literal(Integer.toString(units)).styled(s -> s.withColor(Formatting.AQUA));
+		return Text.literal(Integer.toString(units)).styled(s -> s.withColor(Formatting.AQUA).withItalic(false));
 	}
 
 	public static Text productName(Product product) {
-		return Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.AQUA));
+		return Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.AQUA).withItalic(false));
 	}
 
 	public static Text currency(double value) {

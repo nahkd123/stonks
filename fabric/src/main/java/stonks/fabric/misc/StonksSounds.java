@@ -61,7 +61,7 @@ public class StonksSounds {
 			var e = iter.next();
 
 			if (e.atTime <= soundTime) {
-				e.player.playSound(e.sound, SoundCategory.PLAYERS, e.volume, e.pitch);
+				e.player.playSoundToPlayer(e.sound, SoundCategory.PLAYERS, e.volume, e.pitch);
 				iter.remove();
 			}
 		}
@@ -70,7 +70,7 @@ public class StonksSounds {
 	}
 
 	public void play(ServerPlayerEntity player, SoundEvent sound, int ticks, float volume, float pitch) {
-		if (ticks <= 0) player.playSound(sound, SoundCategory.PLAYERS, volume, pitch);
+		if (ticks <= 0) player.playSoundToPlayer(sound, SoundCategory.PLAYERS, volume, pitch);
 		else entries.add(new Entry(player, sound, soundTime + ticks, volume, pitch));
 	}
 

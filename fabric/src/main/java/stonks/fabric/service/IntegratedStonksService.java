@@ -72,12 +72,14 @@ public class IntegratedStonksService extends StonksMemoryService {
 		}
 
 		try (var stream = Files.newInputStream(saveFilePath)) {
-			var offer = Offer.deserialize(this::productGetter, stream);
-			if (offer != null) insertOffer(offer);
-			else {
-				StonksFabric.LOGGER.info("Loaded data from {}", saveFilePath);
-				return;
-			}
+			Offer offer;
+
+			do {
+				offer = Offer.deserialize(this::productGetter, stream);
+				if (offer != null) insertOffer(offer);
+			} while (offer != null);
+
+			StonksFabric.LOGGER.info("Loaded data from {}", saveFilePath);
 		} catch (IOException e) {
 			e.printStackTrace();
 			StonksFabric.LOGGER.error("Unable to load data from {}", saveFilePath);

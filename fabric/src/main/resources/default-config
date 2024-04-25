@@ -53,14 +53,12 @@ useService stonks.fabric.service.IntegratedStonksService
         name Special Items
         product special_paper
             name Special Paper
-            construction item minecraft:paper{ \
-                display: { \
-                    Name: '{"text": "Special Paper", "color": "red", "italic": false}', \
-                    Lore: [ \
-                        '{"text": "Edit this in /config/stonks/config!", "color": "aqua", "italic": false}' \
-                    ] \
-                } \
-            }
+            construction item minecraft:paper[ \
+                minecraft:item_name={"text": "Special Paper", "color": "red", "italic": false}, \
+                minecraft:lore=[ \
+                    '{"text": "Edit this in /config/stonks/config!", "color": "aqua", "italic": false}' \
+                ] \
+            ]
 
 // Adapters
 useAdapter stonks.fabric.adapter.provided.ItemsAdapter

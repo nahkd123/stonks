@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.4-SNAPSHOT'
+    id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'com.diffplug.eclipse.apt' version '3.42.2'
 }
 
@@ -7,20 +7,12 @@ repositories {
     maven { url = 'https://maven.nucleoid.xyz' }
 }
 
-eclipse {
-    synchronizationTasks 'eclipseFactorypath'
-}
+processResources {
+    inputs.property "stonks_version", rootProject.stonks_version
 
-compileJava {
-    def expands = Map.of(
-        "stonks_version", rootProject.stonks_version,
-        "minecraft_version", rootProject.minecraft_version,
-        "loader_version", rootProject.loader_version,
-        "fabric_version", rootProject.fabric_version
-    ).entrySet().stream()
-    .map(v -> "${v.getKey()}:${v.getValue()}")
-    .collect(java.util.stream.Collectors.joining(';'))
-    options.compilerArgs << "-Anahara.modkit.expand=${expands}"
+    filesMatching("fabric.mod.json") {
+        expand "stonks_version": rootProject.stonks_version
+    }
 }
 
 dependencies {
@@ -28,10 +20,11 @@ dependencies {
     mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
     modApi "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
-    implementation annotationProcessor(naharaModkit('nahara-modkit-annotations-v1'))
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_version"
     modImplementation include("eu.pb4:sgui:$rootProject.sgui_version")
-    modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version")
+    modImplementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version") {
+        exclude group: 'net.fabricmc'
+    }
     api include(project(':core'))
     api include(naharaToolkit('nahara-common-tasks'))
     api include(naharaToolkit('nahara-common-configurations'))

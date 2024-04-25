@@ -87,7 +87,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		for (int i = 0; i < inv.size(); i++) {
 			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !ItemStack.areEqual(refStack, stack)) continue;
+			if (stack.isEmpty() || !ItemStack.areItemsAndComponentsEqual(refStack, stack)) continue;
 			count += stack.getCount();
 		}
 
@@ -122,7 +122,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 
 		for (int i = 0; i < inv.size(); i++) {
 			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !ItemStack.areEqual(refStack, stack)) continue;
+			if (stack.isEmpty() || !ItemStack.areItemsAndComponentsEqual(refStack, stack)) continue;
 
 			var toTake = Math.min(amount, stack.getCount());
 			stack.decrement(toTake);

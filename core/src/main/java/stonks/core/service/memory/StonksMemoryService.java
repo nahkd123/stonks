@@ -191,28 +191,21 @@ public class StonksMemoryService implements LocalStonksService {
 	}
 
 	protected void insertOffer(Offer offer) {
-		var productEntry = getProductEntry(offer.getProduct());
-		if (productEntry == null)
-			throw new IllegalArgumentException("StonksMemoryService: Unknown product id: "
-				+ offer.getProduct().getProductId());
+		if (!offer.isFilled()) {
+			var productEntry = getProductEntry(offer.getProduct());
+			if (productEntry == null)
+				throw new IllegalArgumentException("StonksMemoryService: Unknown product id: "
+					+ offer.getProduct().getProductId());
 
-		var playerOffers = this.userOffers.computeIfAbsent(offer.getOffererId(), $ -> new ArrayList<>());
-		var list = offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers;
-		var searchResult = Collections.binarySearch(list, offer,
-			(a, b) -> offer.getType().getOfferPriceComparator().compare(a.getPricePerUnit(), b.getPricePerUnit()));
-
-		// list.add(offer);
-		// list.sort((a, b) ->
-		// type.getOfferPriceComparator().compare(a.getPricePerUnit(),
-		// b.getPricePerUnit()));
-		if (searchResult >= 0) {
-			list.add(searchResult, offer);
-		} else {
-			// insertAt = -v - 1
-			list.add(-searchResult - 1, offer);
+			var list = offer.getType() == OfferType.BUY ? productEntry.buyOffers : productEntry.sellOffers;
+			var searchResult = Collections.binarySearch(list, offer,
+				(a, b) -> offer.getType().getOfferPriceComparator().compare(a.getPricePerUnit(), b.getPricePerUnit()));
+			list.add(searchResult >= 0 ? searchResult : (-searchResult - 1), offer);
 		}
 
+		var playerOffers = this.userOffers.computeIfAbsent(offer.getOffererId(), $ -> new ArrayList<>());
 		playerOffers.add(offer);
+
 		offers.put(offer.getOfferId(), offer);
 	}
 

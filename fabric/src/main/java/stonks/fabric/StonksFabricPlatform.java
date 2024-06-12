@@ -22,7 +22,9 @@
 package stonks.fabric;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
+import stonks.core.caching.StonksCache;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
@@ -35,13 +37,26 @@ import stonks.fabric.service.StonksServiceProvider;
 public interface StonksFabricPlatform extends StonksPlatform {
 	/**
 	 * <p>
-	 * Obtain the Stonks service cache. You should use this cache instead of
-	 * {@link #getStonksService()} for performance.
+	 * Obtain the legacy Stonks service cache.
+	 * </p>
+	 * 
+	 * @return The cache.
+	 * @deprecated use {@link #getStonksCache()}. This method is there to help you
+	 *             transitioning to APIs that uses {@link Future}.
+	 */
+	@Deprecated(forRemoval = true)
+	public StonksServiceCache getLegacyStonksCache();
+
+	/**
+	 * <p>
+	 * Obtain the Stonks service cache. The cache performs caching automatically and
+	 * you should use this instead of your own caching solution, as this will be
+	 * shared across all mods.
 	 * </p>
 	 * 
 	 * @return The cache.
 	 */
-	public StonksServiceCache getStonksCache();
+	public StonksCache getStonksCache();
 
 	/**
 	 * <p>

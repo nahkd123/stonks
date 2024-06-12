@@ -49,7 +49,7 @@ public class ViewOffersMenu extends StackedMenu {
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
 		setTitle(Translations.Menus.ViewOffers.ViewOffers);
-		offersCache = StonksFabric.getPlatform(player).getStonksCache().getOffers(player.getUuid());
+		offersCache = StonksFabric.getPlatform(player).getLegacyStonksCache().getOffers(player.getUuid());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
 		placePagesNavigations();

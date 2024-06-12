@@ -34,6 +34,7 @@ import stonks.core.product.Category;
 import stonks.core.product.Product;
 import stonks.core.service.StonksService;
 
+@Deprecated(forRemoval = true)
 public class StonksServiceCache {
 	private StonksService service;
 	private Task<List<Category>> categories;

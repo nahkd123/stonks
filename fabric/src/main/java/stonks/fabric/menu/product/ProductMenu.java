@@ -55,7 +55,7 @@ public class ProductMenu extends StackedMenu {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		setTitle(Translations.Menus.ProductInfo._ProductInfo(product));
 		this.product = product;
-		this.queryTask = StonksFabric.getPlatform(getPlayer()).getStonksCache().getOverview(product).get();
+		this.queryTask = StonksFabric.getPlatform(getPlayer()).getLegacyStonksCache().getOverview(product).get();
 
 		setSlot(22, GuiElementBuilder.from(StonksFabric.getDisplayStack(StonksFabric
 			.getPlatform(player)

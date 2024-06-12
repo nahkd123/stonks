@@ -25,7 +25,6 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -111,20 +110,16 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.then(argument("id", StringArgumentType.string())
 					.suggests((context, builder) -> {
-						var cache = StonksFabric.getPlatform(context.getSource().getServer()).getStonksCache();
-						return CompletableFuture.supplyAsync(() -> {
-							try {
-								cache.getAllCategories()
-									.await()
+						return StonksFabric.getPlatform(context.getSource().getServer())
+							.getStonksCache()
+							.getAllCategories()
+							.thenApply(list -> {
+								list
 									.stream()
-									.flatMap(v -> v.getProducts().stream())
-									.forEach(v -> builder.suggest(v.getProductId()));
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-
-							return builder.build();
-						});
+									.flatMap(category -> category.getProducts().stream())
+									.forEach(product -> builder.suggest(product.getProductId()));
+								return builder.build();
+							});
 					})
 					.then(argument("amount", IntegerArgumentType.integer(0))
 						.executes(ctx -> giveProducts(ctx, IntegerArgumentType.getInteger(ctx, "amount"))))
@@ -159,19 +154,21 @@ public class StonksCommand {
 		var adapter = provider.getStonksAdapter();
 		cache
 			.getAllCategories()
-			.afterThatDo(categories -> {
+			.thenAccept(categories -> {
 				var product = categories.stream()
 					.flatMap(category -> category.getProducts().stream())
 					.filter(v -> v.getProductId().equals(id))
 					.findFirst();
 
 				if (product.isPresent()) {
-					for (var p : players) {
-						adapter.addUnitsTo(p, product.get(), amount);
-						ctx.getSource().sendFeedback(() -> Text.literal("Gave ")
-							.append(p.getDisplayName())
-							.append(" " + amount + "x " + product.get().getProductName()), true);
-					}
+					ctx.getSource().getServer().execute(() -> {
+						for (var p : players) {
+							adapter.addUnitsTo(p, product.get(), amount);
+							ctx.getSource().sendFeedback(() -> Text.literal("Gave ")
+								.append(p.getDisplayName())
+								.append(" " + amount + "x " + product.get().getProductName()), true);
+						}
+					});
 				} else {
 					ctx.getSource().sendError(Text.literal("Product not found: " + id)
 						.styled(s -> s.withColor(Formatting.RED)));
@@ -185,7 +182,7 @@ public class StonksCommand {
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getCategoryById(id)
-			.afterThatDo(category -> {
+			.thenAccept(category -> {
 				if (category == null) {
 					ctx.getSource().sendError(Text.literal("Unknown category with ID " + id));
 					return;
@@ -220,7 +217,7 @@ public class StonksCommand {
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getAllCategories()
-			.afterThatDo(categories -> {
+			.thenAccept(categories -> {
 				ctx.getSource().sendMessage(Text.literal(categories.size() + " "
 					+ (categories.size() == 1 ? "category" : "categories") + (categories.size() > 0 ? ":" : "")));
 				for (var cat : categories) {

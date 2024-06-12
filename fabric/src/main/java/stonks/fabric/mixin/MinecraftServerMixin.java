@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import net.minecraft.server.MinecraftServer;
+import stonks.core.caching.StonksCache;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.service.LocalStonksService;
 import stonks.core.service.StonksService;
@@ -46,7 +47,9 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Unique
 	private StonksService stonks$service;
 	@Unique
-	private StonksServiceCache stonks$cache;
+	private StonksServiceCache stonks$legacyCache;
+	@Unique
+	private StonksCache stonks$cache;
 	@Unique
 	private AdaptersContainer stonks$adapters;
 	@Unique
@@ -60,7 +63,10 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	public StonksService getStonksService() { return stonks$service; }
 
 	@Override
-	public StonksServiceCache getStonksCache() { return stonks$cache; }
+	public StonksServiceCache getLegacyStonksCache() { return stonks$legacyCache; }
+
+	@Override
+	public StonksCache getStonksCache() { return stonks$cache; }
 
 	@Override
 	public StonksFabricAdapter getStonksAdapter() { return stonks$adapters; }
@@ -77,7 +83,8 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Override
 	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters) {
 		stonks$service = service.createService((MinecraftServer) (Object) this);
-		stonks$cache = new StonksServiceCache(stonks$service);
+		stonks$legacyCache = new StonksServiceCache(stonks$service);
+		stonks$cache = new StonksCache(stonks$service);
 		stonks$tasksHandler = new TasksHandler();
 		stonks$config = config;
 		stonks$sounds = new StonksSounds();

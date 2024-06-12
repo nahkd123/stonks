@@ -94,7 +94,7 @@ public interface StonksService {
 	 * </p>
 	 * 
 	 * @return Market overview.
-	 * @deprecated use {@link #queryProductMarketOverview(Product)}
+	 * @deprecated use {@link #queryMarketOverviewAsync(Product)}
 	 */
 	@Deprecated(forRemoval = true)
 	default Task<ProductMarketOverview> queryProductMarketOverview(Product product) {

@@ -212,8 +212,8 @@ public class StonksMemoryService implements LocalStonksService {
 	@Override
 	public CompletableFuture<InstantOfferExecuteResult> instantOfferAsync(Product product, OfferType type, int units, double balance) {
 		var productEntry = getProductEntry(product);
-		if (productEntry == null)
-			throw new IllegalArgumentException("StonksMemoryService: Unknown product id: " + product.getProductId());
+		if (productEntry == null) return CompletableFuture.failedFuture(
+			new IllegalArgumentException("StonksMemoryService: Unknown product id: " + product.getProductId()));
 		var exec = new InstantOfferExecutor(balance, units);
 
 		switch (type) {
@@ -225,8 +225,9 @@ public class StonksMemoryService implements LocalStonksService {
 			break;
 		}
 
-		return CompletableFuture
-			.completedFuture(new InstantOfferExecuteResult(exec.getCurrentUnits(), exec.getCurrentBalance()));
+		InstantOfferExecuteResult result = new InstantOfferExecuteResult(exec.getCurrentUnits(), exec
+			.getCurrentBalance());
+		return CompletableFuture.completedFuture(result);
 	}
 
 	@Override

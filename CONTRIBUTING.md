@@ -15,11 +15,7 @@ Did your server crashed? Is it because of Stonks? Did you found a duplication gl
 ## Contribute to documentations
 Some people are not insanely smart to figure out how to use Stonks. That's why I want some poeple to help with documentations.
 
-### User's documentations (a.k.a Wiki)
-Currently, [Wiki](https://github.com/nahkd123/stonks/wiki) can only edited by collaborators. I'm planning to use GitHub Pages for all kind of documentations.
-
-### Developer's documentations
-As of today, you can fork this repository, make changes in ``/docs/`` and create a new pull request to contribute to developer's documentations. Once GitHub Pages is available for this project, you have to create pull requests to ``docs`` branch of this repository.
+All documentations are maintained in `docs/<version>` branches. For example, documentations for Stonks for Minecraft 1.21 are stored in `docs/1.21.x`. Please note that only the branch whose version is equals to main branch's version (eg: main branch is `main/1.21.x` then the docs branch must be `docs/1.21.x`) is used for https://nahkd123.github.io/stonks/ page. Other branches are meant for historical/archival purpose (so if you are still using Stonks for MC 1.20.6, you can checkout `docs/1.20.x`).
 
 ## Contribute code
 You can contribute code by creating pull request to this repository.

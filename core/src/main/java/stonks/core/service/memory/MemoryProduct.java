@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,20 @@
  */
 package stonks.core.service.memory;
 
+import stonks.core.dynamic.Dynamic;
 import stonks.core.product.Product;
 
 public class MemoryProduct implements Product {
 	private MemoryCategory category;
 	private String id;
 	private String name;
-	private String constructData;
+	private Dynamic metadata;
 
-	public MemoryProduct(MemoryCategory category, String id, String name, String constructData) {
+	public MemoryProduct(MemoryCategory category, String id, String name, Dynamic metadata) {
 		this.category = category;
 		this.id = id;
 		this.name = name;
-		this.constructData = constructData;
+		this.metadata = metadata;
 	}
 
 	@Override
@@ -46,5 +47,5 @@ public class MemoryProduct implements Product {
 	public String getProductName() { return name; }
 
 	@Override
-	public String getProductConstructionData() { return constructData; }
+	public Dynamic getProductMetadata() { return metadata; }
 }

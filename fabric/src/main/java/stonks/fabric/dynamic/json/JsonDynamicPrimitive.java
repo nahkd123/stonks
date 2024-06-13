@@ -19,25 +19,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.adapter;
+package stonks.fabric.dynamic.json;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.MinecraftServer;
+import com.google.gson.JsonPrimitive;
 
-public class StonksFabricAdapterCallback {
-	@FunctionalInterface
-	public static interface AdapterCallback {
-		public void registerAdaptersTo(MinecraftServer server, AdaptersContainer container);
+import stonks.core.dynamic.DynamicPrimitive;
+
+public final class JsonDynamicPrimitive implements JsonDynamic, DynamicPrimitive {
+	private JsonPrimitive json;
+
+	public JsonDynamicPrimitive(JsonPrimitive json) {
+		this.json = json;
 	}
 
-	/**
-	 * <p>
-	 * Event fired when Stonks service is starting.
-	 * </p>
-	 */
-	public static final Event<AdapterCallback> EVENT = EventFactory.createArrayBacked(AdapterCallback.class,
-		callbacks -> (server, container) -> {
-			for (var cb : callbacks) cb.registerAdaptersTo(server, container);
-		});
+	@Override
+	public JsonPrimitive getJson() { return json; }
+
+	@Override
+	public String asString() {
+		return json.getAsString();
+	}
+
+	@Override
+	public boolean isString() { return json.isString(); }
+
+	@Override
+	public Number asNumber() {
+		return json.getAsNumber();
+	}
+
+	@Override
+	public boolean isNumber() { return json.isNumber(); }
+
+	@Override
+	public boolean asBoolean() {
+		return json.getAsBoolean();
+	}
+
+	@Override
+	public boolean isBoolean() { return json.isBoolean(); }
 }

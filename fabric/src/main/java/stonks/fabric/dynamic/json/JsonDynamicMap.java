@@ -19,25 +19,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.adapter;
+package stonks.fabric.dynamic.json;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.MinecraftServer;
+import java.util.Set;
 
-public class StonksFabricAdapterCallback {
-	@FunctionalInterface
-	public static interface AdapterCallback {
-		public void registerAdaptersTo(MinecraftServer server, AdaptersContainer container);
+import com.google.gson.JsonObject;
+
+import stonks.core.dynamic.Dynamic;
+import stonks.core.dynamic.DynamicMap;
+
+public class JsonDynamicMap implements JsonDynamic, DynamicMap {
+	private JsonObject json;
+
+	public JsonDynamicMap(JsonObject json) {
+		this.json = json;
 	}
 
-	/**
-	 * <p>
-	 * Event fired when Stonks service is starting.
-	 * </p>
-	 */
-	public static final Event<AdapterCallback> EVENT = EventFactory.createArrayBacked(AdapterCallback.class,
-		callbacks -> (server, container) -> {
-			for (var cb : callbacks) cb.registerAdaptersTo(server, container);
-		});
+	@Override
+	public JsonObject getJson() { return json; }
+
+	@Override
+	public Set<String> keys() {
+		return json.keySet();
+	}
+
+	@Override
+	public Dynamic getOrNull(String key) {
+		return getFactory().wrap(json.get(key));
+	}
+
+	@Override
+	public Dynamic put(String key, Dynamic value) {
+		var prev = getOrNull(key);
+
+		if (value == null) {
+			remove(key);
+			return prev;
+		}
+
+		if (!(value instanceof JsonDynamic jsonDyn)) throw new IllegalArgumentException("Value must be JsonDynamic");
+		json.add(key, jsonDyn.getJson());
+		return prev;
+	}
+
+	@Override
+	public boolean remove(String key) {
+		return json.remove(key) != null;
+	}
 }

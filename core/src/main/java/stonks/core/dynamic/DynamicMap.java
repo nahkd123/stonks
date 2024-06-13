@@ -19,25 +19,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.adapter;
+package stonks.core.dynamic;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.MinecraftServer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-public class StonksFabricAdapterCallback {
-	@FunctionalInterface
-	public static interface AdapterCallback {
-		public void registerAdaptersTo(MinecraftServer server, AdaptersContainer container);
+public interface DynamicMap extends Dynamic, Iterable<Map.Entry<String, ? extends Dynamic>> {
+	public Set<String> keys();
+
+	public Dynamic getOrNull(String key);
+
+	public Dynamic put(String key, Dynamic value);
+
+	public boolean remove(String key);
+
+	default void clear() {
+		for (String key : keys()) remove(key);
 	}
 
-	/**
-	 * <p>
-	 * Event fired when Stonks service is starting.
-	 * </p>
-	 */
-	public static final Event<AdapterCallback> EVENT = EventFactory.createArrayBacked(AdapterCallback.class,
-		callbacks -> (server, container) -> {
-			for (var cb : callbacks) cb.registerAdaptersTo(server, container);
-		});
+	@Override
+	default Iterator<Entry<String, ? extends Dynamic>> iterator() {
+		return keys().stream().<Map.Entry<String, ? extends Dynamic>>map(k -> Map.entry(k, getOrNull(k))).iterator();
+	}
+
+	default Collection<Map.Entry<String, ? extends Dynamic>> entries() {
+		var out = new ArrayList<Map.Entry<String, ? extends Dynamic>>();
+		var iter = iterator();
+		while (iter.hasNext()) out.add(iter.next());
+		return out;
+	}
 }

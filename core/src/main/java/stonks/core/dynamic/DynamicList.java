@@ -19,25 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.adapter;
+package stonks.core.dynamic;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.MinecraftServer;
+import java.util.Iterator;
 
-public class StonksFabricAdapterCallback {
-	@FunctionalInterface
-	public static interface AdapterCallback {
-		public void registerAdaptersTo(MinecraftServer server, AdaptersContainer container);
+public interface DynamicList extends Dynamic, Iterable<Dynamic> {
+	public int size();
+
+	public Dynamic get(int at);
+
+	public void add(int insertAt, Dynamic value);
+
+	default void add(Dynamic value) {
+		add(size(), value);
 	}
 
-	/**
-	 * <p>
-	 * Event fired when Stonks service is starting.
-	 * </p>
-	 */
-	public static final Event<AdapterCallback> EVENT = EventFactory.createArrayBacked(AdapterCallback.class,
-		callbacks -> (server, container) -> {
-			for (var cb : callbacks) cb.registerAdaptersTo(server, container);
-		});
+	public void remove(int at);
+
+	default boolean remove(Dynamic value) {
+		for (int i = 0; i < size(); i++) {
+			if (get(i) == value) {
+				remove(i);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	default void clear() {
+		for (int i = size() - 1; i >= 0; i--) remove(i);
+	}
+
+	@Override
+	default Iterator<Dynamic> iterator() {
+		return new Iterator<>() {
+			int index = 0;
+
+			@Override
+			public boolean hasNext() {
+				return index < size();
+			}
+
+			@Override
+			public Dynamic next() {
+				return get(index++);
+			}
+
+			@Override
+			public void remove() {
+				if (index > size() || index == 0) throw new ArrayIndexOutOfBoundsException();
+				index--;
+				DynamicList.this.remove(index);
+			}
+		};
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,21 @@
  */
 package stonks.core.product;
 
+import stonks.core.dynamic.Dynamic;
+import stonks.core.dynamic.DynamicPrimitive;
+
 public interface Product {
 	public Category getCategory();
 
 	public String getProductId();
 
+	/**
+	 * <p>
+	 * Get the display name of the product. This will be displayed in GUIs.
+	 * </p>
+	 * 
+	 * @return The display name of the product.
+	 */
 	public String getProductName();
 
 	/**
@@ -36,6 +46,29 @@ public interface Product {
 	 * </p>
 	 * 
 	 * @return Product construction data as string. Can be {@code null}.
+	 * @deprecated use {@link #getProductMetadata()}, which have supports for
+	 *             complex data structure.
 	 */
-	public String getProductConstructionData();
+	@Deprecated(forRemoval = true)
+	default String getProductConstructionData() {
+		var meta = getProductMetadata();
+		if (meta instanceof DynamicPrimitive prim) return prim.asString();
+		return "";
+	}
+
+	/**
+	 * <p>
+	 * Obtain the structured metadata of this product. The metadata contains stuffs
+	 * like "how to reconstruct this product", "the product's floor price" and so
+	 * on. At this moment, only {@link DynamicPrimitive} with string type will be
+	 * returned from this method when using Stonks for Fabric, but in the future,
+	 * user will be able to configure with complex structure.
+	 * </p>
+	 * <p>
+	 * My plan is to move {@link #getProductName()} to metadata as well.
+	 * </p>
+	 * 
+	 * @return The product metadata.
+	 */
+	public Dynamic getProductMetadata();
 }

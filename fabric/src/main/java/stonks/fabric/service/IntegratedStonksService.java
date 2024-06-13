@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import stonks.core.service.memory.MemoryCategory;
 import stonks.core.service.memory.MemoryProduct;
 import stonks.core.service.memory.StonksMemoryService;
 import stonks.fabric.StonksFabric;
+import stonks.fabric.dynamic.json.JsonDynamicFactory;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
 public class IntegratedStonksService extends StonksMemoryService {
@@ -107,7 +108,9 @@ public class IntegratedStonksService extends StonksMemoryService {
 					var productId = child1.getValue().get();
 					var productName = child1.firstChild("name").flatMap(v -> v.getValue()).orElse(productId);
 					var productConstruction = child1.firstChild("construction").flatMap(v -> v.getValue()).orElse(null);
-					var product = new MemoryProduct(category, productId, productName, productConstruction);
+					// TODO
+					var metadata = JsonDynamicFactory.FACTORY.createPrimitive(productConstruction);
+					var product = new MemoryProduct(category, productId, productName, metadata);
 					category.getModifiableMockProducts().add(product);
 				}
 			}

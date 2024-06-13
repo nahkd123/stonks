@@ -19,25 +19,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package stonks.fabric.adapter;
+package stonks.core.dynamic;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.MinecraftServer;
+public interface DynamicPrimitive extends Dynamic {
+	public String asString();
 
-public class StonksFabricAdapterCallback {
-	@FunctionalInterface
-	public static interface AdapterCallback {
-		public void registerAdaptersTo(MinecraftServer server, AdaptersContainer container);
-	}
+	public boolean isString();
 
-	/**
-	 * <p>
-	 * Event fired when Stonks service is starting.
-	 * </p>
-	 */
-	public static final Event<AdapterCallback> EVENT = EventFactory.createArrayBacked(AdapterCallback.class,
-		callbacks -> (server, container) -> {
-			for (var cb : callbacks) cb.registerAdaptersTo(server, container);
-		});
+	public Number asNumber();
+
+	public boolean isNumber();
+
+	public boolean asBoolean();
+
+	public boolean isBoolean();
 }

@@ -30,6 +30,8 @@ import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.economy.Economy;
+import stonks.fabric.economy.LegacyEconomy;
 import stonks.fabric.misc.StonksSounds;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
@@ -67,6 +69,16 @@ public interface StonksFabricPlatform extends StonksPlatform {
 	 * @return The adapter.
 	 */
 	public StonksFabricAdapter getStonksAdapter();
+
+	/**
+	 * <p>
+	 * Get currently active economy system. This will always return
+	 * {@link LegacyEconomy} for now.
+	 * </p>
+	 * 
+	 * @return The currently active economy system.
+	 */
+	public Economy getEconomySystem();
 
 	/**
 	 * <p>

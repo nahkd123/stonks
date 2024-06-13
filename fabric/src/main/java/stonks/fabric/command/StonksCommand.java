@@ -24,8 +24,6 @@ package stonks.fabric.command;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-import java.util.Optional;
-
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -41,7 +39,6 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 
 public class StonksCommand {
 	public static final LiteralArgumentBuilder<ServerCommandSource> ROOT = literal("stonks")
@@ -131,16 +128,15 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.executes(ctx -> {
 					var players = EntityArgumentType.getPlayers(ctx, "players");
-					var adapter = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksAdapter();
+					var economy = StonksFabric.getPlatform(ctx.getSource().getServer()).getEconomySystem();
 
 					for (var p : players) {
 						ctx.getSource().sendMessage(Text.literal("Inspecting ").append(p.getDisplayName()).append(":"));
 
-						var balance = adapter.accountBalance(p);
 						ctx.getSource().sendMessage(Text.literal(" - ")
 							.styled(s -> s.withColor(Formatting.GRAY))
 							.append(Text.literal("Account Balance: ").styled(s -> s.withColor(Formatting.WHITE)))
-							.append(StonksFabricUtils.currencyText(Optional.of(balance), true)));
+							.append(economy.formatAsDisplay(economy.balanceOf(p))));
 					}
 					return 1;
 				}));

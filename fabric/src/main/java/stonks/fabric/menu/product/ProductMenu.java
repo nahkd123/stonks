@@ -22,12 +22,12 @@
 package stonks.fabric.menu.product;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import nahara.common.tasks.Task;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -49,30 +49,22 @@ import stonks.fabric.translation.Translations;
 
 public class ProductMenu extends StackedMenu {
 	private Product product;
-	private Task<ProductMarketOverview> queryTask;
+	private CompletableFuture<ProductMarketOverview> queryTask;
 
 	public ProductMenu(StackedMenu previous, ServerPlayerEntity player, Product product) {
 		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
 		setTitle(Translations.Menus.ProductInfo._ProductInfo(product));
 		this.product = product;
-		this.queryTask = StonksFabric.getPlatform(getPlayer()).getLegacyStonksCache().getOverview(product).get();
+		this.queryTask = StonksFabric.getPlatform(getPlayer()).getStonksCache().getOverview(product).get();
 
 		setSlot(22, GuiElementBuilder.from(StonksFabric.getDisplayStack(StonksFabric
 			.getPlatform(player)
 			.getStonksAdapter(), product)));
 
-		setSlot(19, createInstantOfferButton(OfferType.BUY, queryTask.afterThatDo(v -> {
-			return v.getSellOffers().compute();
-		})));
-		setSlot(20, createInstantOfferButton(OfferType.SELL, queryTask.afterThatDo(v -> {
-			return v.getBuyOffers().compute();
-		})));
-		setSlot(24, createOfferButton(queryTask.afterThatDo(v -> {
-			return v.getBuyOffers();
-		}), OfferType.BUY));
-		setSlot(25, createOfferButton(queryTask.afterThatDo(v -> {
-			return v.getSellOffers();
-		}), OfferType.SELL));
+		setSlot(19, createInstantOfferButton(OfferType.BUY, queryTask.thenApply(v -> v.getSellOffers().compute())));
+		setSlot(20, createInstantOfferButton(OfferType.SELL, queryTask.thenApply(v -> v.getBuyOffers().compute())));
+		setSlot(24, createOfferButton(queryTask.thenApply(v -> v.getBuyOffers()), OfferType.BUY));
+		setSlot(25, createOfferButton(queryTask.thenApply(v -> v.getSellOffers()), OfferType.SELL));
 	}
 
 	public Product getProduct() { return product; }
@@ -84,7 +76,7 @@ public class ProductMenu extends StackedMenu {
 		setSlot(5, MenuIcons.VIEW_SELF_OFFERS);
 	}
 
-	private GuiElementInterface createInstantOfferButton(OfferType type, Task<Optional<ComputedOffersList>> computeTask) {
+	private GuiElementInterface createInstantOfferButton(OfferType type, CompletableFuture<Optional<ComputedOffersList>> computeTask) {
 		var icon = switch (type) {
 		case BUY -> Items.DIAMOND;
 		case SELL -> Items.GOLD_INGOT;
@@ -151,7 +143,7 @@ public class ProductMenu extends StackedMenu {
 		};
 	}
 
-	private GuiElementInterface createOfferButton(Task<OverviewOffersList> list, OfferType type) {
+	private GuiElementInterface createOfferButton(CompletableFuture<OverviewOffersList> list, OfferType type) {
 		var icon = switch (type) {
 		case BUY -> Items.DIAMOND_BLOCK;
 		case SELL -> Items.GOLD_BLOCK;
@@ -192,8 +184,12 @@ public class ProductMenu extends StackedMenu {
 			@Override
 			public void onSlotClick(int index, ClickType clickType, SlotActionType action, SlotGuiInterface gui, OverviewOffersList success, Throwable error) {
 				if (error != null) return;
-				var now = queryTask.get();
-				new OfferAmountConfigureMenu(ProductMenu.this, player, product, type, now.get().getSuccess()).open();
+
+				try {
+					new OfferAmountConfigureMenu(ProductMenu.this, player, product, type, queryTask.get()).open();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
 		};
 	}

@@ -77,34 +77,42 @@ public class OfferInfoMenu extends StackedMenu {
 
 				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getPlatform(getPlayer()).getStonksService();
-				var handler = StonksFabric.getPlatform(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Translations.Menus.OfferInfo.ClaimOffer$Claiming));
 
 				var previousUnits = offer.getClaimedUnits();
-				handler.handle(service.claimOffer(offer), (newOffer, error) -> {
-					if (error != null) {
+				service.claimOfferAsync(offer.getOfferId())
+					.thenAcceptAsync(newOffer -> {
+						if (newOffer.isEmpty()) {
+							if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
+								.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
+							else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
+							StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
+							StonksFabric.LOGGER.warn("Offer with ID {} no longer exists!", offer.getOfferId());
+							return;
+						}
+
+						var newUnits = newOffer.get().getClaimedUnits();
+						var delta = newUnits - previousUnits;
+
+						if (offer.getType() == OfferType.BUY) {
+							adapter.addUnitsTo(getPlayer(), offer.getProduct(), delta);
+						} else {
+							adapter.accountDeposit(getPlayer(), config.applyTax(delta * offer.getPricePerUnit()));
+						}
+
+						new OfferInfoMenu(getPrevious(), getPlayer(), newOffer.get()).open();
+						StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
+					}, player.getServer())
+					.exceptionallyAsync(error -> {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
 						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
-						return;
-					}
-
-					var newUnits = newOffer.getClaimedUnits();
-					var delta = newUnits - previousUnits;
-
-					if (offer.getType() == OfferType.BUY) {
-						adapter.addUnitsTo(getPlayer(), offer.getProduct(), delta);
-					} else {
-						adapter.accountDeposit(getPlayer(), config.applyTax(delta * offer.getPricePerUnit()));
-					}
-
-					new OfferInfoMenu(getPrevious(), getPlayer(), newOffer).open();
-					StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
-				});
+						return null;
+					}, player.getServer());
 			});
 	}
 
@@ -117,44 +125,54 @@ public class OfferInfoMenu extends StackedMenu {
 			.setCallback((index, type, action, gui) -> {
 				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getPlatform(getPlayer()).getStonksService();
-				var handler = StonksFabric.getPlatform(getPlayer()).getTasksHandler();
 
 				setSlot(index, new GuiElementBuilder(Items.CLOCK)
 					.setName(Translations.Menus.OfferInfo.CancelOffer$Cancelling));
 
 				var previousClaimedUnits = offer.getClaimedUnits();
-				handler.handle(service.cancelOffer(offer), (newOffer, error) -> {
-					if (error != null) {
+				service.cancelOfferAsync(offer.getOfferId())
+					.thenAccept(newOffer -> getPlayer().getServer().execute(() -> {
+						if (newOffer.isEmpty()) {
+							if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
+								.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
+							else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
+							StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
+							StonksFabric.LOGGER.warn("Offer with ID {} no longer exists!", offer.getOfferId());
+							return;
+						}
+
+						var offer = newOffer.get();
+						var totalUnits = offer.getTotalUnits();
+						int refundUnits;
+						double refundMoney;
+						var ppu = offer.getPricePerUnit();
+
+						if (offer.getType() == OfferType.BUY) {
+							refundUnits = offer.getFilledUnits() - previousClaimedUnits;
+							refundMoney = (totalUnits - offer.getFilledUnits()) * ppu;
+						} else {
+							refundUnits = totalUnits - offer.getFilledUnits();
+							refundMoney = StonksFabric.getPlatform(getPlayer()).getPlatformConfig()
+								.applyTax((offer.getFilledUnits() - previousClaimedUnits) * ppu);
+						}
+
+						adapter.addUnitsTo(getPlayer(), offer.getProduct(), refundUnits);
+						adapter.accountDeposit(getPlayer(), refundMoney);
+
+						close();
+						StonksFabric.getPlatform(getPlayer()).getSounds().playCancelledSound(getPlayer());
+						getPlayer().sendMessage(
+							Translations.Messages.OfferCancelled(offer, refundUnits, refundMoney),
+							true);
+					}))
+					.exceptionally(error -> {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
 						else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
 						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
-						return;
-					}
-
-					var totalUnits = newOffer.getTotalUnits();
-					int refundUnits;
-					double refundMoney;
-					var ppu = newOffer.getPricePerUnit();
-
-					if (offer.getType() == OfferType.BUY) {
-						refundUnits = newOffer.getFilledUnits() - previousClaimedUnits;
-						refundMoney = (totalUnits - newOffer.getFilledUnits()) * ppu;
-					} else {
-						refundUnits = totalUnits - newOffer.getFilledUnits();
-						refundMoney = StonksFabric.getPlatform(getPlayer()).getPlatformConfig()
-							.applyTax((newOffer.getFilledUnits() - previousClaimedUnits) * ppu);
-					}
-
-					adapter.addUnitsTo(getPlayer(), newOffer.getProduct(), refundUnits);
-					adapter.accountDeposit(getPlayer(), refundMoney);
-
-					close();
-					StonksFabric.getPlatform(getPlayer()).getSounds().playCancelledSound(getPlayer());
-					getPlayer().sendMessage(Translations.Messages.OfferCancelled(newOffer, refundUnits, refundMoney),
-						true);
-				});
+						return null;
+					});
 			});
 	}
 }

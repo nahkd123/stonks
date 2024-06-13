@@ -29,7 +29,7 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import stonks.core.caching.Cached;
+import stonks.core.caching.FutureCache;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
@@ -39,7 +39,7 @@ import stonks.fabric.menu.handling.WaitableGuiElement;
 import stonks.fabric.translation.Translations;
 
 public class ViewOffersMenu extends StackedMenu {
-	private Cached<List<Offer>> offersCache;
+	private FutureCache<List<Offer>> offersCache;
 	private boolean isUpdating = false;
 	private boolean isInitialized = false;
 	private List<Offer> loadedOffers;
@@ -49,7 +49,7 @@ public class ViewOffersMenu extends StackedMenu {
 	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
 		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
 		setTitle(Translations.Menus.ViewOffers.ViewOffers);
-		offersCache = StonksFabric.getPlatform(player).getLegacyStonksCache().getOffers(player.getUuid());
+		offersCache = StonksFabric.getPlatform(player).getStonksCache().getOffers(player.getUuid());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
 		placePagesNavigations();
@@ -90,14 +90,20 @@ public class ViewOffersMenu extends StackedMenu {
 	public void onTick() {
 		super.onTick();
 
-		if (!isInitialized || (isUpdating == false && offersCache.shouldUpdate())) {
+		if (!isInitialized || (isUpdating == false && offersCache.shouldFetch())) {
 			isInitialized = true;
 			isUpdating = true;
 
-			getGuiTasksHandler().handle(offersCache.get(), (offers, error) -> {
-				isUpdating = false;
-
-				if (error != null) {
+			offersCache.get()
+				.thenAccept(offers -> {
+					isUpdating = false;
+					loadedOffers = offers;
+					maxPages = Math.max(offers.size() / getOffersPerPage(), 1);
+					placeOffers(offers);
+					placePagesNavigations();
+				})
+				.exceptionally(error -> {
+					isUpdating = false;
 					loadedOffers = null;
 					setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
 						.setName(Translations.Errors.Errors)
@@ -105,14 +111,8 @@ public class ViewOffersMenu extends StackedMenu {
 						.asStack());
 					StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 					error.printStackTrace();
-					return;
-				}
-
-				loadedOffers = offers;
-				maxPages = Math.max(offers.size() / getOffersPerPage(), 1);
-				placeOffers(offers);
-				placePagesNavigations();
-			});
+					return null;
+				});
 		}
 	}
 

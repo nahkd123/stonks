@@ -77,6 +77,16 @@ public class FutureCache<T> {
 	 * @return The future.
 	 */
 	public CompletableFuture<T> get() {
+		if (fetchingTask != null && fetchingTask.isDone()) {
+			if (!fetchingTask.isCompletedExceptionally()) try {
+				result = fetchingTask.get();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+			
+			fetchingTask = null;
+		}
+
 		if (!shouldFetch()) {
 			if (fetchingTask != null) return fetchingTask;
 			return CompletableFuture.completedFuture(result);

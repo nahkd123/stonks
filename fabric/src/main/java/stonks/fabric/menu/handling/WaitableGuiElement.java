@@ -21,6 +21,7 @@
  */
 package stonks.fabric.menu.handling;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import eu.pb4.sgui.api.ClickType;
@@ -29,7 +30,6 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import nahara.common.tasks.Task;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
@@ -45,22 +45,29 @@ public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 
 	public static final AnimatedGuiElement ANIMATED_LOADING = new AnimatedGuiElement(LOADING, 5, false, EMPTY_CALLBACK);
 
-	private Task<T> task;
+	private CompletableFuture<T> task;
 	private int timeTicked;
 	private ItemStack stack;
 
-	public WaitableGuiElement(Task<T> task) {
+	public WaitableGuiElement(CompletableFuture<T> task) {
 		this.task = task;
 	}
 
 	@Override
 	public ItemStack getItemStackForDisplay(GuiInterface gui) {
-		var now = task.get();
-		if (now.isEmpty()) { return LOADING[(timeTicked++ / 5) % LOADING.length].copy(); }
+		if (!task.isDone()) return LOADING[(timeTicked++ / 5) % LOADING.length].copy();
+		T success;
+		Throwable failure;
 
-		if (stack == null) stack = createStackWhenLoaded(
-			task.get().get().getSuccess(),
-			task.get().get().getFailure());
+		try {
+			success = task.isCompletedExceptionally() ? null : task.get();
+			failure = task.isCompletedExceptionally() ? task.exceptionNow() : null;
+		} catch (Throwable t) {
+			success = null;
+			failure = t;
+		}
+
+		if (stack == null) stack = createStackWhenLoaded(success, failure);
 		return stack.copy();
 	}
 
@@ -73,9 +80,20 @@ public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 
 	@Override
 	public ClickCallback getGuiCallback() {
-		var now = task.get();
-		if (now.isEmpty()) return GuiElementInterface.super.getGuiCallback();
-		return (index, type, action, gui) -> onSlotClick(index, type, action, gui, now.get().getSuccess(),
-			now.get().getFailure());
+		if (!task.isDone()) return GuiElementInterface.super.getGuiCallback();
+		T success;
+		Throwable failure;
+
+		try {
+			success = task.isCompletedExceptionally() ? null : task.get();
+			failure = task.isCompletedExceptionally() ? task.exceptionNow() : null;
+		} catch (Throwable t) {
+			success = null;
+			failure = t;
+		}
+
+		T success2 = success;
+		Throwable failure2 = failure;
+		return (index, type, action, gui) -> onSlotClick(index, type, action, gui, success2, failure2);
 	}
 }

@@ -23,6 +23,7 @@ package stonks.fabric.dynamic.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 
 import stonks.core.dynamic.Dynamic;
 import stonks.core.dynamic.DynamicList;
@@ -49,18 +50,13 @@ public class JsonDynamicList implements JsonDynamic, DynamicList {
 
 	@Override
 	public void add(int insertAt, Dynamic value) {
-		if (!(value instanceof JsonDynamic jsonDyn)) throw new IllegalArgumentException("Value must be JsonDyn");
-		var newArr = new JsonArray();
-		for (int i = 0; i < insertAt; i++) newArr.add(json.get(i));
-		json.add(jsonDyn.getJson());
-		for (int i = insertAt; i < json.size(); i++) newArr.add(json.get(i));
-		json = newArr;
-	}
+		if (value == null) {
+			json.add(JsonNull.INSTANCE);
+			return;
+		}
 
-	@Override
-	public void add(Dynamic value) {
 		if (!(value instanceof JsonDynamic jsonDyn)) throw new IllegalArgumentException("Value must be JsonDyn");
-		json.add(jsonDyn.getJson());
+		json.asList().add(insertAt, jsonDyn.getJson());
 	}
 
 	@Override

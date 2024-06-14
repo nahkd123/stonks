@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ public interface StonksService {
 	 * </p>
 	 * 
 	 * @return Market overview.
-	 * @deprecated use {@link #queryProductMarketOverview(Product)}
+	 * @deprecated use {@link #queryMarketOverviewAsync(Product)}
 	 */
 	@Deprecated(forRemoval = true)
 	default Task<ProductMarketOverview> queryProductMarketOverview(Product product) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,16 @@
 package stonks.fabric;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
+import stonks.core.caching.StonksCache;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.platform.StonksPlatform;
 import stonks.core.product.Product;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.economy.Economy;
+import stonks.fabric.economy.LegacyEconomy;
 import stonks.fabric.misc.StonksSounds;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
@@ -35,13 +39,26 @@ import stonks.fabric.service.StonksServiceProvider;
 public interface StonksFabricPlatform extends StonksPlatform {
 	/**
 	 * <p>
-	 * Obtain the Stonks service cache. You should use this cache instead of
-	 * {@link #getStonksService()} for performance.
+	 * Obtain the legacy Stonks service cache.
+	 * </p>
+	 * 
+	 * @return The cache.
+	 * @deprecated use {@link #getStonksCache()}. This method is there to help you
+	 *             transitioning to APIs that uses {@link Future}.
+	 */
+	@Deprecated(forRemoval = true)
+	public StonksServiceCache getLegacyStonksCache();
+
+	/**
+	 * <p>
+	 * Obtain the Stonks service cache. The cache performs caching automatically and
+	 * you should use this instead of your own caching solution, as this will be
+	 * shared across all mods.
 	 * </p>
 	 * 
 	 * @return The cache.
 	 */
-	public StonksServiceCache getStonksCache();
+	public StonksCache getStonksCache();
 
 	/**
 	 * <p>
@@ -52,6 +69,16 @@ public interface StonksFabricPlatform extends StonksPlatform {
 	 * @return The adapter.
 	 */
 	public StonksFabricAdapter getStonksAdapter();
+
+	/**
+	 * <p>
+	 * Get currently active economy system. This will always return
+	 * {@link LegacyEconomy} for now.
+	 * </p>
+	 * 
+	 * @return The currently active economy system.
+	 */
+	public Economy getEconomySystem();
 
 	/**
 	 * <p>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,8 @@
  */
 package stonks.fabric;
 
-import nahara.common.tasks.Task;
+import java.util.concurrent.CompletableFuture;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import stonks.core.market.Offer;
@@ -30,7 +31,7 @@ import stonks.core.product.Product;
 import stonks.fabric.translation.Translations;
 
 public class StonksFabricHelper {
-	public static Task<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
+	public static CompletableFuture<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
 		var provider = StonksFabric.getPlatform(player);
 
 		// Take out stuffs first
@@ -38,8 +39,8 @@ public class StonksFabricHelper {
 			var currentBalance = provider.getStonksAdapter().accountBalance(player);
 			if (currentBalance < balance) {
 				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance), true);
-				return Task
-					.failed(new RuntimeException("2nd check failed: Not enough money (concurrent modification?)"));
+				return CompletableFuture.failedFuture(
+					new RuntimeException("2nd check failed: Not enough money (concurrent modification?)"));
 			}
 
 			provider.getStonksAdapter().accountWithdraw(player, balance);
@@ -47,26 +48,16 @@ public class StonksFabricHelper {
 			var currentUnits = provider.getStonksAdapter().getUnits(player, product);
 			if (currentUnits < units) {
 				player.sendMessage(Translations.Messages.NotEnoughItems(units, currentUnits));
-				return Task
-					.failed(new RuntimeException("2nd check failed: Not enough units (concurrent modification?)"));
+				return CompletableFuture.failedFuture(
+					new RuntimeException("2nd check failed: Not enough units (concurrent modification?)"));
 			}
 
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 
 		player.sendMessage(Translations.Messages.PleaseWait, true);
-		var task = provider.getStonksService().instantOffer(product, type, units, balance);
-
-		provider.getTasksHandler()
-			.handle(task, (result, error) -> {
-				if (error != null) {
-					player.sendMessage(Translations.Messages.ErrorRefunding, true);
-					if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
-					else provider.getStonksAdapter().addUnitsTo(player, product, units);
-					error.printStackTrace();
-					return;
-				}
-
+		return provider.getStonksService().instantOfferAsync(product, type, units, balance)
+			.thenAcceptAsync(result -> {
 				if (type == OfferType.BUY) {
 					var unitsLeft = result.units();
 					var unitsBought = units - unitsLeft;
@@ -96,9 +87,14 @@ public class StonksFabricHelper {
 				}
 
 				StonksFabric.getPlatform(player).getSounds().playInstantOfferSound(player);
-			});
-
-		return task.afterThatDo($ -> null);
+			}, player.getServer())
+			.exceptionallyAsync(error -> {
+				player.sendMessage(Translations.Messages.ErrorRefunding, true);
+				if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
+				else provider.getStonksAdapter().addUnitsTo(player, product, units);
+				error.printStackTrace();
+				return null;
+			}, player.getServer());
 	}
 
 	public static void placeOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double pricePerUnit) {
@@ -132,29 +128,22 @@ public class StonksFabricHelper {
 		}
 
 		player.sendMessage(Translations.Messages.PleaseWait, true);
-		provider.getTasksHandler()
-			.handle(provider.getStonksService().listOffer(player.getUuid(), product, type, units, pricePerUnit),
-				(offer, error) -> {
-					if (error != null) {
-						player.sendMessage(Translations.Messages.ErrorRefunding, true);
+		provider.getStonksService().listOfferAsync(player.getUuid(), product, type, units, pricePerUnit)
+			.thenAcceptAsync(offer -> {
+				player.sendMessage(offer.getType() == OfferType.BUY
+					? Translations.Messages.PlacedBuyOffer(units, product, totalPrice, pricePerUnit)
+					: Translations.Messages.PlacedSellOffer(units, product, totalPrice, pricePerUnit),
+					true);
 
-						if (type == OfferType.BUY) {
-							adapter.accountDeposit(player, totalPrice);
-						} else {
-							adapter.addUnitsTo(player, product, units);
-						}
-
-						error.printStackTrace();
-						return;
-					}
-
-					player.sendMessage(offer.getType() == OfferType.BUY
-						? Translations.Messages.PlacedBuyOffer(units, product, totalPrice, pricePerUnit)
-						: Translations.Messages.PlacedSellOffer(units, product, totalPrice, pricePerUnit),
-						true);
-
-					StonksFabric.getPlatform(player).getSounds().playOfferPlacedSound(player);
-				});
+				StonksFabric.getPlatform(player).getSounds().playOfferPlacedSound(player);
+			}, player.getServer())
+			.exceptionallyAsync(error -> {
+				player.sendMessage(Translations.Messages.ErrorRefunding, true);
+				if (type == OfferType.BUY) adapter.accountDeposit(player, totalPrice);
+				else adapter.addUnitsTo(player, product, units);
+				error.printStackTrace();
+				return null;
+			}, player.getServer());
 	}
 
 	public static void sendOfferFilledMessage(MinecraftServer server, Offer filledOffer) {

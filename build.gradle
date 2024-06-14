@@ -33,10 +33,6 @@ subprojects {
         return "com.github.nahkd123.nahara-toolkit:${moduleName}:$rootProject.nahara_toolkit_version"
     }
 
-    dependencies.ext.naharaModkit = { moduleName ->
-        return "com.github.nahkd123.nahara-modkit:${moduleName}:$rootProject.nahara_modkit_version"
-    }
-
     java {
         withSourcesJar()
 

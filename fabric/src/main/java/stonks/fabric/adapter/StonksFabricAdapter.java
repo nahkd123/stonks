@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package stonks.fabric.adapter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import stonks.core.product.Product;
+import stonks.fabric.economy.Economy;
 
 /**
  * <p>
@@ -87,7 +88,9 @@ public interface StonksFabricAdapter {
 	 * @param player Player to obtain their balance in primary account.
 	 * @return Negative value if this adapter failed to obtain balance, positive
 	 *         value (including zero) if this adapter managed to obtain balance.
+	 * @deprecated use {@link Economy#balanceOf(ServerPlayerEntity)}
 	 */
+	@Deprecated
 	default double accountBalance(ServerPlayerEntity player) {
 		return -1d;
 	}
@@ -101,7 +104,9 @@ public interface StonksFabricAdapter {
 	 * @param money  Amount of money to receive.
 	 * @return true if deposit successful. false will allow other adapters to
 	 *         deposit.
+	 * @deprecated use {@link Economy#depositTo(ServerPlayerEntity, long)}
 	 */
+	@Deprecated
 	default boolean accountDeposit(ServerPlayerEntity player, double money) {
 		return false;
 	}
@@ -115,7 +120,9 @@ public interface StonksFabricAdapter {
 	 * @param money  Amount of money to withdraw.
 	 * @return true if withdraw successful. false will allow other adapters to
 	 *         withdraw.
+	 * @deprecated use {@link Economy#withdrawFrom(ServerPlayerEntity, long)}
 	 */
+	@Deprecated
 	default boolean accountWithdraw(ServerPlayerEntity player, double money) {
 		return false;
 	}

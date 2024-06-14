@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import stonks.core.caching.StonksServiceCache;
+import stonks.core.caching.StonksCache;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
 import stonks.core.product.Product;
@@ -65,28 +65,27 @@ public class MarketMainMenu extends StackedMenu {
 		var cy = (getHeight() - 1) / 2;
 		setSlot(2 + cx + (1 + cy) * getWidth(), WaitableGuiElement.ANIMATED_LOADING);
 
-		getGuiTasksHandler().handle(StonksFabric.getPlatform(player).getStonksCache().getAllCategories(),
-			(categories, error) -> {
-				if (error != null) {
-					var icon = new GuiElementBuilder(Items.BARRIER)
-						.setName(Translations.Errors.Errors)
-						.addLoreLine(Translations.Errors.CategoriesList);
-
-					for (int i = 0; i < getHeight() - 1; i++) {
-						var slot = (i + 1) * getWidth();
-						setSlot(slot, icon);
-					}
-
-					setSlot(2 + cx + (1 + cy) * getWidth(), icon);
-					StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
-					error.printStackTrace();
-					return;
-				}
-
+		StonksFabric.getPlatform(player).getStonksCache().getAllCategories()
+			.thenAcceptAsync(categories -> {
 				categoriesMaxPages = Math.max((int) Math.ceil(categories.size() / (double) CATEGORIES_PER_PAGE), 1);
 				refresh(categories);
 				placePagesNavigations(categories);
-			});
+			}, player.getServer())
+			.exceptionallyAsync(error -> {
+				var icon = new GuiElementBuilder(Items.BARRIER)
+					.setName(Translations.Errors.Errors)
+					.addLoreLine(Translations.Errors.CategoriesList);
+
+				for (int i = 0; i < getHeight() - 1; i++) {
+					var slot = (i + 1) * getWidth();
+					setSlot(slot, icon);
+				}
+
+				setSlot(2 + cx + (1 + cy) * getWidth(), icon);
+				StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
+				error.printStackTrace();
+				return null;
+			}, player.getServer());
 	}
 
 	@Override
@@ -207,7 +206,7 @@ public class MarketMainMenu extends StackedMenu {
 		}
 	}
 
-	private void placeProduct(int slot, StonksServiceCache cache, Category category, Product product) {
+	private void placeProduct(int slot, StonksCache cache, Category category, Product product) {
 		var dispStack = StonksFabric.getDisplayStack(StonksFabric
 			.getPlatform(getPlayer())
 			.getStonksAdapter(), product);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import net.minecraft.server.MinecraftServer;
+import stonks.core.caching.StonksCache;
 import stonks.core.caching.StonksServiceCache;
 import stonks.core.service.LocalStonksService;
 import stonks.core.service.StonksService;
@@ -37,6 +38,8 @@ import stonks.fabric.adapter.AdaptersContainer;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.adapter.StonksFabricAdapterCallback;
 import stonks.fabric.adapter.StonksFabricAdapterProvider;
+import stonks.fabric.economy.Economy;
+import stonks.fabric.economy.LegacyEconomy;
 import stonks.fabric.misc.StonksSounds;
 import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
@@ -46,9 +49,13 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Unique
 	private StonksService stonks$service;
 	@Unique
-	private StonksServiceCache stonks$cache;
+	private StonksServiceCache stonks$legacyCache;
+	@Unique
+	private StonksCache stonks$cache;
 	@Unique
 	private AdaptersContainer stonks$adapters;
+	@Unique
+	private LegacyEconomy stonks$economy;
 	@Unique
 	private TasksHandler stonks$tasksHandler;
 	@Unique
@@ -60,10 +67,16 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	public StonksService getStonksService() { return stonks$service; }
 
 	@Override
-	public StonksServiceCache getStonksCache() { return stonks$cache; }
+	public StonksServiceCache getLegacyStonksCache() { return stonks$legacyCache; }
+
+	@Override
+	public StonksCache getStonksCache() { return stonks$cache; }
 
 	@Override
 	public StonksFabricAdapter getStonksAdapter() { return stonks$adapters; }
+
+	@Override
+	public Economy getEconomySystem() { return stonks$economy; }
 
 	@Override
 	public TasksHandler getTasksHandler() { return stonks$tasksHandler; }
@@ -77,12 +90,14 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	@Override
 	public void startStonks(PlatformConfig config, StonksServiceProvider service, List<StonksFabricAdapterProvider> adapters) {
 		stonks$service = service.createService((MinecraftServer) (Object) this);
-		stonks$cache = new StonksServiceCache(stonks$service);
+		stonks$legacyCache = new StonksServiceCache(stonks$service);
+		stonks$cache = new StonksCache(stonks$service);
 		stonks$tasksHandler = new TasksHandler();
 		stonks$config = config;
 		stonks$sounds = new StonksSounds();
 
 		stonks$adapters = new AdaptersContainer();
+		stonks$economy = new LegacyEconomy(stonks$adapters, config);
 		for (var p : adapters) stonks$adapters.add(p.createAdapter((MinecraftServer) (Object) this));
 
 		StonksFabricAdapterCallback.EVENT

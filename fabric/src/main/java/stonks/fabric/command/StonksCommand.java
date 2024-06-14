@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 nahkd
+ * Copyright (c) 2023-2024 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,6 @@ package stonks.fabric.command;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -42,7 +39,6 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import stonks.fabric.StonksFabric;
-import stonks.fabric.StonksFabricUtils;
 
 public class StonksCommand {
 	public static final LiteralArgumentBuilder<ServerCommandSource> ROOT = literal("stonks")
@@ -111,20 +107,16 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.then(argument("id", StringArgumentType.string())
 					.suggests((context, builder) -> {
-						var cache = StonksFabric.getPlatform(context.getSource().getServer()).getStonksCache();
-						return CompletableFuture.supplyAsync(() -> {
-							try {
-								cache.getAllCategories()
-									.await()
+						return StonksFabric.getPlatform(context.getSource().getServer())
+							.getStonksCache()
+							.getAllCategories()
+							.thenApply(list -> {
+								list
 									.stream()
-									.flatMap(v -> v.getProducts().stream())
-									.forEach(v -> builder.suggest(v.getProductId()));
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-
-							return builder.build();
-						});
+									.flatMap(category -> category.getProducts().stream())
+									.forEach(product -> builder.suggest(product.getProductId()));
+								return builder.build();
+							});
 					})
 					.then(argument("amount", IntegerArgumentType.integer(0))
 						.executes(ctx -> giveProducts(ctx, IntegerArgumentType.getInteger(ctx, "amount"))))
@@ -136,16 +128,15 @@ public class StonksCommand {
 			.then(argument("players", EntityArgumentType.players())
 				.executes(ctx -> {
 					var players = EntityArgumentType.getPlayers(ctx, "players");
-					var adapter = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksAdapter();
+					var economy = StonksFabric.getPlatform(ctx.getSource().getServer()).getEconomySystem();
 
 					for (var p : players) {
 						ctx.getSource().sendMessage(Text.literal("Inspecting ").append(p.getDisplayName()).append(":"));
 
-						var balance = adapter.accountBalance(p);
 						ctx.getSource().sendMessage(Text.literal(" - ")
 							.styled(s -> s.withColor(Formatting.GRAY))
 							.append(Text.literal("Account Balance: ").styled(s -> s.withColor(Formatting.WHITE)))
-							.append(StonksFabricUtils.currencyText(Optional.of(balance), true)));
+							.append(economy.formatAsDisplay(economy.balanceOf(p))));
 					}
 					return 1;
 				}));
@@ -159,19 +150,21 @@ public class StonksCommand {
 		var adapter = provider.getStonksAdapter();
 		cache
 			.getAllCategories()
-			.afterThatDo(categories -> {
+			.thenAccept(categories -> {
 				var product = categories.stream()
 					.flatMap(category -> category.getProducts().stream())
 					.filter(v -> v.getProductId().equals(id))
 					.findFirst();
 
 				if (product.isPresent()) {
-					for (var p : players) {
-						adapter.addUnitsTo(p, product.get(), amount);
-						ctx.getSource().sendFeedback(() -> Text.literal("Gave ")
-							.append(p.getDisplayName())
-							.append(" " + amount + "x " + product.get().getProductName()), true);
-					}
+					ctx.getSource().getServer().execute(() -> {
+						for (var p : players) {
+							adapter.addUnitsTo(p, product.get(), amount);
+							ctx.getSource().sendFeedback(() -> Text.literal("Gave ")
+								.append(p.getDisplayName())
+								.append(" " + amount + "x " + product.get().getProductName()), true);
+						}
+					});
 				} else {
 					ctx.getSource().sendError(Text.literal("Product not found: " + id)
 						.styled(s -> s.withColor(Formatting.RED)));
@@ -185,7 +178,7 @@ public class StonksCommand {
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getCategoryById(id)
-			.afterThatDo(category -> {
+			.thenAccept(category -> {
 				if (category == null) {
 					ctx.getSource().sendError(Text.literal("Unknown category with ID " + id));
 					return;
@@ -220,7 +213,7 @@ public class StonksCommand {
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getAllCategories()
-			.afterThatDo(categories -> {
+			.thenAccept(categories -> {
 				ctx.getSource().sendMessage(Text.literal(categories.size() + " "
 					+ (categories.size() == 1 ? "category" : "categories") + (categories.size() > 0 ? ":" : "")));
 				for (var cat : categories) {

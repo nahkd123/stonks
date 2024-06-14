@@ -4,7 +4,7 @@
 ![Build Status Badge](https://img.shields.io/github/actions/workflow/status/nahkd123/stonks/gradle.yml)
 ![License Badge](https://img.shields.io/github/license/nahkd123/stonks)
 ![Dynamic Version Badge](https://img.shields.io/github/v/release/nahkd123/stonks)
-![Minecraft Version Badge](https://img.shields.io/badge/minecraft-1.21_rc1-red)
+![Minecraft Version Badge](https://img.shields.io/badge/minecraft-1.21-red)
 
 Weird little stocks/items market for block game.
 

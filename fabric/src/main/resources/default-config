@@ -61,6 +61,10 @@ useService stonks.fabric.service.IntegratedStonksService
             ]
 
 // Adapters
+// "stonks.fabric.adapter.provided.ItemsAdapter" is included so that Stonks can add/remove items in player's inventory
+// If you remove this adapter, Stonks will be unable to access player's inventory. If you don't need to have access to
+// player's inventory, you can remove this adapter.
+// Additionally, you can make your own adapter to hook with other mods, like trading RF power for example.
 useAdapter stonks.fabric.adapter.provided.ItemsAdapter
 
 // You need to include economy adapter by yourself.

@@ -52,11 +52,11 @@ public class LegacyEconomy implements Economy {
 	public Identifier getEconomyId() { return Identifier.of(StonksFabric.MODID, "legacy_economy_adapter"); }
 
 	public long doubleToRaw(double value) {
-		return (long) (value * config.decimals);
+		return (long) (value / Math.pow(10, config.decimals));
 	}
 
 	public double rawToDouble(long raw) {
-		return raw / (double) config.decimals;
+		return raw / Math.pow(10, config.decimals);
 	}
 
 	@Override

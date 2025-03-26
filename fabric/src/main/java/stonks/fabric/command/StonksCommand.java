@@ -24,6 +24,8 @@ package stonks.fabric.command;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
+import java.net.URI;
+
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -61,23 +63,23 @@ public class StonksCommand {
 			src.sendMessage(Text.literal(" Version ").styled(s -> s.withColor(Formatting.GRAY))
 				.append(Text.literal(meta.getVersion().getFriendlyString()).styled(s -> s.withColor(Formatting.AQUA))));
 			src.sendMessage(Text.literal(" ")
-				.append(makeLinkBtn("GitHub", Formatting.WHITE, "https://github.com/nahkd123/stonks"))
-				.append(makeLinkBtn("Issues", Formatting.AQUA, "https://github.com/nahkd123/stonks/issues"))
-				.append(makeLinkBtn("Wiki", Formatting.YELLOW, "https://github.com/nahkd123/stonks/wiki")));
+				.append(makeLinkBtn("GitHub", Formatting.WHITE, URI.create("https://github.com/nahkd123/stonks")))
+				.append(makeLinkBtn("Issues", Formatting.AQUA, URI.create("https://github.com/nahkd123/stonks/issues")))
+				.append(makeLinkBtn("Wiki", Formatting.YELLOW, URI.create("https://github.com/nahkd123/stonks/wiki"))));
 			src.sendMessage(Text.empty());
 			src.sendMessage(Text.literal(" Special thanks:"));
 			src.sendMessage(Text.empty()
 				.styled(s -> s.withColor(Formatting.WHITE))
 				.append(bulletPoint).append("The Fabric Project ")
-				.append(makeLinkBtn("Homepage", Formatting.YELLOW, "https://fabricmc.net/"))
-				.append(makeLinkBtn("GitHub", Formatting.WHITE, "https://github.com/fabricMC")));
+				.append(makeLinkBtn("Homepage", Formatting.YELLOW, URI.create("https://fabricmc.net/")))
+				.append(makeLinkBtn("GitHub", Formatting.WHITE, URI.create("https://github.com/fabricMC"))));
 			src.sendMessage(Text.empty()
 				.styled(s -> s.withColor(Formatting.WHITE))
 				.append(bulletPoint).append("Patbox ")
-				.append(makeLinkBtn("Homepage", Formatting.YELLOW, "https://pb4.eu/"))
-				.append(makeLinkBtn("sgui", Formatting.AQUA, "https://github.com/Patbox/sgui"))
+				.append(makeLinkBtn("Homepage", Formatting.YELLOW, URI.create("https://pb4.eu/")))
+				.append(makeLinkBtn("sgui", Formatting.AQUA, URI.create("https://github.com/Patbox/sgui")))
 				.append(makeLinkBtn("Common Economy API", Formatting.AQUA,
-					"https://github.com/Patbox/common-economy-api")));
+					URI.create("https://github.com/Patbox/common-economy-api"))));
 			src.sendMessage(Text.empty()
 				.styled(s -> s.withColor(Formatting.WHITE))
 				.append(bulletPoint).append("You! Thanks for using my mod!"));
@@ -86,13 +88,13 @@ public class StonksCommand {
 		});
 	}
 
-	private static Text makeLinkBtn(String name, Formatting color, String url) {
+	private static Text makeLinkBtn(String name, Formatting color, URI url) {
 		return Text.literal("[")
 			.styled(s -> s.withColor(Formatting.DARK_GRAY))
 			.append(Text.literal(name).styled(s -> s
 				.withColor(color)
-				.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
-				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(url)))))
+				.withClickEvent(new ClickEvent.OpenUrl(url))
+				.withHoverEvent(new HoverEvent.ShowText(Text.literal(url.toString())))))
 			.append("] ");
 	}
 
@@ -193,13 +195,12 @@ public class StonksCommand {
 				for (var product : category.getProducts()) {
 					ctx.getSource().sendMessage(Text.literal(" - ")
 						.styled(s -> s.withColor(Formatting.GRAY))
-						.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text
+						.styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text
 							.literal("Click to fill in your chatbox")
 							.styled(s1 -> s1.withColor(Formatting.AQUA)))))
 						.styled(
 							s -> s.withClickEvent(
-								new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/stonks product "
-									+ product.getProductId())))
+								new ClickEvent.SuggestCommand("/stonks product " + product.getProductId())))
 						.append(Text.literal(product.getProductName())
 							.styled(s -> s.withColor(Formatting.WHITE)))
 						.append(Text.literal(" (" + product.getProductId() + ")")
@@ -219,12 +220,12 @@ public class StonksCommand {
 				for (var cat : categories) {
 					ctx.getSource().sendMessage(Text.literal(" - ")
 						.styled(s -> s.withColor(Formatting.GRAY))
-						.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text
+						.styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text
 							.literal("Click to fill in your chatbox")
 							.styled(s1 -> s1.withColor(Formatting.AQUA)))))
 						.styled(
-							s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/stonks category "
-								+ cat.getCategoryId())))
+							s -> s.withClickEvent(
+								new ClickEvent.SuggestCommand("/stonks category " + cat.getCategoryId())))
 						.append(Text.literal(cat.getCategoryName())
 							.styled(s -> s.withColor(Formatting.WHITE)))
 						.append(Text.literal(" (" + cat.getCategoryId() + ")")

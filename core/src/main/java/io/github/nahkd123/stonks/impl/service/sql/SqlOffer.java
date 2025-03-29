@@ -1,7 +1,5 @@
 package io.github.nahkd123.stonks.impl.service.sql;
 
-import static io.github.nahkd123.stonks.impl.service.sql.SqlMarketService.OFFERS;
-
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -60,23 +58,17 @@ class SqlOffer implements Offer {
 		if (removed) return CompletableFuture.completedFuture(new Offer.Status(lastFilled, lastClaimed, true));
 
 		return service.queueTransaction(() -> {
-			try (var s = service.sql.prepareStatement("select * from %s where Id=?".formatted(OFFERS.name()))) {
-				s.setString(1, id().toString());
+			OfferRecord updatedRec = service.selectOfferById.query(rec).firstOr(null);
 
-				try (var set = s.executeQuery()) {
-					if (!set.next()) {
-						removed = true;
-						return new Offer.Status(lastFilled, lastClaimed, true);
-					}
-
-					rec = OfferRecord.RECORD.getFrom(set);
-					lastFilled = rec.filledUnits();
-					lastClaimed = rec.claimedUnits();
-					return new Offer.Status(lastFilled, lastClaimed, false);
-				}
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			if (updatedRec == null) {
+				removed = true;
+				return new Offer.Status(lastFilled, lastClaimed, true);
 			}
+
+			rec = updatedRec;
+			lastFilled = rec.filledUnits();
+			lastClaimed = rec.claimedUnits();
+			return new Offer.Status(lastFilled, lastClaimed, false);
 		});
 	}
 
@@ -85,39 +77,26 @@ class SqlOffer implements Offer {
 		if (service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		if (removed) return CompletableFuture.failedFuture(new ServiceException("Offer no longer exist"));
 		return service.queueTransaction(() -> {
-			try (var s = service.sql.prepareStatement("select * from %s where Id=?".formatted(OFFERS.name()))) {
-				s.setString(1, id().toString());
+			OfferRecord updatedRec = service.selectOfferById.query(rec).firstOr(null);
 
-				try (var set = s.executeQuery()) {
-					if (!set.next()) {
-						removed = true;
-						return new Offer.ClaimResult(0L, true);
-					}
+			if (updatedRec == null) {
+				removed = true;
+				return new Offer.ClaimResult(0L, true);
+			} else {
+				rec = updatedRec;
+				lastFilled = rec.filledUnits();
+				lastClaimed = rec.claimedUnits();
+			}
 
-					rec = OfferRecord.RECORD.getFrom(set);
-					lastFilled = rec.filledUnits();
-					lastClaimed = rec.claimedUnits();
-				}
+			long toClaim = lastFilled - lastClaimed;
+			rec = rec.withClaimedUnits(lastFilled);
 
-				long toClaim = lastFilled - lastClaimed;
-				rec = rec.withClaimedUnits(lastFilled);
-
-				if (rec.claimedUnits() >= rec.totalUnits()) {
-					removeOffer();
-					return new Offer.ClaimResult(toClaim, true);
-				} else {
-					String sqlCode = "update %s set ClaimedUnits=? where Id=?".formatted(OFFERS.name());
-
-					try (var upd = service.sql.prepareStatement(sqlCode)) {
-						upd.setLong(1, rec.claimedUnits());
-						upd.setString(2, rec.id().toString());
-						upd.execute();
-					}
-
-					return new Offer.ClaimResult(toClaim, false);
-				}
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			if (rec.claimedUnits() >= rec.totalUnits()) {
+				removeOffer();
+				return new Offer.ClaimResult(toClaim, true);
+			} else {
+				service.updateOffer.update(rec);
+				return new Offer.ClaimResult(toClaim, false);
 			}
 		});
 	}
@@ -127,38 +106,26 @@ class SqlOffer implements Offer {
 		if (service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		if (removed) return CompletableFuture.failedFuture(new ServiceException("Offer no longer exist"));
 		return service.queueTransaction(() -> {
-			try (var s = service.sql.prepareStatement("select * from %s where Id=?".formatted(OFFERS.name()))) {
-				s.setString(1, id().toString());
+			OfferRecord updatedRec = service.selectOfferById.query(rec).firstOr(null);
 
-				try (var set = s.executeQuery()) {
-					if (!set.next()) {
-						removed = true;
-						return new Offer.ClaimResult(0L, true);
-					}
-
-					rec = OfferRecord.RECORD.getFrom(set);
-					lastFilled = rec.filledUnits();
-					lastClaimed = rec.claimedUnits();
-				}
-
-				long toClaim = lastFilled - lastClaimed;
-				rec = rec.withClaimedUnits(lastFilled);
-				removeOffer();
-				return new Offer.ClaimResult(toClaim, true);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			if (updatedRec == null) {
+				removed = true;
+				return new Offer.ClaimResult(0L, true);
+			} else {
+				rec = updatedRec;
+				lastFilled = rec.filledUnits();
+				lastClaimed = rec.claimedUnits();
 			}
+
+			long toClaim = lastFilled - lastClaimed;
+			rec = rec.withClaimedUnits(lastFilled);
+			removeOffer();
+			return new Offer.ClaimResult(toClaim, true);
 		});
 	}
 
-	private void removeOffer() {
-		String sqlCode = "delete from %s where Id=?".formatted(SqlMarketService.OFFERS.name());
-		try (var s = service.sql.prepareStatement(sqlCode)) {
-			s.setString(1, rec.id().toString());
-			s.execute();
-			removed = true;
-		} catch (SQLException e) {
-			throw new ServiceException("Internal error", e);
-		}
+	private void removeOffer() throws SQLException {
+		service.deleteOffer.update(rec);
+		removed = true;
 	}
 }

@@ -2,7 +2,7 @@ package io.github.nahkd123.stonks.impl.service.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -10,9 +10,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
+import io.github.nahkd123.stonks.impl.orm.Ordering;
+import io.github.nahkd123.stonks.impl.orm.Query;
+import io.github.nahkd123.stonks.impl.orm.TableIndex;
 import io.github.nahkd123.stonks.impl.orm.TableInfo;
 import io.github.nahkd123.stonks.impl.utils.EmitHandler;
 import io.github.nahkd123.stonks.logging.Logger;
@@ -33,15 +34,40 @@ import io.github.nahkd123.stonks.service.ServiceNotificationListener;
  * </p>
  */
 public class SqlMarketService extends Thread implements ManagableMarketService {
-	public static final TableInfo<ProductRecord> PRODUCTS = new TableInfo<>("Products", ProductRecord.RECORD);
-	public static final TableInfo<OfferRecord> OFFERS = new TableInfo<>("Offers", OfferRecord.RECORD);
+	// @formatter:off
+	public static final TableInfo<ProductRecord> PRODUCTS = new TableInfo<>(
+		"Products",
+		ProductRecord.RECORD,
+		List.of());
+	public static final TableInfo<OfferRecord> OFFERS = new TableInfo<>(
+		"Offers",
+		OfferRecord.RECORD,
+		List.of(
+			new TableIndex("Offers::Price::Asc", "Price", Ordering.ASCENDING),
+			new TableIndex("Offers::Price::Desc", "Price", Ordering.DESCENDING)));
+	// @formatter:on
 
 	private Logger logger;
 	private Queue<Runnable> transactionQueue = new ConcurrentLinkedQueue<>();
 	private CompletableFuture<Void> serviceStartTask = null;
+	private Connection sql;
 	EmitHandler<ServiceNotificationListener> listeners = new EmitHandler<>();
-	Connection sql;
 	ServiceConfig config = new ServiceConfig(false, 5);
+
+	TableInfo.Select<ProductRecord> selectProductById;
+	TableInfo.Select<ProductRecord> selectAllProducts;
+	TableInfo.Insert<ProductRecord> insertProduct;
+	TableInfo.Update<ProductRecord> deleteProduct;
+
+	TableInfo.Select<OfferRecord> selectOfferById;
+	TableInfo.Select<OfferRecord> selectOfferByOwner;
+	TableInfo.Select<OfferRecord> selectBuyOffers;
+	TableInfo.Select<OfferRecord> selectSellOffers;
+	TableInfo.Select<OfferRecord> selectTopBuyOffers;
+	TableInfo.Select<OfferRecord> selectTopSellOffers;
+	TableInfo.Insert<OfferRecord> insertOffer;
+	TableInfo.Update<OfferRecord> updateOffer;
+	TableInfo.Update<OfferRecord> deleteOffer;
 
 	public SqlMarketService(Connection sql, Logger logger) {
 		this.sql = sql;
@@ -87,19 +113,61 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 		}
 
 		logger.info("SQL Market Service is shutting down");
+		try {
+			onShutdown();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void init() throws SQLException {
 		PRODUCTS.migrate(sql);
+		selectProductById = PRODUCTS.select(sql);
+		selectAllProducts = PRODUCTS.select(sql, null);
+		insertProduct = PRODUCTS.insert(sql);
+		deleteProduct = PRODUCTS.delete(sql);
+
 		OFFERS.migrate(sql);
+		selectOfferById = OFFERS.select(sql);
+		selectOfferByOwner = OFFERS.select(sql, Query.ofCondition("Owner=?"));
+		selectBuyOffers = OFFERS.select(sql, Query.ofCondition("Type='BUY'").withSorted("Price", Ordering.DESCENDING));
+		selectSellOffers = OFFERS.select(sql, Query.ofCondition("Type='SELL'").withSorted("Price", Ordering.ASCENDING));
+		selectTopBuyOffers = OFFERS.select(sql, Query
+			.ofCondition("Type='BUY'")
+			.withSorted("Price", Ordering.DESCENDING)
+			.withLimit(config.overviewSamples()));
+		selectTopSellOffers = OFFERS.select(sql, Query
+			.ofCondition("Type='SELL'")
+			.withSorted("Price", Ordering.ASCENDING)
+			.withLimit(config.overviewSamples()));
+		insertOffer = OFFERS.insert(sql);
+		updateOffer = OFFERS.update(sql);
+		deleteOffer = OFFERS.delete(sql);
 	}
 
-	public <T> CompletableFuture<T> queueTransaction(Supplier<T> callback) {
+	public void onShutdown() throws SQLException {
+		selectProductById.close();
+		selectAllProducts.close();
+		insertProduct.close();
+		deleteProduct.close();
+
+		selectOfferById.close();
+		selectOfferByOwner.close();
+		selectBuyOffers.close();
+		selectSellOffers.close();
+		selectTopBuyOffers.close();
+		selectTopSellOffers.close();
+		insertOffer.close();
+		updateOffer.close();
+		deleteOffer.close();
+	}
+
+	public <T> CompletableFuture<T> queueTransaction(SqlTransaction<T> callback) {
 		CompletableFuture<T> task = new CompletableFuture<>();
 
 		if (!transactionQueue.offer(() -> {
 			try {
-				task.complete(callback.get());
+				task.complete(callback.executeTransaction());
 			} catch (Throwable t) {
 				task.completeExceptionally(t);
 			}
@@ -110,6 +178,13 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 		}
 
 		return task;
+	}
+
+	public CompletableFuture<Void> queueTransaction(SqlTransactionVoid callback) {
+		return queueTransaction(() -> {
+			callback.executeTransaction();
+			return null;
+		});
 	}
 
 	@Override
@@ -125,15 +200,10 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	@Override
 	public CompletableFuture<Set<? extends Product>> queryCatalog() {
 		return queueTransaction(() -> {
-			try (var s = sql.createStatement();
-				var set = s.executeQuery("select * from %s".formatted(PRODUCTS.name()))) {
-				List<ProductRecord> list = new ArrayList<>();
-				while (set.next()) list.add(ProductRecord.RECORD.getFrom(set));
-				return list.stream()
-					.map(ref -> new SqlProduct(this, ref))
-					.collect(Collectors.toUnmodifiableSet());
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			try (var set = selectAllProducts.query()) {
+				Set<SqlProduct> catalog = new HashSet<>();
+				for (ProductRecord rec : set) catalog.add(new SqlProduct(this, rec));
+				return catalog;
 			}
 		});
 	}
@@ -141,20 +211,12 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	@Override
 	public CompletableFuture<Set<? extends Offer>> queryUserOffers(UUID uuid) {
 		return queueTransaction(() -> {
-			try (var s = sql.prepareStatement("select * from %s where Owner=?".formatted(OFFERS.name()))) {
-				s.setString(1, uuid.toString());
-				List<SqlOffer> offers = new ArrayList<>();
+			selectOfferByOwner.statement().setString(1, uuid.toString());
 
-				try (var set = s.executeQuery()) {
-					while (set.next()) {
-						OfferRecord rec = OfferRecord.RECORD.getFrom(set);
-						offers.add(new SqlOffer(this, rec));
-					}
-				}
-
-				return Set.copyOf(offers);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			try (var set = selectOfferByOwner.query()) {
+				Set<SqlOffer> offers = new HashSet<>();
+				for (OfferRecord rec : set) offers.add(new SqlOffer(this, rec));
+				return offers;
 			}
 		});
 	}
@@ -162,46 +224,28 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	@Override
 	public CompletableFuture<? extends Product> createProduct(String id) {
 		return queueTransaction(() -> {
-			try (var s = sql.prepareStatement("select * from %s where Id=?".formatted(PRODUCTS.name()))) {
-				s.setString(1, id);
+			ProductRecord rec = new ProductRecord(id);
 
-				try (var set = s.executeQuery()) {
-					if (set.next()) throw new ServiceException("Product with ID %s already exists".formatted(id));
-				}
-
-				ProductRecord rec = new ProductRecord(id);
-				PRODUCTS.insert(sql, rec);
-				return new SqlProduct(this, rec);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			try (var result = selectProductById.query(rec)) {
+				if (result.hasNext()) throw new ServiceException("Product with ID %s already exists".formatted(id));
 			}
+
+			insertProduct.insert(rec);
+			return new SqlProduct(this, rec);
 		});
 	}
 
 	@Override
 	public CompletableFuture<Void> deleteProduct(Product product) {
+		if (!(product instanceof SqlProduct(SqlMarketService sv, ProductRecord rec)))
+			throw new ServiceException("Not a valid product object obtained from SqlMarketService");
 		return queueTransaction(() -> {
-			try (var s = sql.prepareStatement("select * from %s where Id=?".formatted(PRODUCTS.name()))) {
-				s.setString(1, product.getId());
-
-				try (var set = s.executeQuery()) {
-					if (!set.next()) throw new ServiceException("Product with ID %s does not exists"
-						.formatted(product.getId()));
-				}
-
-				// Delete all offers
-				try (var del = sql.prepareStatement("delete from %s where ProductId=?".formatted(OFFERS.name()))) {
-					del.setString(1, product.getId());
-					del.execute();
-				}
-
-				// Delete product
-				ProductRecord rec = new ProductRecord(product.getId());
-				PRODUCTS.delete(sql, rec);
-				return null;
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
+			try (var s = sql.prepareStatement(OFFERS.sqlDelete("ProductId=?"))) {
+				s.setString(1, rec.id());
+				s.executeUpdate();
 			}
+
+			deleteProduct.update(rec);
 		});
 	}
 
@@ -213,7 +257,35 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	@Override
 	public CompletableFuture<Void> useConfig(ServiceConfig config) {
 		if (config == null) throw new IllegalArgumentException("config must not be null");
-		this.config = config;
+
+		if (!this.config.equals(config)) try {
+			this.config = config;
+
+			selectTopBuyOffers.close();
+			selectTopBuyOffers = OFFERS.select(sql, Query
+				.ofCondition("Type='BUY'")
+				.withSorted("Price", Ordering.DESCENDING)
+				.withLimit(config.overviewSamples()));
+
+			selectTopSellOffers.close();
+			selectTopSellOffers = OFFERS.select(sql, Query
+				.ofCondition("Type='SELL'")
+				.withSorted("Price", Ordering.ASCENDING)
+				.withLimit(config.overviewSamples()));
+		} catch (SQLException e) {
+			return CompletableFuture.failedFuture(e);
+		}
+
 		return CompletableFuture.completedFuture(null);
+	}
+
+	@FunctionalInterface
+	public static interface SqlTransaction<T> {
+		T executeTransaction() throws SQLException;
+	}
+
+	@FunctionalInterface
+	public static interface SqlTransactionVoid {
+		void executeTransaction() throws SQLException;
 	}
 }

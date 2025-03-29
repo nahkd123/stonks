@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
+import io.github.nahkd123.stonks.impl.orm.TableInfo;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.OfferOverviewEntry;
 import io.github.nahkd123.stonks.service.OfferType;
@@ -31,20 +32,19 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 		});
 	}
 
-	private ProductOffersOverview calculateOfferOverview(OfferType type, int samples) {
+	private ProductOffersOverview calculateOfferOverview(OfferType type, int samples) throws SQLException {
 		List<OfferOverviewEntry> entries = new ArrayList<>();
 		long totalUnits = 0L;
 		long totalValue = 0L;
-		String sqlCode = switch (type) {
-		case BUY -> "select * from %s where Type='BUY' order by Price desc limit %d";
-		case SELL -> "select * from %s where Type='SELL' order by Price asc limit %d";
-		};
-		sqlCode = sqlCode.formatted(SqlMarketService.OFFERS.name(), samples);
 
-		try (var s = service.sql.createStatement();
-			var set = s.executeQuery(sqlCode)) {
-			while (set.next()) {
-				OfferRecord offer = OfferRecord.RECORD.getFrom(set);
+		TableInfo.Select<OfferRecord> query = switch (type) {
+		case BUY -> service.selectTopBuyOffers;
+		case SELL -> service.selectTopSellOffers;
+		};
+
+		try (var set = query.query()) {
+			while (set.hasNext()) {
+				OfferRecord offer = set.next();
 				long available = offer.totalUnits() - offer.filledUnits();
 				totalUnits += available;
 				totalValue += available * offer.price();
@@ -52,8 +52,6 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 			}
 
 			return new ProductOffersOverview(type, totalValue / totalUnits, entries);
-		} catch (SQLException e) {
-			throw new ServiceException("Internal error", e);
 		}
 	}
 
@@ -61,16 +59,13 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 	public CompletableFuture<InstantBuyResult> instantBuy(long balance, long units, SlippageOption slippage) {
 		if (service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		return service.queueTransaction(() -> {
-			String sqlCode = "select * from %s where Type='SELL' order by Price asc"
-				.formatted(SqlMarketService.OFFERS.name());
 			long balance0 = balance;
 			long units0 = units;
 			long bought = 0L;
 
-			try (var s = service.sql.createStatement();
-				var set = s.executeQuery(sqlCode)) {
-				while (set.next()) {
-					OfferRecord offer = OfferRecord.RECORD.getFrom(set);
+			try (var set = service.selectSellOffers.query()) {
+				while (set.hasNext()) {
+					OfferRecord offer = set.next();
 					if (slippage != null && slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long canBuy = Math.min(balance0 / offer.price(), units0);
@@ -81,13 +76,7 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 					units0 -= toBuy;
 					offer = offer.withFilledUnits(offer.filledUnits() + toBuy);
 					bought += toBuy;
-
-					sqlCode = "update %s set FilledUnits=? where Id=?".formatted(SqlMarketService.OFFERS.name());
-					try (var upd = service.sql.prepareStatement(sqlCode)) {
-						upd.setLong(1, offer.filledUnits());
-						upd.setString(2, offer.id().toString());
-						upd.execute();
-					}
+					service.updateOffer.update(offer);
 
 					if (offer.filledUnits() >= offer.totalUnits()) {
 						SqlOffer handle = new SqlOffer(service, offer);
@@ -96,8 +85,6 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 				}
 
 				return new Product.InstantBuyResult(bought, balance0);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
 			}
 		});
 	}
@@ -106,15 +93,12 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 	public CompletableFuture<InstantSellResult> instantSell(long units, SlippageOption slippage) {
 		if (service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		return service.queueTransaction(() -> {
-			String sqlCode = "select * from %s where Type='BUY' order by Price desc"
-				.formatted(SqlMarketService.OFFERS.name());
 			long inventory = units;
 			long balance = 0L;
 
-			try (var s = service.sql.createStatement();
-				var set = s.executeQuery(sqlCode)) {
-				while (set.next()) {
-					OfferRecord offer = OfferRecord.RECORD.getFrom(set);
+			try (var set = service.selectBuyOffers.query()) {
+				while (set.hasNext()) {
+					OfferRecord offer = set.next();
 					if (slippage != null && slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long toSell = Math.min(inventory, available);
@@ -123,13 +107,7 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 					inventory -= toSell;
 					balance += toSell * offer.price();
 					offer = offer.withFilledUnits(offer.filledUnits() + toSell);
-
-					sqlCode = "update %s set FilledUnits=? where Id=?".formatted(SqlMarketService.OFFERS.name());
-					try (var upd = service.sql.prepareStatement(sqlCode)) {
-						upd.setLong(1, offer.filledUnits());
-						upd.setString(2, offer.id().toString());
-						upd.execute();
-					}
+					service.updateOffer.update(offer);
 
 					if (offer.filledUnits() >= offer.totalUnits()) {
 						SqlOffer handle = new SqlOffer(service, offer);
@@ -138,8 +116,6 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 				}
 
 				return new Product.InstantSellResult(balance, inventory);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
 			}
 		});
 	}
@@ -148,13 +124,9 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 	public CompletableFuture<? extends Offer> placeOffer(UUID owner, OfferType type, long price, long units) {
 		if (service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		return service.queueTransaction(() -> {
-			try {
-				OfferRecord rec = new OfferRecord(UUID.randomUUID(), owner, type, getId(), price, units, 0L, 0L);
-				SqlMarketService.OFFERS.insert(service.sql, rec);
-				return new SqlOffer(service, rec);
-			} catch (SQLException e) {
-				throw new ServiceException("Internal error", e);
-			}
+			OfferRecord rec = new OfferRecord(UUID.randomUUID(), owner, type, getId(), price, units, 0L, 0L);
+			service.insertOffer.insert(rec);
+			return new SqlOffer(service, rec);
 		});
 	}
 }

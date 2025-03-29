@@ -1,8 +1,8 @@
-package io.github.nahkd123.stonks.impl.orm.meta;
+package io.github.nahkd123.stonks.utils.orm.meta;
 
-import io.github.nahkd123.stonks.impl.orm.RecordField;
-import io.github.nahkd123.stonks.impl.orm.RecordFieldType;
-import io.github.nahkd123.stonks.impl.orm.RecordInfo;
+import io.github.nahkd123.stonks.utils.orm.RecordField;
+import io.github.nahkd123.stonks.utils.orm.RecordFieldType;
+import io.github.nahkd123.stonks.utils.orm.RecordInfo;
 
 public record ColumnMeta(String tableCatalog, String tableSchema, String tableName, String columnName, int dataType, String typeName) {
 	public static final RecordInfo<ColumnMeta> RECORD = RecordInfo.of(

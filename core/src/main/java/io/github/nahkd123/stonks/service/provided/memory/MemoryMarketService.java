@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.service.memory;
+package io.github.nahkd123.stonks.service.provided.memory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import io.github.nahkd123.stonks.impl.utils.EmitHandler;
 import io.github.nahkd123.stonks.service.ManagableMarketService;
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.Offer;
@@ -16,6 +15,7 @@ import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.ServiceConfig;
 import io.github.nahkd123.stonks.service.ServiceException;
 import io.github.nahkd123.stonks.service.ServiceNotificationListener;
+import io.github.nahkd123.stonks.utils.EmitHandler;
 
 /**
  * <p>

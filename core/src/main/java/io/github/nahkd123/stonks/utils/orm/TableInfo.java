@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.orm;
+package io.github.nahkd123.stonks.utils.orm;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.github.nahkd123.stonks.impl.orm.meta.ColumnMeta;
+import io.github.nahkd123.stonks.utils.orm.meta.ColumnMeta;
 
 public record TableInfo<R>(String name, RecordInfo<R> recordInfo, List<TableIndex> indexes) {
 	public void migrate(Connection connection) throws SQLException {

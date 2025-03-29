@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.service.sql;
+package io.github.nahkd123.stonks.service.provided.sql;
 
 import java.sql.SQLException;
 import java.util.UUID;

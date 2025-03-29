@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.utils;
+package io.github.nahkd123.stonks.utils;
 
 import java.util.HashSet;
 import java.util.Queue;

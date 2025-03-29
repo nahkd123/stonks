@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.orm;
+package io.github.nahkd123.stonks.utils.orm;
 
 public enum Ordering {
 	ASCENDING("ASC"),

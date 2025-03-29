@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.service.memory;
+package io.github.nahkd123.stonks.service.provided.memory;
 
 import java.util.ArrayList;
 import java.util.Collections;

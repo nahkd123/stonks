@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.service.sql;
+package io.github.nahkd123.stonks.service.provided.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,11 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.LockSupport;
 
-import io.github.nahkd123.stonks.impl.orm.Ordering;
-import io.github.nahkd123.stonks.impl.orm.Query;
-import io.github.nahkd123.stonks.impl.orm.TableIndex;
-import io.github.nahkd123.stonks.impl.orm.TableInfo;
-import io.github.nahkd123.stonks.impl.utils.EmitHandler;
 import io.github.nahkd123.stonks.logging.Logger;
 import io.github.nahkd123.stonks.service.ManagableMarketService;
 import io.github.nahkd123.stonks.service.Offer;
@@ -23,6 +18,11 @@ import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.ServiceConfig;
 import io.github.nahkd123.stonks.service.ServiceException;
 import io.github.nahkd123.stonks.service.ServiceNotificationListener;
+import io.github.nahkd123.stonks.utils.EmitHandler;
+import io.github.nahkd123.stonks.utils.orm.Ordering;
+import io.github.nahkd123.stonks.utils.orm.Query;
+import io.github.nahkd123.stonks.utils.orm.TableIndex;
+import io.github.nahkd123.stonks.utils.orm.TableInfo;
 
 /**
  * <p>

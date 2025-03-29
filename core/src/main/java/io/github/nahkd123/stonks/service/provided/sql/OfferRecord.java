@@ -1,11 +1,11 @@
-package io.github.nahkd123.stonks.impl.service.sql;
+package io.github.nahkd123.stonks.service.provided.sql;
 
 import java.util.UUID;
 
-import io.github.nahkd123.stonks.impl.orm.RecordField;
-import io.github.nahkd123.stonks.impl.orm.RecordFieldType;
-import io.github.nahkd123.stonks.impl.orm.RecordInfo;
 import io.github.nahkd123.stonks.service.OfferType;
+import io.github.nahkd123.stonks.utils.orm.RecordField;
+import io.github.nahkd123.stonks.utils.orm.RecordFieldType;
+import io.github.nahkd123.stonks.utils.orm.RecordInfo;
 
 public record OfferRecord(UUID id, UUID owner, OfferType type, String productId, long price, long totalUnits, long filledUnits, long claimedUnits) {
 

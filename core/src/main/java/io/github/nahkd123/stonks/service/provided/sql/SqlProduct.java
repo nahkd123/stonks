@@ -1,4 +1,4 @@
-package io.github.nahkd123.stonks.impl.service.sql;
+package io.github.nahkd123.stonks.service.provided.sql;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
-import io.github.nahkd123.stonks.impl.orm.TableInfo;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.OfferOverviewEntry;
 import io.github.nahkd123.stonks.service.OfferType;
@@ -15,6 +14,7 @@ import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.ProductOffersOverview;
 import io.github.nahkd123.stonks.service.ProductOverview;
 import io.github.nahkd123.stonks.service.ServiceException;
+import io.github.nahkd123.stonks.utils.orm.TableInfo;
 
 record SqlProduct(SqlMarketService service, ProductRecord rec) implements Product {
 	@Override

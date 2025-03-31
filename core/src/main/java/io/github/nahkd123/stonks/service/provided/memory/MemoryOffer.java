@@ -88,9 +88,10 @@ class MemoryOffer implements Offer {
 		return CompletableFuture.completedFuture(new Offer.ClaimResult(toClaim, true));
 	}
 
-	private void removeThisOffer() {
+	void removeThisOffer() {
 		Map<UUID, MemoryOffer> userOffers = product.service.userOffers.get(owner);
 		if (userOffers != null) userOffers.remove(id);
+		product.service.offers.remove(id);
 		List<MemoryOffer> list = product.getOffersListByType(type);
 		list.remove(this);
 		removed = true;

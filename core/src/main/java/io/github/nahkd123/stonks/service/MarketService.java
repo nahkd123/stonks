@@ -34,4 +34,14 @@ public interface MarketService {
 	 * @return Async task that resolves to collection of offers made by user.
 	 */
 	CompletableFuture<Set<? extends Offer>> queryUserOffers(UUID uuid);
+
+	/**
+	 * <p>
+	 * Query a single offer with specific ID.
+	 * </p>
+	 * 
+	 * @param id The UUID of offer (from {@link Offer#id()}).
+	 * @return Async task that resolves to offer with specific ID.
+	 */
+	CompletableFuture<? extends Offer> queryOffer(UUID id);
 }

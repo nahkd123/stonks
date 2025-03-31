@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.LockSupport;
 
-import io.github.nahkd123.stonks.logging.Logger;
 import io.github.nahkd123.stonks.service.ManagableMarketService;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.Product;
@@ -36,18 +35,21 @@ import io.github.nahkd123.stonks.utils.orm.TableInfo;
 public class SqlMarketService extends Thread implements ManagableMarketService {
 	// @formatter:off
 	public static final TableInfo<ProductRecord> PRODUCTS = new TableInfo<>(
-		"Products",
-		ProductRecord.RECORD,
+		"v1::Products", ProductRecord.RECORD,
 		List.of());
 	public static final TableInfo<OfferRecord> OFFERS = new TableInfo<>(
-		"Offers",
-		OfferRecord.RECORD,
+		"v1::Offers", OfferRecord.RECORD,
 		List.of(
-			new TableIndex("Offers::Price::Asc", "Price", Ordering.ASCENDING),
-			new TableIndex("Offers::Price::Desc", "Price", Ordering.DESCENDING)));
+			new TableIndex("v1::Offers::ProductId", List.of(
+				new TableIndex.Entry("ProductId"))),
+			new TableIndex("v1::Offers::Price::Asc", List.of(
+				new TableIndex.Entry("ProductId"),
+				new TableIndex.Entry("Price", Ordering.ASCENDING))),
+			new TableIndex("v1::Offers::Price::Desc", List.of(
+				new TableIndex.Entry("ProductId"),
+				new TableIndex.Entry("Price", Ordering.DESCENDING)))));
 	// @formatter:on
 
-	private Logger logger;
 	private Queue<Runnable> transactionQueue = new ConcurrentLinkedQueue<>();
 	private CompletableFuture<Void> serviceStartTask = null;
 	private Connection sql;
@@ -69,9 +71,9 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	TableInfo.Update<OfferRecord> updateOffer;
 	TableInfo.Update<OfferRecord> deleteOffer;
 
-	public SqlMarketService(Connection sql, Logger logger) {
+	public SqlMarketService(Connection sql) {
 		this.sql = sql;
-		this.logger = logger;
+		setName("SQL Market Service Thread");
 	}
 
 	/**
@@ -90,20 +92,15 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 
 	@Override
 	public void run() {
-		logger.info("SQL Market Service thread is starting");
-
 		try {
 			init();
 			serviceStartTask.complete(null);
 		} catch (SQLException e) {
 			serviceStartTask.completeExceptionally(e);
-			logger.error("Failed to initialize SQL Market Service");
 			return;
 		}
 
 		while (!Thread.interrupted()) {
-			logger.verbose("Processing transactions... (Queue size = %d)".formatted(transactionQueue.size()));
-
 			while (!transactionQueue.isEmpty()) {
 				Runnable transaction = transactionQueue.poll();
 				transaction.run();
@@ -112,7 +109,6 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 			LockSupport.park();
 		}
 
-		logger.info("SQL Market Service is shutting down");
 		try {
 			onShutdown();
 		} catch (SQLException e) {
@@ -222,6 +218,19 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 	}
 
 	@Override
+	public CompletableFuture<? extends Offer> queryOffer(UUID id) {
+		return queueTransaction(() -> {
+			selectOfferById.statement().setString(1, id.toString());
+
+			try (var set = selectOfferById.query()) {
+				OfferRecord rec = set.firstOr(null);
+				if (rec == null) throw new ServiceException("No such offer with ID %s".formatted(id));
+				return new SqlOffer(this, rec);
+			}
+		});
+	}
+
+	@Override
 	public CompletableFuture<? extends Product> createProduct(String id) {
 		return queueTransaction(() -> {
 			ProductRecord rec = new ProductRecord(id);
@@ -232,7 +241,10 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 
 			insertProduct.insert(rec);
 			return new SqlProduct(this, rec);
-		});
+		}).thenCompose(product -> queryCatalog().thenApply(catalog -> {
+			listeners.beginEmit(listener -> listener.onCatalogUpdate(this, catalog));
+			return product;
+		}));
 	}
 
 	@Override
@@ -246,7 +258,10 @@ public class SqlMarketService extends Thread implements ManagableMarketService {
 			}
 
 			deleteProduct.update(rec);
-		});
+		}).thenCompose($ -> queryCatalog().thenApply(catalog -> {
+			listeners.beginEmit(listener -> listener.onCatalogUpdate(this, catalog));
+			return null;
+		}));
 	}
 
 	@Override

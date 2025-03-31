@@ -51,7 +51,7 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 				entries.add(new OfferOverviewEntry(offer.price(), available));
 			}
 
-			return new ProductOffersOverview(type, totalValue / totalUnits, entries);
+			return new ProductOffersOverview(type, totalUnits > 0 ? totalValue / totalUnits : 0, entries);
 		}
 	}
 

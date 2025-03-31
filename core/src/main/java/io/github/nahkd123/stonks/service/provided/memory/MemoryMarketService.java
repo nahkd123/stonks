@@ -3,10 +3,12 @@ package io.github.nahkd123.stonks.service.provided.memory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import io.github.nahkd123.stonks.service.ManagableMarketService;
 import io.github.nahkd123.stonks.service.MarketService;
@@ -29,6 +31,7 @@ public class MemoryMarketService implements ManagableMarketService {
 	private Set<MemoryProduct> catalog = new HashSet<>();
 	EmitHandler<ServiceNotificationListener> listeners = new EmitHandler<>();
 	Map<UUID, Map<UUID, MemoryOffer>> userOffers = new HashMap<>();
+	Map<UUID, MemoryOffer> offers = new HashMap<>();
 	ServiceConfig config = new ServiceConfig(false, 5);
 
 	@Override
@@ -53,6 +56,13 @@ public class MemoryMarketService implements ManagableMarketService {
 	}
 
 	@Override
+	public CompletableFuture<? extends Offer> queryOffer(UUID id) {
+		MemoryOffer offer = offers.get(id);
+		if (offer != null) return CompletableFuture.completedFuture(offer);
+		else return CompletableFuture.failedFuture(new ServiceException("No such offer with ID %s".formatted(id)));
+	}
+
+	@Override
 	public CompletableFuture<MemoryProduct> createProduct(String id) {
 		MemoryProduct product = new MemoryProduct(this, id);
 		catalog.add(product);
@@ -62,13 +72,16 @@ public class MemoryMarketService implements ManagableMarketService {
 
 	@Override
 	public CompletableFuture<Void> deleteProduct(Product product) {
-		if (catalog.remove(product)) {
-			listeners.beginEmit(listener -> listener.onCatalogUpdate(this, catalog));
-			return CompletableFuture.completedFuture(null);
-		} else {
+		if (!catalog.remove(product))
 			return CompletableFuture.failedFuture(new ServiceException("Product %s does not exists in catalog"
 				.formatted(product.getId())));
-		}
+		MemoryProduct memoryProduct = (MemoryProduct) product;
+		List<MemoryOffer> allOffers = Stream.of(memoryProduct.buyOffers, memoryProduct.sellOffers)
+			.flatMap(List::stream)
+			.toList();
+		for (MemoryOffer offer : allOffers) offer.removeThisOffer();
+		listeners.beginEmit(listener -> listener.onCatalogUpdate(this, catalog));
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override

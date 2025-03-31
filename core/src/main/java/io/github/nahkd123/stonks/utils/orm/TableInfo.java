@@ -59,6 +59,7 @@ public record TableInfo<R>(String name, RecordInfo<R> recordInfo, List<TableInde
 				Map<String, TableIndex> missingIndexes = new HashMap<>(indexes.stream()
 					.collect(Collectors.toMap(TableIndex::name, Function.identity())));
 				Set<String> extraIndexes = new HashSet<>();
+				Set<String> visited = new HashSet<>();
 
 				try (var indexes = meta.getIndexInfo(null, null, name, false, true)) {
 					while (indexes.next()) {
@@ -66,7 +67,9 @@ public record TableInfo<R>(String name, RecordInfo<R> recordInfo, List<TableInde
 						String indexName = indexes.getString("INDEX_NAME");
 						if (!nonUnique) continue;
 						if (indexName == null) continue;
+						if (visited.contains(indexName)) continue;
 						if (missingIndexes.remove(indexName) == null) extraIndexes.add(indexName);
+						visited.add(indexName);
 					}
 				}
 

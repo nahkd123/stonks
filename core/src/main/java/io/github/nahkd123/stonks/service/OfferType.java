@@ -1,5 +1,7 @@
 package io.github.nahkd123.stonks.service;
 
+import io.github.nahkd123.stonks.utils.net.BufferCodec;
+
 public enum OfferType {
 	/**
 	 * <p>
@@ -13,4 +15,6 @@ public enum OfferType {
 	 * </p>
 	 */
 	SELL;
+
+	public static final BufferCodec<OfferType> CODEC = BufferCodec.ofEnum(values());
 }

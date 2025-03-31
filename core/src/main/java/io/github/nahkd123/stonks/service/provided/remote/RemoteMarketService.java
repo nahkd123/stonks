@@ -2,9 +2,11 @@ package io.github.nahkd123.stonks.service.provided.remote;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.channels.ByteChannel;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.LockSupport;
 import java.util.stream.Collectors;
 
 import io.github.nahkd123.stonks.service.MarketService;
@@ -25,7 +27,34 @@ import io.github.nahkd123.stonks.utils.net.Message.Request;
 
 public class RemoteMarketService extends RemoteServiceConnection implements MarketService, Closeable {
 	private EmitHandler<ServiceNotificationListener> listeners = new EmitHandler<>();
-	private boolean running = true;
+
+	/**
+	 * <p>
+	 * Run I/O loop in current thread. This will block the thread until
+	 * interruption. This <em>does not close</em> the I/O channel when returning
+	 * from this method.
+	 * </p>
+	 * 
+	 * @param The channel that the I/O loop will read from.
+	 * @throws IOException if I/O error occurred.
+	 */
+	public void runInCurrentThread(ByteChannel channel) throws IOException {
+		while (!Thread.currentThread().isInterrupted() && isRunning()) {
+			boolean didSomething = false;
+			didSomething |= handleRead(channel);
+			didSomething |= handleWrite(channel);
+
+			if (isCloseRequested()) {
+				onConnectionClosing(false);
+				setRunning(false);
+				return;
+			}
+
+			if (!didSomething) LockSupport.parkNanos(1000000L);
+		}
+
+		onConnectionClosing(true);
+	}
 
 	@Override
 	public void addNotificationListener(ServiceNotificationListener listener) {
@@ -74,19 +103,29 @@ public class RemoteMarketService extends RemoteServiceConnection implements Mark
 
 	@Override
 	protected void handleNotification(Message message) {
-		// TODO Auto-generated method stub
-		System.out.println(message);
+		switch (message) {
+		case CatalogMessage(Set<CatalogMessage.Product> products):
+			listeners.beginEmit(l -> l.onCatalogUpdate(this, products.stream()
+				.map(p -> new RemoteProduct(this, p))
+				.collect(Collectors.toSet())));
+			break;
+		case OfferMessage offerMessage:
+			listeners.beginEmit(l -> l.onOfferFilled(this, new RemoteOffer(this, offerMessage)));
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
-	protected boolean shouldKeepRunning() {
-		return running;
+	protected void onConnectionClosing(boolean isRemote) {
+		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (!running) return;
-		request(SpecialMessage.BYE);
-		running = false;
+		if (!isRunning() || isCloseRequested()) return;
+		request(SpecialMessage.BYE).join();
+		requestClose();
 	}
 }

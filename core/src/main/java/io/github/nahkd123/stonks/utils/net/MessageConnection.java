@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.github.nahkd123.stonks.service.ServiceException;
 import io.github.nahkd123.stonks.utils.net.Message.Response;
 
 public abstract class MessageConnection extends Connection {
@@ -23,7 +24,7 @@ public abstract class MessageConnection extends Connection {
 	}
 
 	@Override
-	protected void receiveFrame(short kind, int messageId, long requestId, ByteBuffer buffer) {
+	protected void onFrameReceive(short kind, int messageId, long requestId, ByteBuffer buffer) {
 		Message.Type<?> type = idToType.get(messageId);
 
 		switch (kind) {
@@ -55,6 +56,9 @@ public abstract class MessageConnection extends Connection {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Message> CompletableFuture<Message.Response> request(T message) {
+		if (!isRunning() || isCloseRequested())
+			return CompletableFuture.failedFuture(new ServiceException("Connection is closed or being closed"));
+
 		CompletableFuture<Message.Response> future = new CompletableFuture<>();
 		long requestId = requestIdCounter.getAndIncrement();
 		unfulfilledRequests.put(requestId, future);
@@ -82,6 +86,9 @@ public abstract class MessageConnection extends Connection {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Message> void notify(T message) {
+		if (!isRunning() || isCloseRequested())
+			throw new ServiceException("Connection is closed or being closed");
+
 		Message.Type<T> type = (Message.Type<T>) classToType.get(message.getClass());
 		writeFrame(KIND_NOTIFY, type.messageId(), 0L, buffer -> type.codec().write(message, buffer));
 	}

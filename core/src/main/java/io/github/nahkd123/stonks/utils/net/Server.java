@@ -10,11 +10,18 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.concurrent.locks.LockSupport;
 
-public abstract class Server implements Runnable {
-	@Override
-	public void run() {
+public abstract class Server {
+	/**
+	 * <p>
+	 * Run the I/O loop in current thread. This <em>will not close the listener
+	 * </em> when returning from this method.
+	 * </p>
+	 * 
+	 * @param listener The listener that will be used to accept incoming
+	 *                 connections.
+	 */
+	public void runInCurrentThread(ServerSocketChannel listener) {
 		try {
-			ServerSocketChannel listener = createListener();
 			listener.configureBlocking(false);
 			Selector selector = SelectorProvider.provider().openSelector();
 			SelectionKey acceptKey = listener.register(selector, SelectionKey.OP_ACCEPT);
@@ -44,27 +51,27 @@ public abstract class Server implements Runnable {
 						if (key.isReadable()) {
 							SocketChannel channel = (SocketChannel) key.channel();
 							Connection connection = (Connection) key.attachment();
-							connection.handleRead(channel);
-							didSomething = true;
+							didSomething |= connection.handleRead(channel);
 						}
 
 						if (key.isWritable()) {
 							SocketChannel channel = (SocketChannel) key.channel();
 							Connection connection = (Connection) key.attachment();
-							connection.handleWrite(channel);
-							didSomething = true;
+							didSomething |= connection.handleWrite(channel);
 						}
 					}
 				}
 
 				for (SelectionKey key : selector.keys()) {
 					if (key.attachment() instanceof Connection conn) {
-						didSomething |= conn.loopInServerThread();
+						if (conn.isCloseRequested()) {
+							conn.running = false;
+							conn.onConnectionClosing(false);
+						}
 
-						if (!conn.shouldKeepRunning()) {
+						if (!conn.running) {
 							key.cancel();
 							key.channel().close();
-							conn.cleanInServerThread();
 						}
 					}
 				}
@@ -73,19 +80,21 @@ public abstract class Server implements Runnable {
 			}
 
 			acceptKey.cancel();
-			listener.close();
 
 			for (SelectionKey key : selector.keys()) {
 				key.cancel();
 				key.channel().close();
-				if (key.attachment() instanceof Connection conn) conn.cleanInServerThread();
+
+				if (key.attachment() instanceof Connection conn) {
+					if (!conn.running) continue;
+					conn.running = false;
+					conn.onConnectionClosing(false);
+				}
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
-
-	protected abstract ServerSocketChannel createListener() throws IOException;
 
 	protected abstract Connection createNewConnection() throws IOException;
 

@@ -81,6 +81,13 @@ public interface Product {
 	 */
 	CompletableFuture<? extends Offer> placeOffer(UUID owner, OfferType type, long price, long units);
 
+	/**
+	 * <p>
+	 * Slippage option that prevents the price from shooting way too far from user's
+	 * expectation. The rate is typically around 0.01 to 0.02 away from target
+	 * price.
+	 * </p>
+	 */
 	record SlippageOption(long targetPrice, double maxRate) {
 		public boolean check(long price) {
 			double actualRate = price / (double) targetPrice;
@@ -88,9 +95,21 @@ public interface Product {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Contains how many units successfully bought and how much money left to
+	 * refund.
+	 * </p>
+	 */
 	record InstantBuyResult(long bought, long leftoverBalance) {
 	}
 
+	/**
+	 * <p>
+	 * Contains how much money earned from selling and how many units left to
+	 * refund.
+	 * </p>
+	 */
 	record InstantSellResult(long earning, long leftoverUnits) {
 	}
 }

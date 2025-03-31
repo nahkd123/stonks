@@ -80,11 +80,7 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 				.thenCompose(p -> p.placeOffer(owner, type, price, units))
 				.thenAccept(offer -> {
 					offerCache.put(offer.id(), offer);
-				// @formatter:off
-					responseSucceed(request, new OfferMessage(
-						offer.id(), offer.owner(), offer.type(), offer.product().getId(),
-						offer.price(), offer.totalUnits()));
-					// @formatter:on
+					responseSucceed(request, new OfferMessage(offer));
 				})
 				.exceptionally(e -> handleException(request, e));
 			break;
@@ -92,11 +88,7 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 			service.queryOffer(id)
 				.thenAccept(offer -> {
 					offerCache.put(offer.id(), offer);
-				// @formatter:off
-					responseSucceed(request, new OfferMessage(
-						offer.id(), offer.owner(), offer.type(), offer.product().getId(),
-						offer.price(), offer.totalUnits()));
-				// @formatter:on
+					responseSucceed(request, new OfferMessage(offer));
 				})
 				.exceptionally(e -> handleException(request, e));
 			break;
@@ -115,7 +107,10 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 		case CancelOfferMessage(UUID id):
 			cachedOrGet(id)
 				.thenCompose(Offer::cancelOffer)
-				.thenAccept(result -> responseSucceed(request, new OfferClaimResultMessage(id, result)))
+				.thenAccept(result -> {
+					offerCache.remove(id);
+					responseSucceed(request, new OfferClaimResultMessage(id, result));
+				})
 				.exceptionally(e -> handleException(request, e));
 			break;
 		case QueryUserOffersMessage(UUID uuid):
@@ -141,7 +136,7 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 		switch (special) {
 		case BYE:
 			responseSucceed(request, SpecialMessage.BYE);
-			service = null;
+			requestClose();
 			break;
 		case PING:
 			responseSucceed(request, SpecialMessage.PONG);
@@ -207,26 +202,23 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 	}
 
 	@Override
-	protected void cleanInServerThread() {
+	protected void onConnectionClosing(boolean isRemote) {
 		service.removeNotificationListener(this);
-	}
-
-	@Override
-	protected boolean shouldKeepRunning() {
-		return service != null;
+		service = null;
 	}
 
 	@Override
 	public void onCatalogUpdate(MarketService sender, Set<? extends Product> products) {
-		if (service == null) {
-			cleanInServerThread();
-			return;
-		}
-
 		updateCatalog(products);
 		var mapped = products.stream()
 			.map(p -> new CatalogMessage.Product(p.getId()))
 			.collect(Collectors.toSet());
 		notify(new CatalogMessage(mapped));
+	}
+
+	@Override
+	public void onOfferFilled(MarketService sender, Offer offer) {
+		offerCache.put(offer.id(), offer);
+		notify(new OfferMessage(offer));
 	}
 }

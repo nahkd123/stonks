@@ -6,63 +6,54 @@ import java.util.concurrent.CompletableFuture;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.OfferType;
 import io.github.nahkd123.stonks.service.Product;
-import io.github.nahkd123.stonks.service.provided.remote.message.CatalogMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.CancelOfferMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.ClaimOfferMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.OfferClaimResultMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.OfferMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.OfferStatusMessage;
-import io.github.nahkd123.stonks.service.provided.remote.message.offer.QueryOfferStatusMessage;
+import io.github.nahkd123.stonks.service.provided.remote.packet.offer.CancelOfferRequest;
+import io.github.nahkd123.stonks.service.provided.remote.packet.offer.ClaimOfferRequest;
+import io.github.nahkd123.stonks.service.provided.remote.packet.offer.QueryOfferStatus;
+import io.github.nahkd123.stonks.service.provided.remote.packet.offer.RemoteOfferData;
 
-record RemoteOffer(RemoteMarketService service, OfferMessage message) implements Offer {
+record RemoteOffer(RemoteServiceClient client, RemoteOfferData data) implements Offer {
 	@Override
 	public UUID id() {
-		return message.id();
+		return data.id();
 	}
 
 	@Override
 	public UUID owner() {
-		return message.owner();
+		return data.owner();
 	}
 
 	@Override
 	public OfferType type() {
-		return message.type();
+		return data.type();
 	}
 
 	@Override
 	public Product product() {
-		return new RemoteProduct(service, new CatalogMessage.Product(message.productId()));
+		return new RemoteProduct(client, data.productId());
 	}
 
 	@Override
 	public long price() {
-		return message.price();
+		return data.price();
 	}
 
 	@Override
 	public long totalUnits() {
-		return message.totalUnits();
+		return data.totalUnits();
 	}
 
 	@Override
 	public CompletableFuture<Status> queryStatus() {
-		return service.request(new QueryOfferStatusMessage(id()))
-			.thenCompose(service::throwOnError)
-			.thenApply(message -> ((OfferStatusMessage) message).status());
+		return client.request(new QueryOfferStatus(data.id()));
 	}
 
 	@Override
 	public CompletableFuture<ClaimResult> claimOffer() {
-		return service.request(new ClaimOfferMessage(id()))
-			.thenCompose(service::throwOnError)
-			.thenApply(message -> ((OfferClaimResultMessage) message).result());
+		return client.request(new ClaimOfferRequest(data.id()));
 	}
 
 	@Override
 	public CompletableFuture<ClaimResult> cancelOffer() {
-		return service.request(new CancelOfferMessage(id()))
-			.thenCompose(service::throwOnError)
-			.thenApply(message -> ((OfferClaimResultMessage) message).result());
+		return client.request(new CancelOfferRequest(data.id()));
 	}
 }

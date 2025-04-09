@@ -66,7 +66,7 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 			try (var set = service.selectSellOffers.query()) {
 				while (set.hasNext()) {
 					OfferRecord offer = set.next();
-					if (slippage != null && slippage.check(offer.price())) break;
+					if (slippage != null && !slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long canBuy = Math.min(balance0 / offer.price(), units0);
 					if (canBuy == 0L) break;
@@ -99,7 +99,7 @@ record SqlProduct(SqlMarketService service, ProductRecord rec) implements Produc
 			try (var set = service.selectBuyOffers.query()) {
 				while (set.hasNext()) {
 					OfferRecord offer = set.next();
-					if (slippage != null && slippage.check(offer.price())) break;
+					if (slippage != null && !slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long toSell = Math.min(inventory, available);
 					if (toSell == 0L) break;

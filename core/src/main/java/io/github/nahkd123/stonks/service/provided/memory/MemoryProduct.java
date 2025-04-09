@@ -58,7 +58,7 @@ class MemoryProduct implements Product {
 		long bought = 0L;
 
 		for (MemoryOffer sellOffer : sellOffers) {
-			if (slippage != null && slippage.check(sellOffer.price())) break;
+			if (slippage != null && !slippage.check(sellOffer.price())) break;
 			long available = sellOffer.totalUnits() - sellOffer.filledUnits;
 			long canBuy = Math.min(balance / sellOffer.price(), units);
 			if (canBuy == 0L) break;
@@ -83,7 +83,7 @@ class MemoryProduct implements Product {
 		long earning = 0L;
 
 		for (MemoryOffer buyOffer : buyOffers) {
-			if (slippage != null && slippage.check(buyOffer.price())) break;
+			if (slippage != null && !slippage.check(buyOffer.price())) break;
 			long available = buyOffer.totalUnits() - buyOffer.filledUnits;
 			long toSell = Math.min(units, available);
 			if (toSell == 0L) break;

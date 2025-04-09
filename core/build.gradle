@@ -2,6 +2,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     api naharaToolkit('nahara-common-tasks')
     implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+    implementation 'com.github.nahkd123:transporter:1.0.1'
 }
 
 processResources {

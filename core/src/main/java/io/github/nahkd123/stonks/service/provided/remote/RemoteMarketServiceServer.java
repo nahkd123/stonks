@@ -51,7 +51,9 @@ public class RemoteMarketServiceServer {
 	 * @throws IOException If I/O error occurred during server setup phase.
 	 */
 	public void runServer(ServerSocketChannel listener, BooleanSupplier stopSignal) throws IOException {
+		Thread serverThread = Thread.currentThread();
 		listener.configureBlocking(false);
+
 		try (Selector selector = Selector.open()) {
 			SelectionKey acceptKey = listener.register(selector, SelectionKey.OP_ACCEPT);
 
@@ -69,7 +71,7 @@ public class RemoteMarketServiceServer {
 							SelectionKey clientKey = clientChannel.register(
 								selector,
 								SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-							clientKey.attach(new RemoteServiceServerConnection(clientChannel, service));
+							clientKey.attach(new RemoteServiceServerConnection(clientChannel, service, serverThread));
 							didSomething = true;
 						}
 

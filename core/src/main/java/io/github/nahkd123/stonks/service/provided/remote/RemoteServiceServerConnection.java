@@ -21,11 +21,14 @@
  */
 package io.github.nahkd123.stonks.service.provided.remote;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import io.github.nahkd123.stonks.service.MarketService;
@@ -50,11 +53,19 @@ import io.github.nahkd123.stonks.service.provided.remote.packet.product.QueryPro
 class RemoteServiceServerConnection extends RemoteServiceConnection implements ServiceNotificationListener {
 	private MarketService service;
 	private Map<String, Product> catalog = null;
+	private Thread serverThread;
 
-	public RemoteServiceServerConnection(ByteChannel channel, MarketService service) {
+	public RemoteServiceServerConnection(ByteChannel channel, MarketService service, Thread serverThread) {
 		super(channel);
 		this.service = service;
+		this.serverThread = serverThread;
 		this.service.addNotificationListener(this);
+	}
+
+	@Override
+	protected void queueRawPacketWrite(PacketMode mode, int type, int reqId, Consumer<ByteBuffer> writer) {
+		super.queueRawPacketWrite(mode, type, reqId, writer);
+		LockSupport.unpark(serverThread);
 	}
 
 	@Override

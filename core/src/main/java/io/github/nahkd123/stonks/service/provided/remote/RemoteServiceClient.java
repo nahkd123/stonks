@@ -21,11 +21,14 @@
  */
 package io.github.nahkd123.stonks.service.provided.remote;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import io.github.nahkd123.stonks.service.MarketService;
@@ -40,9 +43,18 @@ import io.github.nahkd123.stonks.utils.EmitHandler;
 
 public class RemoteServiceClient extends RemoteServiceConnection implements MarketService {
 	private EmitHandler<ServiceNotificationListener> listeners = new EmitHandler<>();
+	private Thread threadToUnpark;
 
 	public RemoteServiceClient(ByteChannel channel) {
 		super(channel);
+	}
+
+	public void setThreadToUnpark(Thread threadToUnpark) { this.threadToUnpark = threadToUnpark; }
+
+	@Override
+	protected void queueRawPacketWrite(PacketMode mode, int type, int reqId, Consumer<ByteBuffer> writer) {
+		super.queueRawPacketWrite(mode, type, reqId, writer);
+		if (threadToUnpark != null) LockSupport.unpark(threadToUnpark);
 	}
 
 	<T> CompletableFuture<T> request(Object request) {

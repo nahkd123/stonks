@@ -27,6 +27,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
+/**
+ * <p>
+ * The emit handler that handles the emission of events to listeners. The
+ * handler consists of event queue and modification queues for emitting events
+ * and handling the changes of listeners. If the listener is being removed while
+ * firing events, it will be queued for remove later, after all events are
+ * fired.
+ * </p>
+ * 
+ * @param <T> Type of listener delegate.
+ * @see #addListener(Object)
+ * @see #removeListener(Object)
+ * @see #beginEmit(Consumer)
+ */
 public class EmitHandler<T> {
 	private Set<T> listeners = new HashSet<>();
 	private boolean emitting = false;
@@ -34,6 +48,13 @@ public class EmitHandler<T> {
 	private Set<T> add = new HashSet<>();
 	private Set<T> remove = new HashSet<>();
 
+	/**
+	 * <p>
+	 * Add a listener to this emit handler.
+	 * </p>
+	 * 
+	 * @param listener The listener.
+	 */
 	public void addListener(T listener) {
 		if (emitting) {
 			if (!add.contains(listener)) add.add(listener);
@@ -43,6 +64,13 @@ public class EmitHandler<T> {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Remove a listener from this emit handler.
+	 * </p>
+	 * 
+	 * @param listener The listener.
+	 */
 	public void removeListener(T listener) {
 		if (!listeners.contains(listener)) return;
 
@@ -54,6 +82,16 @@ public class EmitHandler<T> {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Begin emitting events to all listeners. If the handler already emitting
+	 * events, the callback will be placed in a queue, otherwise it will execute the
+	 * callback (and possibly callbacks that will be registered during event).
+	 * </p>
+	 * 
+	 * @param emitter The callback that will be called when event is selected by
+	 *                event queue.
+	 */
 	public void beginEmit(Consumer<T> emitter) {
 		emitterQueue.add(emitter);
 		if (emitting) return;

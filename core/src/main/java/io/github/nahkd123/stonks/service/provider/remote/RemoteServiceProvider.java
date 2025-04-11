@@ -52,8 +52,10 @@ import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
  * }
  * }
  * <p>
- * If you only use TCP socket, you can use a single address string in-place of
- * above object (following the {@code hostname:port} format).
+ * Additionally, the above object can be swapped with a single JSON string. If
+ * the string starts with {@code ./} or {@code .\}, the address will be
+ * interpreted as Unix socket path, other it will be TCP address following the
+ * {@code hostname:port} format.
  * </p>
  */
 @AutoService(MarketServiceProvider.class)
@@ -68,7 +70,9 @@ public class RemoteServiceProvider implements MarketServiceProvider {
 
 		switch (config) {
 		case String s:
-			addr = parseInetSocketAddress(s);
+			addr = (s.startsWith("./") || s.startsWith(".\\"))
+				? UnixDomainSocketAddress.of(s)
+				: parseInetSocketAddress(s);
 			break;
 		case Map m:
 			String type = (String) m.getOrDefault("type", "tcp");

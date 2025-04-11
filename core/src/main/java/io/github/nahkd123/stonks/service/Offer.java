@@ -90,7 +90,7 @@ public interface Offer extends Comparable<Offer> {
 	record Status(long filledUnits, long claimedUnits, boolean removed) {
 	}
 
-	record ClaimResult(long claimedUnits, boolean remove) {
+	record ClaimResult(long claimedUnits, long pendingUnits, boolean remove) {
 	}
 
 	@Override

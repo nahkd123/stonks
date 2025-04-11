@@ -30,7 +30,7 @@ public record InstantSellRequest(String productId, long units, SlippageOption sl
 	public static final BufferCodec<InstantSellRequest> CODEC = BufferCodec.tupleOf(
 		BufferCodec.UTF8, InstantSellRequest::productId,
 		BufferCodec.I64, InstantSellRequest::units,
-		StonksBufferCodecs.SLIPPAGE, InstantSellRequest::slippage,
+		StonksBufferCodecs.SLIPPAGE.asNullable(), InstantSellRequest::slippage,
 		InstantSellRequest::new);
 
 	public static final BufferCodec<Product.InstantSellResult> RESPONSE = BufferCodec.tupleOf(

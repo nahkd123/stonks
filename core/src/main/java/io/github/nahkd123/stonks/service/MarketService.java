@@ -21,6 +21,7 @@
  */
 package io.github.nahkd123.stonks.service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -52,9 +53,10 @@ public interface MarketService {
 	 * </p>
 	 * 
 	 * @param uuid The UUID of user.
-	 * @return Async task that resolves to collection of offers made by user.
+	 * @return Async task that resolves to list of offers made by user, ordered from
+	 *         oldest to newest.
 	 */
-	CompletableFuture<Set<? extends Offer>> queryUserOffers(UUID uuid);
+	CompletableFuture<List<? extends Offer>> queryUserOffers(UUID uuid);
 
 	/**
 	 * <p>

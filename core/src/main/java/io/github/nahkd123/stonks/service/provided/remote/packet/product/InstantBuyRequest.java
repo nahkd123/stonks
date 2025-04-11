@@ -31,7 +31,7 @@ public record InstantBuyRequest(String productId, long balance, long units, Slip
 		BufferCodec.UTF8, InstantBuyRequest::productId,
 		BufferCodec.I64, InstantBuyRequest::balance,
 		BufferCodec.I64, InstantBuyRequest::units,
-		StonksBufferCodecs.SLIPPAGE, InstantBuyRequest::slippage,
+		StonksBufferCodecs.SLIPPAGE.asNullable(), InstantBuyRequest::slippage,
 		InstantBuyRequest::new);
 
 	public static final BufferCodec<Product.InstantBuyResult> RESPONSE = BufferCodec.tupleOf(

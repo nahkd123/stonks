@@ -71,9 +71,9 @@ public class MemoryMarketService implements ManagableMarketService {
 	}
 
 	@Override
-	public CompletableFuture<Set<? extends Offer>> queryUserOffers(UUID uuid) {
+	public CompletableFuture<List<? extends Offer>> queryUserOffers(UUID uuid) {
 		Collection<MemoryOffer> offers = userOffers.computeIfAbsent(uuid, $ -> new HashMap<>()).values();
-		return CompletableFuture.completedFuture(Set.copyOf(offers));
+		return CompletableFuture.completedFuture(List.copyOf(offers));
 	}
 
 	@Override

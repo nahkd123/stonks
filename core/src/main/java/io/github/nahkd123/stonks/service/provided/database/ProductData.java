@@ -19,28 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.nahkd123.stonks.utils.orm;
+package io.github.nahkd123.stonks.service.provided.database;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import static io.github.nahkd123.tableschema.schema.Constraint.unique;
 
-public record TableIndex(String name, List<Entry> columns) {
+import io.github.nahkd123.tableschema.schema.Field;
+import io.github.nahkd123.tableschema.schema.Schema;
+import io.github.nahkd123.tableschema.schema.type.FieldType;
 
-	public String sqlCreateIndex(String table) {
-		return "CREATE INDEX [%s] ON [%s] (%s)".formatted(
-			name, table,
-			columns.stream().map(Entry::sql).collect(Collectors.joining(", ")));
-	}
-
-	public static record Entry(String field, Ordering ordering) {
-		public Entry(String field) {
-			this(field, null);
-		}
-
-		public String sql() {
-			return ordering != null
-				? "[%s] %s".formatted(field, ordering.getSqlKeyword())
-				: "[%s]".formatted(field);
-		}
-	}
+record ProductData(String id) {
+	public static final Schema<String, ProductData> SCHEMA = Schema.of(
+		new Field<>(FieldType.fixedString(50), "Id", ProductData::id).with(unique()),
+		(key, params) -> new ProductData(key))
+		.withVersion(0); // TODO change this when updating schema
 }

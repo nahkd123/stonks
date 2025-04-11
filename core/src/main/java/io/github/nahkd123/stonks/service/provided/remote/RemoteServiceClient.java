@@ -105,11 +105,11 @@ public class RemoteServiceClient extends RemoteServiceConnection implements Mark
 	}
 
 	@Override
-	public CompletableFuture<Set<? extends Offer>> queryUserOffers(UUID uuid) {
+	public CompletableFuture<List<? extends Offer>> queryUserOffers(UUID uuid) {
 		return this.<QueryUserOffers.Response>request(new QueryUserOffers(uuid))
 			.thenApply(response -> response.offers().stream()
 				.map(offer -> new RemoteOffer(this, offer))
-				.collect(Collectors.toUnmodifiableSet()));
+				.toList());
 	}
 
 	@Override

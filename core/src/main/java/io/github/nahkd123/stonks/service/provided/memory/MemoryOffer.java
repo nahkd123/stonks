@@ -93,10 +93,11 @@ class MemoryOffer implements Offer {
 		if (product.service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		if (removed) return CompletableFuture.failedFuture(new ServiceException("Offer no longer exist"));
 		long toClaim = filledUnits - claimedUnits;
+		long pending = totalUnits - filledUnits;
 		claimedUnits = filledUnits;
 		boolean toRemove = claimedUnits >= totalUnits;
 		if (toRemove) removeThisOffer();
-		return CompletableFuture.completedFuture(new Offer.ClaimResult(toClaim, toRemove));
+		return CompletableFuture.completedFuture(new Offer.ClaimResult(toClaim, pending, toRemove));
 	}
 
 	@Override
@@ -104,9 +105,10 @@ class MemoryOffer implements Offer {
 		if (product.service.config.lockdown()) return CompletableFuture.failedFuture(new ServiceException("Lockdown"));
 		if (removed) return CompletableFuture.failedFuture(new ServiceException("Offer no longer exist"));
 		long toClaim = filledUnits - claimedUnits;
+		long pending = totalUnits - filledUnits;
 		claimedUnits = filledUnits;
 		removeThisOffer();
-		return CompletableFuture.completedFuture(new Offer.ClaimResult(toClaim, true));
+		return CompletableFuture.completedFuture(new Offer.ClaimResult(toClaim, pending, true));
 	}
 
 	void removeThisOffer() {

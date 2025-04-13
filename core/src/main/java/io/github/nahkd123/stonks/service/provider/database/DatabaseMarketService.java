@@ -50,6 +50,7 @@ public class DatabaseMarketService extends Thread implements ManagableMarketServ
 	private List<DatabaseServiceOption> options;
 
 	private CompletableFuture<Void> startTask = null;
+	private CompletableFuture<Void> stopTask = null;
 	private Queue<Request<?>> requestQueue;
 	private Map<String, DatabaseProduct> productCache;
 
@@ -68,9 +69,12 @@ public class DatabaseMarketService extends Thread implements ManagableMarketServ
 	public CompletableFuture<Void> startServiceThread() {
 		if (requestQueue != null) throw new ServiceException("Service is already running on another thread");
 		startTask = new CompletableFuture<>();
+		stopTask = new CompletableFuture<>();
 		start();
 		return startTask;
 	}
+
+	public CompletableFuture<Void> getStopTask() { return stopTask; }
 
 	@Override
 	public void run() {
@@ -113,6 +117,7 @@ public class DatabaseMarketService extends Thread implements ManagableMarketServ
 		requestQueue = null;
 		productCache = null;
 		db.close();
+		stopTask.complete(null);
 	}
 
 	private record Request<T>(CompletableFuture<T> task, Callable<T> callback) {

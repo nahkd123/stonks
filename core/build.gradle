@@ -1,5 +1,5 @@
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     api naharaToolkit('nahara-common-tasks')
     implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
     compileOnly annotationProcessor('com.google.auto.service:auto-service:1.1.1')

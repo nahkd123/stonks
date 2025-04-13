@@ -1,0 +1,6 @@
+product apple create
+product apple offer buy 128 for 100 each by @nahkd123
+product apple offer buy 128 for 110 each by @nahkd123
+product apple offer buy 128 for 120 each by @nahkd123
+product apple offer sell 128 for 110 each by @nahkd123
+product apple offer sell 128 for 120 each by @nahkd123

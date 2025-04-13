@@ -26,6 +26,7 @@ import com.google.auto.service.AutoService;
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
 
 /**
  * <p>
@@ -34,12 +35,15 @@ import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
  * </p>
  */
 @AutoService(MarketServiceProvider.class)
-public class MemoryServiceProvider implements MarketServiceProvider {
+public class MemoryServiceProvider implements MarketServiceProvider<Void> {
 	@Override
 	public String getProviderName() { return "memory"; }
 
 	@Override
-	public MarketServiceHost createHost(Object config) {
+	public DynamicCodec<Void> getConfigCodec() { return DynamicCodec.VOID; }
+
+	@Override
+	public MarketServiceHost createHost(Void v) {
 		return new Host(new MemoryMarketService());
 	}
 

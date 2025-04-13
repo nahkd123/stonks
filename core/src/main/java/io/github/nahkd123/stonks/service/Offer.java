@@ -23,6 +23,7 @@ package io.github.nahkd123.stonks.service;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.LongFunction;
 
 public interface Offer extends Comparable<Offer> {
 	/**
@@ -86,6 +87,14 @@ public interface Offer extends Comparable<Offer> {
 	 * </p>
 	 */
 	CompletableFuture<ClaimResult> cancelOffer();
+
+	static String toString(Offer offer, LongFunction<String> currencyFormatter) {
+		return "%s %d of %s for %s/ea".formatted(
+			offer.type() == OfferType.BUY ? "Buying" : "Selling",
+			offer.totalUnits(),
+			offer.product().getId(),
+			currencyFormatter.apply(offer.price()));
+	}
 
 	record Status(long filledUnits, long claimedUnits, boolean removed) {
 	}

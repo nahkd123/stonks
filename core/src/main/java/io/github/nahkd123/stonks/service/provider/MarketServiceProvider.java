@@ -21,6 +21,11 @@
  */
 package io.github.nahkd123.stonks.service.provider;
 
+import java.io.IOException;
+
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicReader;
+
 /**
  * <p>
  * A market service provider, following the SPI (Service Provider Interface)
@@ -34,8 +39,10 @@ package io.github.nahkd123.stonks.service.provider;
  * io.github.nahkd123.stonks.service.provider.memory.MemoryServiceProvider
  * io.github.nahkd123.stonks.service.provider.remote.RemoteServiceProvider
  * }
+ * 
+ * @param <C> The type of configuration object.
  */
-public interface MarketServiceProvider {
+public interface MarketServiceProvider<C> {
 	/**
 	 * <p>
 	 * Get the provider name. This will be used by the platform to determine which
@@ -49,13 +56,27 @@ public interface MarketServiceProvider {
 
 	/**
 	 * <p>
+	 * Get the configuration codec, which is used to decode configuration data for
+	 * passing to {@link #createHost(Object)}.
+	 * </p>
+	 * 
+	 * @return The configuration codec.
+	 */
+	DynamicCodec<C> getConfigCodec();
+
+	/**
+	 * <p>
 	 * Create a new market service host, which manages the lifecycle of market
 	 * service. The host will be consumed by platform and will call lifetime methods
 	 * accordingly.
 	 * </p>
 	 * 
-	 * @param config
-	 * @return
+	 * @param config The configuration provided by user.
+	 * @return The host that will manage the lifecycle of market service.
 	 */
-	MarketServiceHost createHost(Object config);
+	MarketServiceHost createHost(C config);
+
+	default MarketServiceHost createHost(DynamicReader dynamicReader) throws IOException {
+		return createHost(dynamicReader != null ? getConfigCodec().decodeFrom(dynamicReader) : null);
+	}
 }

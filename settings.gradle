@@ -10,4 +10,5 @@ plugins {
 }
 
 include 'core'
+include 'cli'
 include 'fabric'

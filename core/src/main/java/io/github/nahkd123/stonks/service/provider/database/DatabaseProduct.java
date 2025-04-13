@@ -76,6 +76,8 @@ record DatabaseProduct(DatabaseMarketService service, ProductData data) implemen
 			while (iter.hasNext() && samples > 0) {
 				OfferData offer = iter.next();
 				long available = offer.totalUnits() - offer.filledUnits();
+				if (available <= 0L) continue;
+
 				totalUnits += available;
 				totalValue += available * offer.price();
 				entries.add(new OfferOverviewEntry(offer.price(), available));
@@ -104,6 +106,7 @@ record DatabaseProduct(DatabaseMarketService service, ProductData data) implemen
 					if (slippage != null && !slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long canBuy = Math.min(balance0 / offer.price(), units0);
+					if (available == 0L) continue;
 					if (canBuy == 0L) break;
 
 					long toBuy = Math.min(canBuy, available);
@@ -147,6 +150,7 @@ record DatabaseProduct(DatabaseMarketService service, ProductData data) implemen
 					if (slippage != null && !slippage.check(offer.price())) break;
 					long available = offer.totalUnits() - offer.filledUnits();
 					long toSell = Math.min(inventory, available);
+					if (available == 0L) continue;
 					if (toSell == 0L) break;
 
 					inventory -= toSell;

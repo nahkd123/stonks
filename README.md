@@ -16,11 +16,11 @@ Here are quick list of changes (so far!):
 - New SQL market service (support any SQL with JDBC implementation).
 - New remote market service for multi-instance setup.
 - Deprecating `double` for currency in favor of `long` for accuracy.
+- Standalone server and command-line interface.
 
 The following tasks need to be finished:
 
 - Converter to migrate from old config format to new JSON-based config.
-- Standalone server.
 - Auto-migrate database based on user's configuration file (applicable to local service only).
 - _TODO_
 

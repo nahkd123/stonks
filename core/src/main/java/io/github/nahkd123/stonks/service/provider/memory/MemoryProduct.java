@@ -82,6 +82,7 @@ class MemoryProduct implements Product {
 			if (slippage != null && !slippage.check(sellOffer.price())) break;
 			long available = sellOffer.totalUnits() - sellOffer.filledUnits;
 			long canBuy = Math.min(balance / sellOffer.price(), units);
+			if (available == 0L) continue;
 			if (canBuy == 0L) break;
 
 			long toBuy = Math.min(canBuy, available);
@@ -107,6 +108,7 @@ class MemoryProduct implements Product {
 			if (slippage != null && !slippage.check(buyOffer.price())) break;
 			long available = buyOffer.totalUnits() - buyOffer.filledUnits;
 			long toSell = Math.min(units, available);
+			if (available == 0L) continue;
 			if (toSell == 0L) break;
 
 			units -= toSell;
@@ -130,6 +132,7 @@ class MemoryProduct implements Product {
 		int search = Collections.binarySearch(productOffersList, offer);
 		int insertAt = search >= 0 ? search : -search - 1;
 		productOffersList.add(insertAt, offer);
+		service.offers.put(offer.id(), offer);
 		return CompletableFuture.completedFuture(offer);
 	}
 

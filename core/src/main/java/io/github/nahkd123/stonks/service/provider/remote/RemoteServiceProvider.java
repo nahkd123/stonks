@@ -28,6 +28,7 @@ import java.net.SocketAddress;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.LockSupport;
 
 import com.google.auto.service.AutoService;
@@ -35,6 +36,10 @@ import com.google.auto.service.AutoService;
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
+import io.github.nahkd123.stonks.service.provider.remote.RemoteServiceProvider.Config;
+import io.github.nahkd123.stonks.utils.OneOf;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec.ObjectField;
 
 /**
  * <p>
@@ -59,51 +64,26 @@ import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
  * </p>
  */
 @AutoService(MarketServiceProvider.class)
-public class RemoteServiceProvider implements MarketServiceProvider {
+public class RemoteServiceProvider implements MarketServiceProvider<Config> {
 	@Override
 	public String getProviderName() { return "remote"; }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public MarketServiceHost createHost(Object config) {
-		SocketAddress addr = null;
+	public DynamicCodec<Config> getConfigCodec() {
+		DynamicCodec<Config> baseCompound = DynamicCodec.object(Config::new, Map.of(
+			"type", new ObjectField<>(DynamicCodec.STRING, c -> c.type, (c, v) -> c.type = v),
+			"address", new ObjectField<>(DynamicCodec.STRING, c -> c.address, (c, v) -> c.address = v),
+			"host", new ObjectField<>(DynamicCodec.STRING, c -> c.host, (c, v) -> c.host = v),
+			"port", new ObjectField<>(DynamicCodec.INTEGER, c -> c.port, (c, v) -> c.port = v),
+			"path", new ObjectField<>(DynamicCodec.STRING, c -> c.path, (c, v) -> c.path = v)));
+		return baseCompound.or(DynamicCodec.STRING.map(s->{Config c=new Config();if(s.startsWith("./")){c.type="unix";c.path=s;}else{c.type="tcp";c.address=s;}return c;},null)).map(oneOf->switch(oneOf){case OneOf.First(Config c)->c;case OneOf.Second(Config c)->c;default->throw new IllegalArgumentException("Unexpected value: "+oneOf);},c->new OneOf.First<>(c));
+	}
 
-		switch (config) {
-		case String s:
-			addr = (s.startsWith("./") || s.startsWith(".\\"))
-				? UnixDomainSocketAddress.of(s)
-				: parseInetSocketAddress(s);
-			break;
-		case Map m:
-			String type = (String) m.getOrDefault("type", "tcp");
-			addr = switch (type) {
-			case "tcp":
-				String address = (String) m.get("address");
-				String host = (String) m.get("host");
-
-				if (address != null) {
-					yield parseInetSocketAddress(address);
-				} else if (host != null) {
-					Integer port = (Integer) m.get("port");
-					if (port == null) throw new IllegalArgumentException("Missing 'port' property");
-					yield new InetSocketAddress(host, port);
-				}
-
-				throw new IllegalArgumentException("Missing 'address' or 'host' property");
-			case "unix":
-				String pathStr = (String) m.get("path");
-				if (pathStr == null) throw new IllegalArgumentException("Missing 'path' property");
-				yield UnixDomainSocketAddress.of(pathStr);
-			default:
-				throw new IllegalArgumentException("Unknown socket type: " + type);
-			};
-			break;
-		default:
-			throw new IllegalArgumentException("Unable to resolve config object: %s".formatted(config));
-		}
-
+	@Override
+	public MarketServiceHost createHost(Config config) {
 		try {
-			return new Host(addr);
+			if (config == null) throw new IllegalArgumentException("Configuration must be provided");
+			return new Host(config.asSocketAddr());
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -117,10 +97,34 @@ public class RemoteServiceProvider implements MarketServiceProvider {
 		return new InetSocketAddress(host, port);
 	}
 
+	class Config {
+		String type, address, host, path;
+		Integer port;
+
+		SocketAddress asSocketAddr() {
+			switch (type) {
+			case "tcp":
+				if (address != null) return parseInetSocketAddress(address);
+				if (host != null) {
+					if (port == null) throw new IllegalArgumentException("Missing 'port' property");
+					return new InetSocketAddress(host, port);
+				}
+				throw new IllegalArgumentException("Missing 'address' or 'host' property");
+			case "unix":
+				if (path == null) throw new IllegalArgumentException("Missing 'path' property");
+				return UnixDomainSocketAddress.of(path);
+			case null:
+				throw new IllegalArgumentException("Missing 'type' property");
+			default:
+				throw new IllegalArgumentException("Unknown socket type: %s".formatted(type));
+			}
+		}
+	}
+
 	class Host implements MarketServiceHost {
 		private SocketAddress address;
-		private SocketChannel channel;
 		private RemoteServiceClient client;
+		private CompletableFuture<Void> stopTask;
 
 		public Host(SocketAddress address) throws IOException {
 			this.address = address;
@@ -131,12 +135,12 @@ public class RemoteServiceProvider implements MarketServiceProvider {
 
 		@Override
 		public void startService() {
-			Thread.startVirtualThread(() -> {
-				try {
-					channel = SocketChannel.open(address);
+			if (client == null) Thread.startVirtualThread(() -> {
+				try (SocketChannel channel = SocketChannel.open(address)) {
 					channel.configureBlocking(false);
 					client = new RemoteServiceClient(channel);
 					client.setThreadToUnpark(Thread.currentThread());
+					stopTask = new CompletableFuture<>();
 
 					while (!client.isClosed()) {
 						boolean b = client.channelRead(channel);
@@ -144,11 +148,10 @@ public class RemoteServiceProvider implements MarketServiceProvider {
 						if (!b) LockSupport.parkNanos(1000000L);
 					}
 
-					channel.close();
+					stopTask.complete(null);
 				} catch (IOException e) {
 					throw new UncheckedIOException(e);
 				} finally {
-					channel = null;
 					client = null;
 				}
 			});
@@ -157,6 +160,7 @@ public class RemoteServiceProvider implements MarketServiceProvider {
 		@Override
 		public void stopService() {
 			if (client != null) client.close();
+			stopTask.join();
 		}
 	}
 }

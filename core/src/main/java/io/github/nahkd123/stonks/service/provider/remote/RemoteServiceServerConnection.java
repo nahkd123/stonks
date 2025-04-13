@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.OfferType;
 import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.Product.SlippageOption;
+import io.github.nahkd123.stonks.service.ServiceException;
+import io.github.nahkd123.stonks.service.ServiceNotificationListener;
 import io.github.nahkd123.stonks.service.provider.remote.packet.QueryCatalog;
 import io.github.nahkd123.stonks.service.provider.remote.packet.offer.CancelOfferRequest;
 import io.github.nahkd123.stonks.service.provider.remote.packet.offer.ClaimOfferRequest;
@@ -47,8 +50,6 @@ import io.github.nahkd123.stonks.service.provider.remote.packet.product.InstantB
 import io.github.nahkd123.stonks.service.provider.remote.packet.product.InstantSellRequest;
 import io.github.nahkd123.stonks.service.provider.remote.packet.product.PlaceOfferRequest;
 import io.github.nahkd123.stonks.service.provider.remote.packet.product.QueryProductOverview;
-import io.github.nahkd123.stonks.service.ServiceException;
-import io.github.nahkd123.stonks.service.ServiceNotificationListener;
 
 class RemoteServiceServerConnection extends RemoteServiceConnection implements ServiceNotificationListener {
 	private MarketService service;
@@ -161,6 +162,7 @@ class RemoteServiceServerConnection extends RemoteServiceConnection implements S
 	}
 
 	private Void handleException(Request request, Throwable t) {
+		if (t instanceof CompletionException e && e.getCause() != null) t = e.getCause();
 		if (t instanceof ServiceException sve) {
 			request.responseFailure(sve.getMessage());
 		} else {

@@ -31,6 +31,10 @@ import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.ServiceConfig;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
+import io.github.nahkd123.stonks.service.provider.database.DatabaseServiceProvider.Config;
+import io.github.nahkd123.stonks.utils.OneOf;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
+import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec.ObjectField;
 import io.github.nahkd123.tableschema.jdbc.JdbcDatabase;
 
 /**
@@ -57,46 +61,43 @@ import io.github.nahkd123.tableschema.jdbc.JdbcDatabase;
  * }
  */
 @AutoService(MarketServiceProvider.class)
-public class DatabaseServiceProvider implements MarketServiceProvider {
+public class DatabaseServiceProvider implements MarketServiceProvider<Config> {
 	@Override
 	public String getProviderName() { return "database"; }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public MarketServiceHost createHost(Object config) {
-		String url = null;
-		String username = null;
-		String password = null;
+	public DynamicCodec<Config> getConfigCodec() {
+		DynamicCodec<Config> baseCompound = DynamicCodec.object(Config::new, Map.of(
+			"url", new ObjectField<>(DynamicCodec.STRING, c -> c.url, (c, v) -> c.url = v),
+			"username", new ObjectField<>(DynamicCodec.STRING, c -> c.username, (c, v) -> c.username = v),
+			"password", new ObjectField<>(DynamicCodec.STRING, c -> c.password, (c, v) -> c.password = v),
+			"backupOnMigrate",
+			new ObjectField<>(DynamicCodec.BOOLEAN, c -> c.backupOnMigrate, (c, v) -> c.backupOnMigrate = v)));
+		return baseCompound.or(DynamicCodec.STRING.map(url->{Config c=new Config();c.url=url;return c;},null)).map(oneOf->switch(oneOf){case OneOf.First(Config c)->c;case OneOf.Second(Config c)->c;default->throw new IllegalArgumentException("Unexpected value: "+oneOf);},c->new OneOf.First<>(c));
+	}
+
+	@Override
+	public MarketServiceHost createHost(Config config) {
+		if (config == null) throw new IllegalArgumentException("Configuration must be provided");
+		if (config.url == null) throw new IllegalArgumentException("Missing 'url' property");
+		return new Host(config);
+	}
+
+	class Config {
+		String url, username, password;
 		boolean backupOnMigrate = false;
-
-		switch (config) {
-		case String url0:
-			url = url0;
-			break;
-		case Map complex:
-			url = (String) complex.get("url");
-			username = (String) complex.get("username");
-			password = (String) complex.get("password");
-			backupOnMigrate = (Boolean) complex.getOrDefault("backupOnMigrate", false);
-			break;
-		default:
-			throw new IllegalArgumentException("Unable to resolve config object: %s".formatted(config));
-		}
-
-		if (url == null) throw new IllegalArgumentException("Missing 'url'");
-		return new Host(url, username, password, backupOnMigrate);
 	}
 
 	class Host implements MarketServiceHost {
 		private DatabaseMarketService service;
 
-		public Host(String url, String username, String password, boolean backupOnMigrate) {
+		public Host(Config config) {
 			this.service = new DatabaseMarketService(() -> {
-				Connection sql = username != null
-					? DriverManager.getConnection(url, username, password)
-					: DriverManager.getConnection(url);
+				Connection sql = config.username != null
+					? DriverManager.getConnection(config.url, config.username, config.password)
+					: DriverManager.getConnection(config.url);
 				return new JdbcDatabase(sql);
-			}, new ServiceConfig(false, 0), backupOnMigrate
+			}, new ServiceConfig(false, 5), config.backupOnMigrate
 				? new DatabaseServiceOption[] { DatabaseServiceOption.Standard.BACKUP_ON_MIGRATE }
 				: new DatabaseServiceOption[0]);
 		}
@@ -112,6 +113,7 @@ public class DatabaseServiceProvider implements MarketServiceProvider {
 		@Override
 		public void stopService() {
 			service.interrupt();
+			service.getStopTask().join();
 		}
 	}
 }

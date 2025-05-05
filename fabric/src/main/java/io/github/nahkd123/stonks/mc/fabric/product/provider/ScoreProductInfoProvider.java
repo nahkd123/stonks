@@ -9,6 +9,7 @@ import io.github.nahkd123.stonks.mc.fabric.product.provider.ScoreProductInfoProv
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.scoreboard.ReadableScoreboardScore;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardCriterion.RenderType;
@@ -47,7 +48,8 @@ public class ScoreProductInfoProvider implements ProductInfoProvider<ProductInfo
 		public long getInventory(ServerPlayerEntity player) {
 			Scoreboard sb = player.getScoreboard();
 			ScoreboardObjective o = sb.getNullableObjective(objective);
-			return o != null ? sb.getScore(player, o).getScore() : 0;
+			ReadableScoreboardScore score = sb.getScore(player, o);
+			return o != null && score != null ? score.getScore() : 0;
 		}
 
 		private ScoreboardObjective getOrCreateObjective(Scoreboard sb) {

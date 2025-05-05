@@ -26,6 +26,8 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
+import io.github.nahkd123.stonks.mc.fabric.StonksMcInstance;
+import io.github.nahkd123.stonks.mc.fabric.bridge.MinecraftServerBridge;
 import net.minecraft.server.MinecraftServer;
 import stonks.core.caching.StonksCache;
 import stonks.core.caching.StonksServiceCache;
@@ -45,7 +47,7 @@ import stonks.fabric.misc.TasksHandler;
 import stonks.fabric.service.StonksServiceProvider;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin implements StonksFabricPlatform {
+public abstract class MinecraftServerMixin implements StonksFabricPlatform, MinecraftServerBridge {
 	@Unique
 	private StonksService stonks$service;
 	@Unique
@@ -62,6 +64,9 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 	private PlatformConfig stonks$config;
 	@Unique
 	private StonksSounds stonks$sounds;
+
+	@Unique
+	private StonksMcInstance stonks$next$instance = null;
 
 	@Override
 	public StonksService getStonksService() { return stonks$service; }
@@ -111,5 +116,13 @@ public abstract class MinecraftServerMixin implements StonksFabricPlatform {
 			StonksFabric.LOGGER.info("Local service found! Loading data...");
 			localService.loadServiceData();
 		}
+	}
+
+	@Override
+	public StonksMcInstance getStonks() { return stonks$next$instance; }
+
+	@Override
+	public void attachStonks(StonksMcInstance instance) {
+		stonks$next$instance = instance;
 	}
 }

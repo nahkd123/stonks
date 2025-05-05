@@ -1,0 +1,54 @@
+{
+    "services": {
+        "market": {
+            "type": "database",
+            "config": "jdbc:sqlite::memory:"
+        },
+        "economy": {
+            "type": "item",
+            "items": [
+                {"id": "minecraft:gold_block", "name": ["block", "blocks"], "worth": 81},
+                {"id": "minecraft:gold_ingot", "name": ["ingot", "ingots"], "worth": 9},
+                {"id": "minecraft:gold_nugget", "name": ["nugget", "nuggets"], "worth": 1}
+            ]
+        }
+    },
+    "catalog": [
+        {
+            "icon": {
+                "id": "minecraft:cooked_chicken",
+                "components": {
+                    "minecraft:item_name": "Foods",
+                    "minecraft:lore": [{"text": "Ya hungry?", "color": "gray"}]
+                }
+            },
+            "products": [
+                {
+                    "productId": "apple",
+                    "type": "item",
+                    "item": {"id": "minecraft:apple"}
+                },
+                {
+                    "productId": "cooked_chicken",
+                    "type": "item",
+                    "item": {"id": "minecraft:cooked_chicken"}
+                }
+            ]
+        },
+        {
+            "icon": {
+                "id": "minecraft:chest",
+                "components": {
+                    "minecraft:item_name": "Utility"
+                }
+            },
+            "products": [
+                {
+                    "productId": "magic_energy",
+                    "type": "score",
+                    "objective": "magicEnergy"
+                }
+            ]
+        }
+    ]
+}

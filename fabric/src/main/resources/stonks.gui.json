@@ -1,0 +1,52 @@
+{
+    "market": {
+        "title": {"translation": "stonks.gui.market"},
+        "type": "minecraft:generic_9x6",
+        "buttons": [
+            {
+                "slot": [
+                    {"from": {"x": 0, "y": 0}, "to": {"x": 9, "y": 1}},
+                    {"from": {"x": 0, "y": 5}, "to": {"x": 9, "y": 6}},
+                    {"from": {"x": 1, "y": 1}, "to": {"x": 2, "y": 5}}
+                ],
+                "item": {
+                    "id": "minecraft:black_stained_glass_pane",
+                    "components": {
+                        "minecraft:tooltip_display": {"hide_tooltip": true}
+                    }
+                }
+            },
+            {
+                "slot": {"from": {"x": 0, "y": 1}, "to": {"x": 1, "y": 5}},
+                "special": "category",
+                "template": {
+                    "name": {"translation": "stonks.gui.market.category"},
+                    "lore": [
+                        {"$slot": "lore"},
+                        "",
+                        {"translation": "stonks.gui.market.category.click"}
+                    ]
+                }
+            },
+            {
+                "slot": {"from": {"x": 2, "y": 0}, "to": {"x": 9, "y": 5}},
+                "special": "product",
+                "template": {
+                    "name": {"translation": "stonks.gui.market.product"},
+                    "lore": [
+                        {"$slot": "lore"},
+                        "",
+                        {"translation": "stonks.gui.market.product.instantBuy"},
+                        {"translation": "stonks.gui.market.product.instantSell"},
+                        "",
+                        {"translation": "stonks.gui.market.product.click"}
+                    ]
+                }
+            },
+            {
+                "slot": {"x": 4, "y": 0},
+                "special": ""
+            }
+        ]
+    }
+}

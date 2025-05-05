@@ -19,34 +19,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.github.nahkd123.stonks;
+package io.github.nahkd123.stonks.mc.fabric.econ;
 
-import io.github.nahkd123.stonks.service.MarketService;
+import java.io.Serial;
 
-/**
- * <p>
- * Represent an instance of Stonks. Stonks instance is usually bounds to an
- * instance of Minecraft server (either integrated or dedicated) or a process
- * (one process can spawn multiple instances of Stonks).
- * </p>
- * <p>
- * Stonks instances are implemented by platform implementation (they are not
- * supposed to be implemented by API consumers). Getting an instance of
- * {@link Stonks} rely on platform-specific API. The instance is usually
- * configured by user, and in some rare cases, by code.
- * </p>
- */
-public interface Stonks {
-	/**
-	 * <p>
-	 * Get the current market service that is running in this {@link Stonks}
-	 * instance. The lifecycle of market service is managed by platform's
-	 * implementation. It is not possible for {@link Stonks} to have no market
-	 * service, which means the return value of this method will never be
-	 * {@code null}.
-	 * </p>
-	 * 
-	 * @return The current market service.
-	 */
-	MarketService getMarketService();
+import net.minecraft.text.Text;
+
+public class EconomyException extends Exception {
+	@Serial
+	private static final long serialVersionUID = -7506556061409782968L;
+
+	public EconomyException(Text message, Throwable cause) {
+		super(message.getLiteralString(), cause);
+	}
+
+	public EconomyException(Text message) {
+		super(message.getLiteralString());
+	}
+
+	public EconomyException() {}
 }

@@ -4,7 +4,7 @@ dependencies {
     compileOnly annotationProcessor('com.google.auto.service:auto-service:1.1.1')
     implementation 'com.mojang:datafixerupper:8.0.16'
     implementation 'com.github.nahkd123:transporter:1.0.2'
-    implementation 'com.github.nahkd123:tableschema:1.0.0'
+    implementation 'com.github.nahkd123:tableschema:1.0.2'
 }
 
 processResources {

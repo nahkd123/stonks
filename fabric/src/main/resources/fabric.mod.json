@@ -9,7 +9,7 @@
     "icon": "assets/stonks/icon.png",
     "authors": ["nahkd123"],
     "entrypoints": {
-        "main": ["stonks.fabric.StonksFabric::init"],
+        "main": ["stonks.fabric.StonksFabric::init", "io.github.nahkd123.stonks.mc.fabric.StonksMod::entryPoint"],
         "client": [],
         "server": []
     },

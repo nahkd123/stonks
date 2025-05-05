@@ -31,7 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import io.github.nahkd123.stonks.service.ManagableMarketService;
+import io.github.nahkd123.stonks.service.ManageableMarketService;
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.Product;
@@ -48,7 +48,7 @@ import io.github.nahkd123.stonks.utils.EmitHandler;
  * calls into transactions and execute each transaction one by one.
  * </p>
  */
-public class MemoryMarketService implements ManagableMarketService {
+public class MemoryMarketService implements ManageableMarketService {
 	private Set<MemoryProduct> catalog = new HashSet<>();
 	EmitHandler<ServiceNotificationListener> listeners = new EmitHandler<>();
 	Map<UUID, Map<UUID, MemoryOffer>> userOffers = new HashMap<>();

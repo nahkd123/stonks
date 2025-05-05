@@ -34,7 +34,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.github.nahkd123.stonks.service.ManagableMarketService;
+import io.github.nahkd123.stonks.service.ManageableMarketService;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.ServiceConfig;
@@ -45,7 +45,7 @@ import io.github.nahkd123.tableschema.Database;
 import io.github.nahkd123.tableschema.Table;
 import io.github.nahkd123.tableschema.query.Filter;
 
-public class DatabaseMarketService extends Thread implements ManagableMarketService {
+public class DatabaseMarketService extends Thread implements ManageableMarketService {
 	private Callable<Database> db;
 	private List<DatabaseServiceOption> options;
 
@@ -85,7 +85,7 @@ public class DatabaseMarketService extends Thread implements ManagableMarketServ
 		try {
 			db = this.db.call();
 		} catch (Exception e) {
-			throw new ServiceException("Unable to create database interface");
+			throw new ServiceException("Unable to create database interface", e);
 		}
 
 		boolean makeBackup = options.contains(DatabaseServiceOption.Standard.BACKUP_ON_MIGRATE);

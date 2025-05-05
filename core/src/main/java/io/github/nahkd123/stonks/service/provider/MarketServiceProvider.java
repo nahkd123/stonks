@@ -21,10 +21,8 @@
  */
 package io.github.nahkd123.stonks.service.provider;
 
-import java.io.IOException;
-
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicReader;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 
 /**
  * <p>
@@ -62,7 +60,7 @@ public interface MarketServiceProvider<C> {
 	 * 
 	 * @return The configuration codec.
 	 */
-	DynamicCodec<C> getConfigCodec();
+	Codec<C> getConfigCodec();
 
 	/**
 	 * <p>
@@ -76,7 +74,7 @@ public interface MarketServiceProvider<C> {
 	 */
 	MarketServiceHost createHost(C config);
 
-	default MarketServiceHost createHost(DynamicReader dynamicReader) throws IOException {
-		return createHost(dynamicReader != null ? getConfigCodec().decodeFrom(dynamicReader) : null);
+	default <T> MarketServiceHost createHost(Dynamic<T> dynamic) {
+		return createHost(dynamic != null ? getConfigCodec().decode(dynamic).getPartialOrThrow().getFirst() : null);
 	}
 }

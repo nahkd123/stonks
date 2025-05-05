@@ -24,17 +24,19 @@ package io.github.nahkd123.stonks.service.provider.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.auto.service.AutoService;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.ServiceConfig;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
 import io.github.nahkd123.stonks.service.provider.database.DatabaseServiceProvider.Config;
-import io.github.nahkd123.stonks.utils.OneOf;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec.ObjectField;
 import io.github.nahkd123.tableschema.jdbc.JdbcDatabase;
 
 /**
@@ -66,15 +68,7 @@ public class DatabaseServiceProvider implements MarketServiceProvider<Config> {
 	public String getProviderName() { return "database"; }
 
 	@Override
-	public DynamicCodec<Config> getConfigCodec() {
-		DynamicCodec<Config> baseCompound = DynamicCodec.object(Config::new, Map.of(
-			"url", new ObjectField<>(DynamicCodec.STRING, c -> c.url, (c, v) -> c.url = v),
-			"username", new ObjectField<>(DynamicCodec.STRING, c -> c.username, (c, v) -> c.username = v),
-			"password", new ObjectField<>(DynamicCodec.STRING, c -> c.password, (c, v) -> c.password = v),
-			"backupOnMigrate",
-			new ObjectField<>(DynamicCodec.BOOLEAN, c -> c.backupOnMigrate, (c, v) -> c.backupOnMigrate = v)));
-		return baseCompound.or(DynamicCodec.STRING.map(url->{Config c=new Config();c.url=url;return c;},null)).map(oneOf->switch(oneOf){case OneOf.First(Config c)->c;case OneOf.Second(Config c)->c;default->throw new IllegalArgumentException("Unexpected value: "+oneOf);},c->new OneOf.First<>(c));
-	}
+	public Codec<Config> getConfigCodec() { return Config.CODEC; }
 
 	@Override
 	public MarketServiceHost createHost(Config config) {
@@ -83,9 +77,21 @@ public class DatabaseServiceProvider implements MarketServiceProvider<Config> {
 		return new Host(config);
 	}
 
-	class Config {
-		String url, username, password;
-		boolean backupOnMigrate = false;
+	record Config(String url, Optional<String> username, Optional<String> password, boolean backupOnMigrate) {
+		static final Codec<Config> STRING_CODEC = Codec.STRING.xmap(
+			s -> new Config(s, Optional.empty(), Optional.empty(), false),
+			Config::url);
+		static final MapCodec<Config> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.STRING.fieldOf("url").forGetter(Config::url),
+			Codec.STRING.optionalFieldOf("username").forGetter(Config::username),
+			Codec.STRING.optionalFieldOf("password").forGetter(Config::password),
+			Codec.BOOL.optionalFieldOf("backupOnMigrate", false).forGetter(Config::backupOnMigrate))
+			.apply(i, Config::new));
+		static final Codec<Config> CODEC = Codec.either(STRING_CODEC, MAP_CODEC.codec()).xmap(
+			e -> e.left().or(e::right).get(),
+			c -> c.username.isEmpty() && c.password.isEmpty() && !c.backupOnMigrate
+				? Either.left(c)
+				: Either.right(c));
 	}
 
 	class Host implements MarketServiceHost {
@@ -93,8 +99,8 @@ public class DatabaseServiceProvider implements MarketServiceProvider<Config> {
 
 		public Host(Config config) {
 			this.service = new DatabaseMarketService(() -> {
-				Connection sql = config.username != null
-					? DriverManager.getConnection(config.url, config.username, config.password)
+				Connection sql = config.username.isPresent()
+					? DriverManager.getConnection(config.url, config.username.get(), config.password.get())
 					: DriverManager.getConnection(config.url);
 				return new JdbcDatabase(sql);
 			}, new ServiceConfig(false, 5), config.backupOnMigrate

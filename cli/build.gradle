@@ -1,5 +1,14 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'io.github.nahkd123.stonks.cli.StonksCliMain'
+}
+
 dependencies {
     implementation project(':core')
+    implementation 'com.mojang:datafixerupper:8.0.16'
 }
 
 tasks.named('test') {

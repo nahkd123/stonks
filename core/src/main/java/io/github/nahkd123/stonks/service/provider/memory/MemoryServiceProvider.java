@@ -22,11 +22,11 @@
 package io.github.nahkd123.stonks.service.provider.memory;
 
 import com.google.auto.service.AutoService;
+import com.mojang.serialization.Codec;
 
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
 
 /**
  * <p>
@@ -40,7 +40,7 @@ public class MemoryServiceProvider implements MarketServiceProvider<Void> {
 	public String getProviderName() { return "memory"; }
 
 	@Override
-	public DynamicCodec<Void> getConfigCodec() { return DynamicCodec.VOID; }
+	public Codec<Void> getConfigCodec() { return Codec.unit(null); }
 
 	@Override
 	public MarketServiceHost createHost(Void v) {

@@ -21,11 +21,13 @@
  */
 package io.github.nahkd123.stonks.cli;
 
-import java.io.BufferedReader;
 import java.io.Console;
+import java.io.Reader;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,13 +38,18 @@ import java.util.Scanner;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.github.nahkd123.stonks.service.ManagableMarketService;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JavaOps;
+import com.mojang.serialization.JsonOps;
+
+import io.github.nahkd123.stonks.service.ManageableMarketService;
 import io.github.nahkd123.stonks.service.Offer;
 import io.github.nahkd123.stonks.service.OfferOverviewEntry;
 import io.github.nahkd123.stonks.service.OfferType;
@@ -51,8 +58,6 @@ import io.github.nahkd123.stonks.service.ProductOffersOverview;
 import io.github.nahkd123.stonks.service.ProductOverview;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicReader;
-import io.github.nahkd123.stonks.utils.dynamic.json.JsonDynamicReader;
 
 public class StonksCliMain {
 	public static void main(String[] args) throws Throwable {
@@ -76,7 +81,7 @@ public class StonksCliMain {
 	public StonksCliMain(ArgumentType.Arguments args) {
 		providers = ServiceLoader.load(MarketServiceProvider.class).stream()
 			.map(v -> v.get())
-			.collect(Collectors.toMap(MarketServiceProvider::getProviderName, Function.identity()));
+			.collect(Collectors.toMap(MarketServiceProvider::getProviderName, provider -> provider));
 		args.accept(options);
 	}
 
@@ -131,9 +136,14 @@ public class StonksCliMain {
 				return;
 			}
 
-			String host = matcher.group("host");
-			int port = Integer.parseInt(matcher.group("port"));
-			servers.add(new MarketServerInfo(null, InetSocketAddress.createUnresolved(host, port)));
+			InetAddress host;
+			try {
+				host = InetAddress.getByName(matcher.group("host"));
+				int port = Integer.parseInt(matcher.group("port"));
+				servers.add(new MarketServerInfo(null, new InetSocketAddress(host, port)));
+			} catch (UnknownHostException e) {
+				System.err.println("Unable to resolve to IP address for hostname %s".formatted(matcher.group("host")));
+			}
 		}, "--server-tcp"));
 
 	public void run() {
@@ -153,23 +163,23 @@ public class StonksCliMain {
 		}
 
 		System.out.println("Using service provider: %s".formatted(provider.getProviderName()));
-		BufferedReader fileReader = null;
-		DynamicReader configReader;
+		Dynamic<?> configDynamic = null;
 
 		if (config != null) {
 			System.out.println("Using service configuration: \"%s\"".formatted(config));
-			configReader = new StringOnlyDynamicReader(config);
+			configDynamic = new Dynamic<>(JavaOps.INSTANCE, config);
 		} else if (configFile != null) {
 			System.out.println("Using service configuration from file: %s".formatted(configFile));
-			fileReader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8);
-			configReader = new JsonDynamicReader(fileReader);
+
+			try (Reader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
+				JsonElement json = JsonParser.parseReader(reader);
+				configDynamic = new Dynamic<>(JsonOps.INSTANCE, json);
+			}
 		} else {
 			System.out.println("Not using service configuration");
-			configReader = null;
 		}
 
-		MarketServiceHost serviceHost = provider.createHost(configReader != null ? configReader : null);
-		if (fileReader != null) fileReader.close();
+		MarketServiceHost serviceHost = provider.createHost(configDynamic);
 		System.out.println("Create market service host! Starting service...");
 		serviceHost.startService();
 		System.out.println("Service started successfully!");
@@ -194,6 +204,11 @@ public class StonksCliMain {
 
 		if (!hasScript || retainSession) {
 			if (hasScript) System.out.println("--retain-session was specified");
+
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				System.out.println("Shutdown signal received");
+				stop(serviceHost);
+			}));
 
 			Console console = System.console();
 			if (console != null) {
@@ -310,7 +325,7 @@ public class StonksCliMain {
 	}
 
 	private void createProduct(Matcher matcher, MarketServiceHost host) {
-		if (!(host.getService() instanceof ManagableMarketService mgr)) {
+		if (!(host.getService() instanceof ManageableMarketService mgr)) {
 			System.err.println("Current market service does not allow managing the catalog");
 			return;
 		}
@@ -328,7 +343,7 @@ public class StonksCliMain {
 	}
 
 	private void deleteProduct(Matcher matcher, MarketServiceHost host) {
-		if (!(host.getService() instanceof ManagableMarketService mgr)) {
+		if (!(host.getService() instanceof ManageableMarketService mgr)) {
 			System.err.println("Current market service does not allow managing the catalog");
 			return;
 		}

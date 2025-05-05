@@ -27,6 +27,12 @@ subprojects {
     repositories {
         mavenCentral()
         maven { url = 'https://jitpack.io/' }
+        maven {
+            url = 'https://libraries.minecraft.net'
+            content {
+                includeGroup 'com.mojang'
+            }
+        }
     }
 
     dependencies.ext.naharaToolkit = { moduleName ->

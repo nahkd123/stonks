@@ -26,12 +26,12 @@ import java.util.concurrent.CompletableFuture;
 /**
  * <p>
  * Basically {@link MarketService}, but with extra methods for remotely managing
- * the service. Single instance setup always have {@link ManagableMarketService}
+ * the service. Single instance setup always have {@link ManageableMarketService}
  * in the one and only instance. Multi-instance setup requires extra permission
- * in order to obtain {@link ManagableMarketService}.
+ * in order to obtain {@link ManageableMarketService}.
  * </p>
  */
-public interface ManagableMarketService extends MarketService {
+public interface ManageableMarketService extends MarketService {
 	/**
 	 * <p>
 	 * Create a new product with specific ID and add it to the catalog.

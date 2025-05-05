@@ -23,23 +23,29 @@ package io.github.nahkd123.stonks.service.provider.remote;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnixDomainSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.LockSupport;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.auto.service.AutoService;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.nahkd123.stonks.service.MarketService;
 import io.github.nahkd123.stonks.service.provider.MarketServiceHost;
 import io.github.nahkd123.stonks.service.provider.MarketServiceProvider;
 import io.github.nahkd123.stonks.service.provider.remote.RemoteServiceProvider.Config;
-import io.github.nahkd123.stonks.utils.OneOf;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec;
-import io.github.nahkd123.stonks.utils.dynamic.DynamicCodec.ObjectField;
 
 /**
  * <p>
@@ -69,54 +75,100 @@ public class RemoteServiceProvider implements MarketServiceProvider<Config> {
 	public String getProviderName() { return "remote"; }
 
 	@Override
-	public DynamicCodec<Config> getConfigCodec() {
-		DynamicCodec<Config> baseCompound = DynamicCodec.object(Config::new, Map.of(
-			"type", new ObjectField<>(DynamicCodec.STRING, c -> c.type, (c, v) -> c.type = v),
-			"address", new ObjectField<>(DynamicCodec.STRING, c -> c.address, (c, v) -> c.address = v),
-			"host", new ObjectField<>(DynamicCodec.STRING, c -> c.host, (c, v) -> c.host = v),
-			"port", new ObjectField<>(DynamicCodec.INTEGER, c -> c.port, (c, v) -> c.port = v),
-			"path", new ObjectField<>(DynamicCodec.STRING, c -> c.path, (c, v) -> c.path = v)));
-		return baseCompound.or(DynamicCodec.STRING.map(s->{Config c=new Config();if(s.startsWith("./")){c.type="unix";c.path=s;}else{c.type="tcp";c.address=s;}return c;},null)).map(oneOf->switch(oneOf){case OneOf.First(Config c)->c;case OneOf.Second(Config c)->c;default->throw new IllegalArgumentException("Unexpected value: "+oneOf);},c->new OneOf.First<>(c));
-	}
+	public Codec<Config> getConfigCodec() { return Config.CODEC; }
 
 	@Override
 	public MarketServiceHost createHost(Config config) {
 		try {
 			if (config == null) throw new IllegalArgumentException("Configuration must be provided");
-			return new Host(config.asSocketAddr());
+			return new Host(config.socketAddress());
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 
-	private InetSocketAddress parseInetSocketAddress(String s) {
-		String[] split = s.split(":", 2);
-		if (split.length != 2) throw new IllegalArgumentException("Missing port number");
-		String host = split[0];
-		int port = Integer.parseInt(split[1]);
-		return new InetSocketAddress(host, port);
-	}
+	interface Config {
+		Type type();
 
-	class Config {
-		String type, address, host, path;
-		Integer port;
+		SocketAddress socketAddress();
 
-		SocketAddress asSocketAddr() {
-			switch (type) {
-			case "tcp":
-				if (address != null) return parseInetSocketAddress(address);
-				if (host != null) {
-					if (port == null) throw new IllegalArgumentException("Missing 'port' property");
-					return new InetSocketAddress(host, port);
+		Codec<Config> STRING_CODEC = Codec.either(Tcp.STRING_CODEC, Unix.STRING_CODEC).xmap(
+			e -> e.left().map(v -> (Config) v).or(e::right).get(),
+			c -> c instanceof Tcp tcp ? Either.left(tcp) : Either.right((Unix) c));
+		MapCodec<Config> MAP_CODEC = Type.CODEC.dispatchMap("type", Config::type, Type::getMapCodec);
+		Codec<Config> CODEC = Codec.either(STRING_CODEC, MAP_CODEC.codec()).xmap(
+			e -> e.left().or(e::right).get(),
+			Either::right);
+
+		enum Type {
+			TCP(Tcp.MAP_CODEC),
+			UNIX(Unix.MAP_CODEC);
+
+			private MapCodec<? extends Config> mapCodec;
+
+			private Type(MapCodec<? extends Config> mapCodec) {
+				this.mapCodec = mapCodec;
+			}
+
+			public MapCodec<? extends Config> getMapCodec() { return mapCodec; }
+
+			static final Codec<Type> CODEC = Codec.STRING
+				.xmap(v -> v.toUpperCase(), v -> v.toLowerCase())
+				.xmap(Type::valueOf, Type::toString);
+		}
+
+		record Tcp(String host, int port) implements Config {
+			static final Pattern ADDRESS_PATTERN = Pattern.compile("^(?<host>[A-Za-z0-9._-]+?):(?<port>\\d+)$");
+			static final Codec<Tcp> STRING_CODEC = Codec.STRING.comapFlatMap(
+				Tcp::fromAddress,
+				c -> "%s:%s".formatted(c.host, c.port));
+			static final MapCodec<Tcp> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				Codec.STRING.fieldOf("host").forGetter(Tcp::host),
+				Codec.INT.fieldOf("port").forGetter(Tcp::port))
+				.apply(i, Tcp::new));
+
+			static DataResult<Tcp> fromAddress(String addr) {
+				Matcher matcher = ADDRESS_PATTERN.matcher(addr);
+
+				if (matcher.matches()) {
+					String host = matcher.group("host");
+					int port = Integer.parseInt(matcher.group("port"));
+					return DataResult.success(new Tcp(host, port));
 				}
-				throw new IllegalArgumentException("Missing 'address' or 'host' property");
-			case "unix":
-				if (path == null) throw new IllegalArgumentException("Missing 'path' property");
+
+				return DataResult.error(() -> "%s does not follow <host>:<port> format".formatted(addr));
+			}
+
+			@Override
+			public Type type() {
+				return Type.TCP;
+			}
+
+			@Override
+			public SocketAddress socketAddress() {
+				try {
+					return new InetSocketAddress(InetAddress.getByName(host), port);
+				} catch (UnknownHostException e) {
+					throw new RuntimeException("Unable to resolve %s".formatted(host), e);
+				}
+			}
+		}
+
+		record Unix(Path path) implements Config {
+			static final Codec<Path> PATH_CODEC = Codec.STRING.xmap(s -> Path.of(s), p -> p.toString());
+			static final Codec<Unix> STRING_CODEC = PATH_CODEC.xmap(Unix::new, Unix::path);
+			static final MapCodec<Unix> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				PATH_CODEC.fieldOf("path").forGetter(Unix::path))
+				.apply(i, Unix::new));
+
+			@Override
+			public Type type() {
+				return Type.UNIX;
+			}
+
+			@Override
+			public SocketAddress socketAddress() {
 				return UnixDomainSocketAddress.of(path);
-			case null:
-				throw new IllegalArgumentException("Missing 'type' property");
-			default:
-				throw new IllegalArgumentException("Unknown socket type: %s".formatted(type));
 			}
 		}
 	}

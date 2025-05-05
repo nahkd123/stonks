@@ -2,7 +2,7 @@
     "services": {
         "market": {
             "type": "database",
-            "config": "jdbc:sqlite::memory:"
+            "config": "jdbc:sqlite:stonks-sqlite-database.db"
         },
         "economy": {
             "type": "item",

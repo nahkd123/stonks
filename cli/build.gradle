@@ -9,6 +9,10 @@ application {
 dependencies {
     implementation project(':core')
     implementation 'com.mojang:datafixerupper:8.0.16'
+
+    // Databases
+    implementation 'com.mysql:mysql-connector-j:9.3.0'
+    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
 }
 
 tasks.named('test') {

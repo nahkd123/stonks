@@ -28,4 +28,8 @@ dependencies {
     api include(project(':core'))
     api include(naharaToolkit('nahara-common-tasks'))
     api include(naharaToolkit('nahara-common-configurations'))
+
+    // Databases
+    implementation 'com.mysql:mysql-connector-j:9.3.0'
+    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
 }

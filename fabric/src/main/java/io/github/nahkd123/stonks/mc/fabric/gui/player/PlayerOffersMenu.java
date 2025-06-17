@@ -57,8 +57,8 @@ public class PlayerOffersMenu extends TaskedMenu<Void> {
 
 			for (int i = 0; i < page.size(); i++) {
 				Offer offer = page.get(i);
-				if (offer == null) clearSlot(i);
-				setSlot(i, GuiElementBuilder.from(new ItemStack(Items.STONE)));
+				if (offer == null) clearSlot(9 + i);
+				setSlot(9 + i, GuiElementBuilder.from(new ItemStack(Items.STONE)));
 			}
 		} else {
 			for (int i = 9; i < 54; i++) clearSlot(i);

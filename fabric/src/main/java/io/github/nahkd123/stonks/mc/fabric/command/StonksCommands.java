@@ -27,12 +27,13 @@ public class StonksCommands {
 	private static int market(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
 		StonksMcInstance instance = StonksMod.getInstance(ctx.getSource().getServer());
-		MarketMenu menu = new MarketMenu(player, instance);
-		menu.openTasked().exceptionally(t -> {
-			if (t instanceof CompletionException e && e.getCause() != null) t = e.getCause();
-			if (!(t instanceof PlayerAction)) t.printStackTrace();
-			return null;
-		});
+		new MarketMenu(player, instance).openTasked()
+			.thenAccept(v -> player.closeHandledScreen())
+			.exceptionally(t -> {
+				if (t instanceof CompletionException e && e.getCause() != null) t = e.getCause();
+				if (!(t instanceof PlayerAction)) t.printStackTrace();
+				return null;
+			});
 		return 0;
 	}
 

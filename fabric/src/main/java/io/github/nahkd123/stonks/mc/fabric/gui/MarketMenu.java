@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import io.github.nahkd123.stonks.mc.fabric.StonksMcInstance;
+import io.github.nahkd123.stonks.mc.fabric.gui.player.PlayerOffersMenu;
 import io.github.nahkd123.stonks.mc.fabric.gui.tasked.TaskedMenu;
 import io.github.nahkd123.stonks.mc.fabric.product.Category;
 import io.github.nahkd123.stonks.mc.fabric.product.CategoryProduct;
@@ -17,6 +18,8 @@ import io.github.nahkd123.stonks.mc.fabric.utils.StonksTextUtils;
 import io.github.nahkd123.stonks.service.Product;
 import io.github.nahkd123.stonks.service.ProductOverview;
 import io.github.nahkd123.stonks.service.ServiceException;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -24,7 +27,7 @@ import net.minecraft.util.Formatting;
 
 public class MarketMenu extends TaskedMenu<Void> {
 	private StonksMcInstance instance;
-	private Category selectedCategory = null;
+	private Category selectedCategory;
 	private int categoryPage = 0, productPage = 0;
 
 	private CompletableFuture<Map<String, Product>> products;
@@ -76,6 +79,20 @@ public class MarketMenu extends TaskedMenu<Void> {
 
 		setSlot(1, GuiElementBuilder.from(StonksGuiElements.BACK.getItemStack())
 			.setCallback((index, type, action, gui) -> resolve(null))
+			.build());
+
+		setSlot(4, GuiElementBuilder.from(new ItemStack(Items.CHEST))
+			.setItemName(Text.literal("View your offers").formatted(Formatting.YELLOW))
+			.addLoreLine(Text.empty())
+			.addLoreLine(Text.literal("View a list of offers that you've").formatted(Formatting.GRAY))
+			.addLoreLine(Text.literal("placed, as well as claim and cancel").formatted(Formatting.GRAY))
+			.addLoreLine(Text.literal("offers.").formatted(Formatting.GRAY))
+			.addLoreLine(Text.empty())
+			.addLoreLine(Text.empty()
+				.append(Text.literal("Click ").formatted(Formatting.YELLOW))
+				.append("to view your offers")
+				.formatted(Formatting.GRAY))
+			.setCallback((index, type, action, gui) -> openAnotherMenu(new PlayerOffersMenu(player, instance)))
 			.build());
 	}
 

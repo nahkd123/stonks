@@ -125,12 +125,12 @@ public class InstantBuyMenu extends StackedMenu {
 						.thenAcceptAsync(
 							$ -> new InstantBuyMenu(getPrevious(), getPlayer(), getProduct(), originalPricePerUnit, instantPricePerUnit)
 								.open(),
-							player.getServer())
+							player.getCommandSource().getServer())
 						.exceptionallyAsync(error -> {
 							close();
 							error.printStackTrace();
 							return null;
-						}, player.getServer());
+						}, player.getCommandSource().getServer());
 				}
 			});
 	}

@@ -70,7 +70,7 @@ public class MarketMainMenu extends StackedMenu {
 				categoriesMaxPages = Math.max((int) Math.ceil(categories.size() / (double) CATEGORIES_PER_PAGE), 1);
 				refresh(categories);
 				placePagesNavigations(categories);
-			}, player.getServer())
+			}, player.getCommandSource().getServer())
 			.exceptionallyAsync(error -> {
 				var icon = new GuiElementBuilder(Items.BARRIER)
 					.setName(Translations.Errors.Errors)
@@ -85,7 +85,7 @@ public class MarketMainMenu extends StackedMenu {
 				StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 				error.printStackTrace();
 				return null;
-			}, player.getServer());
+			}, player.getCommandSource().getServer());
 	}
 
 	@Override

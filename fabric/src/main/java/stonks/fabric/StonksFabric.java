@@ -151,7 +151,7 @@ public class StonksFabric {
 	}
 
 	public static StonksFabricPlatform getPlatform(ServerPlayerEntity player) {
-		return getPlatform(player.getServer());
+		return getPlatform(player.getCommandSource().getServer()); // FIXME ?
 	}
 
 	public static ItemStack getDisplayStack(StonksFabricAdapter adapter, Product product) {

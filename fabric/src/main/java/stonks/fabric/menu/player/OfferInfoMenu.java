@@ -104,7 +104,7 @@ public class OfferInfoMenu extends StackedMenu {
 
 						new OfferInfoMenu(getPrevious(), getPlayer(), newOffer.get()).open();
 						StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
-					}, player.getServer())
+					}, player.getCommandSource().getServer())
 					.exceptionallyAsync(error -> {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
@@ -112,7 +112,7 @@ public class OfferInfoMenu extends StackedMenu {
 						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return null;
-					}, player.getServer());
+					}, player.getCommandSource().getServer());
 			});
 	}
 
@@ -131,7 +131,7 @@ public class OfferInfoMenu extends StackedMenu {
 
 				var previousClaimedUnits = offer.getClaimedUnits();
 				service.cancelOfferAsync(offer.getOfferId())
-					.thenAccept(newOffer -> getPlayer().getServer().execute(() -> {
+					.thenAccept(newOffer -> player.getCommandSource().getServer().execute(() -> {
 						if (newOffer.isEmpty()) {
 							if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 								.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));

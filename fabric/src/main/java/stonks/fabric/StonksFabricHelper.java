@@ -87,14 +87,14 @@ public class StonksFabricHelper {
 				}
 
 				StonksFabric.getPlatform(player).getSounds().playInstantOfferSound(player);
-			}, player.getServer())
+			}, player.getCommandSource().getServer())
 			.exceptionallyAsync(error -> {
 				player.sendMessage(Translations.Messages.ErrorRefunding, true);
 				if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
 				else provider.getStonksAdapter().addUnitsTo(player, product, units);
 				error.printStackTrace();
 				return null;
-			}, player.getServer());
+			}, player.getCommandSource().getServer());
 	}
 
 	public static void placeOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double pricePerUnit) {
@@ -136,14 +136,14 @@ public class StonksFabricHelper {
 					true);
 
 				StonksFabric.getPlatform(player).getSounds().playOfferPlacedSound(player);
-			}, player.getServer())
+			}, player.getCommandSource().getServer())
 			.exceptionallyAsync(error -> {
 				player.sendMessage(Translations.Messages.ErrorRefunding, true);
 				if (type == OfferType.BUY) adapter.accountDeposit(player, totalPrice);
 				else adapter.addUnitsTo(player, product, units);
 				error.printStackTrace();
 				return null;
-			}, player.getServer());
+			}, player.getCommandSource().getServer());
 	}
 
 	public static void sendOfferFilledMessage(MinecraftServer server, Offer filledOffer) {

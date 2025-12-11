@@ -44,7 +44,7 @@ import stonks.fabric.StonksFabric;
 
 public class StonksCommand {
 	public static final LiteralArgumentBuilder<ServerCommandSource> ROOT = literal("stonks")
-		.requires(s -> s.hasPermissionLevel(CommandManager.field_31840))
+		.requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
 		.then(subcommand$about())
 		.then(subcommand$give())
 		.then(subcommand$inspect())

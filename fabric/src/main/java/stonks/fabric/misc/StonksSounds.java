@@ -24,6 +24,8 @@ package stonks.fabric.misc;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -61,7 +63,7 @@ public class StonksSounds {
 			var e = iter.next();
 
 			if (e.atTime <= soundTime) {
-				e.player.playSoundToPlayer(e.sound, SoundCategory.PLAYERS, e.volume, e.pitch);
+				e.player.playSound(e.sound, e.volume, e.pitch);
 				iter.remove();
 			}
 		}
@@ -70,8 +72,14 @@ public class StonksSounds {
 	}
 
 	public void play(ServerPlayerEntity player, SoundEvent sound, int ticks, float volume, float pitch) {
-		if (ticks <= 0) player.playSoundToPlayer(sound, SoundCategory.PLAYERS, volume, pitch);
-		else entries.add(new Entry(player, sound, soundTime + ticks, volume, pitch));
+		if (ticks <= 0) {
+			var registry = RegistryEntry.of(sound);
+			double x = player.getX(), y = player.getY(), z = player.getZ();
+			var packet = new PlaySoundS2CPacket(registry, SoundCategory.PLAYERS, x, y, z, volume, pitch, 0);
+			player.networkHandler.sendPacket(packet);
+		} else {
+			entries.add(new Entry(player, sound, soundTime + ticks, volume, pitch));
+		}
 	}
 
 	public void play(ServerPlayerEntity player, SoundEvent sound, float volume, float pitch) {

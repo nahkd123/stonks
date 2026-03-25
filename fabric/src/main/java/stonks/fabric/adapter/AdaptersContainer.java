@@ -24,8 +24,8 @@ package stonks.fabric.adapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.StonksFabricUtils;
@@ -49,26 +49,26 @@ public class AdaptersContainer implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
+	public int getUnits(ServerPlayer player, Product product) {
 		int out;
 		for (var a : adapters) { if ((out = a.getUnits(player, product)) != -1) return out; }
 		return StonksFabricAdapter.super.getUnits(player, product);
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	public boolean addUnitsTo(ServerPlayer player, Product product, int amount) {
 		for (var a : adapters) { if (a.addUnitsTo(player, product, amount)) return true; }
 		return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	public boolean removeUnitsFrom(ServerPlayer player, Product product, int amount) {
 		for (var a : adapters) { if (a.removeUnitsFrom(player, product, amount)) return true; }
 		return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
 	}
 
 	@Override
-	public double accountBalance(ServerPlayerEntity player) {
+	public double accountBalance(ServerPlayer player) {
 		var out = StonksFabricAdapter.super.accountBalance(player);
 		for (var a : adapters) { if ((out = a.accountBalance(player)) >= 0d) return out; }
 		logEconomyWarning(player, 0);
@@ -76,20 +76,20 @@ public class AdaptersContainer implements StonksFabricAdapter {
 	}
 
 	@Override
-	public boolean accountDeposit(ServerPlayerEntity player, double money) {
+	public boolean accountDeposit(ServerPlayer player, double money) {
 		for (var a : adapters) { if (a.accountDeposit(player, money)) return true; }
 		logEconomyWarning(player, money);
 		return StonksFabricAdapter.super.accountDeposit(player, money);
 	}
 
 	@Override
-	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
+	public boolean accountWithdraw(ServerPlayer player, double money) {
 		for (var a : adapters) { if (a.accountWithdraw(player, money)) return true; }
 		logEconomyWarning(player, -money);
 		return StonksFabricAdapter.super.accountWithdraw(player, money);
 	}
 
-	private void logEconomyWarning(ServerPlayerEntity player, double moneyMoved) {
+	private void logEconomyWarning(ServerPlayer player, double moneyMoved) {
 		if (!isEconomyWarningLogged) {
 			isEconomyWarningLogged = true;
 			StonksFabric.LOGGER.warn("");

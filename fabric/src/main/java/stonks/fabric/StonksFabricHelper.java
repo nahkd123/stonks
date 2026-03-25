@@ -24,21 +24,21 @@ package stonks.fabric;
 import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.translation.Translations;
 
 public class StonksFabricHelper {
-	public static CompletableFuture<Void> instantOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double balance) {
+	public static CompletableFuture<Void> instantOffer(ServerPlayer player, Product product, OfferType type, int units, double balance) {
 		var provider = StonksFabric.getPlatform(player);
 
 		// Take out stuffs first
 		if (type == OfferType.BUY) {
 			var currentBalance = provider.getStonksAdapter().accountBalance(player);
 			if (currentBalance < balance) {
-				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance), true);
+				player.sendSystemMessage(Translations.Messages.NotEnoughMoney(balance, currentBalance), true);
 				return CompletableFuture.failedFuture(
 					new RuntimeException("2nd check failed: Not enough money (concurrent modification?)"));
 			}
@@ -47,7 +47,7 @@ public class StonksFabricHelper {
 		} else {
 			var currentUnits = provider.getStonksAdapter().getUnits(player, product);
 			if (currentUnits < units) {
-				player.sendMessage(Translations.Messages.NotEnoughItems(units, currentUnits));
+				player.sendSystemMessage(Translations.Messages.NotEnoughItems(units, currentUnits));
 				return CompletableFuture.failedFuture(
 					new RuntimeException("2nd check failed: Not enough units (concurrent modification?)"));
 			}
@@ -55,7 +55,7 @@ public class StonksFabricHelper {
 			provider.getStonksAdapter().removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(Translations.Messages.PleaseWait, true);
+		player.sendSystemMessage(Translations.Messages.PleaseWait, true);
 		return provider.getStonksService().instantOfferAsync(product, type, units, balance)
 			.thenAcceptAsync(result -> {
 				if (type == OfferType.BUY) {
@@ -67,7 +67,7 @@ public class StonksFabricHelper {
 					provider.getStonksAdapter().accountDeposit(player, moneyLeft);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsBought);
 
-					player.sendMessage(unitsLeft == 0
+					player.sendSystemMessage(unitsLeft == 0
 						? Translations.Messages.Bought(unitsBought, product, moneySpent)
 						: Translations.Messages.BoughtWithExtras(unitsBought, product, moneySpent, unitsLeft),
 						true);
@@ -80,24 +80,24 @@ public class StonksFabricHelper {
 					provider.getStonksAdapter().accountDeposit(player, earnings);
 					provider.getStonksAdapter().addUnitsTo(player, product, unitsLeft);
 
-					player.sendMessage(unitsLeft == 0
+					player.sendSystemMessage(unitsLeft == 0
 						? Translations.Messages.Sold(unitsSold, product, earnings)
 						: Translations.Messages.SoldWithExtras(unitsSold, product, earnings, unitsLeft),
 						true);
 				}
 
 				StonksFabric.getPlatform(player).getSounds().playInstantOfferSound(player);
-			}, player.getCommandSource().getServer())
+			}, player.createCommandSourceStack().getServer())
 			.exceptionallyAsync(error -> {
-				player.sendMessage(Translations.Messages.ErrorRefunding, true);
+				player.sendSystemMessage(Translations.Messages.ErrorRefunding, true);
 				if (type == OfferType.BUY) provider.getStonksAdapter().accountDeposit(player, balance);
 				else provider.getStonksAdapter().addUnitsTo(player, product, units);
 				error.printStackTrace();
 				return null;
-			}, player.getCommandSource().getServer());
+			}, player.createCommandSourceStack().getServer());
 	}
 
-	public static void placeOffer(ServerPlayerEntity player, Product product, OfferType type, int units, double pricePerUnit) {
+	public static void placeOffer(ServerPlayer player, Product product, OfferType type, int units, double pricePerUnit) {
 		var provider = StonksFabric.getPlatform(player);
 		var adapter = provider.getStonksAdapter();
 		var totalPrice = units * pricePerUnit;
@@ -106,7 +106,7 @@ public class StonksFabricHelper {
 			var balance = adapter.accountBalance(player);
 
 			if (balance < totalPrice) {
-				player.sendMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
+				player.sendSystemMessage(Translations.Messages.NotEnoughMoney(balance, totalPrice), true);
 				return;
 			}
 
@@ -120,36 +120,36 @@ public class StonksFabricHelper {
 			}
 
 			if (currentUnits < units) {
-				player.sendMessage(Translations.Messages.NotEnoughItems(currentUnits, units), true);
+				player.sendSystemMessage(Translations.Messages.NotEnoughItems(currentUnits, units), true);
 				return;
 			}
 
 			adapter.removeUnitsFrom(player, product, units);
 		}
 
-		player.sendMessage(Translations.Messages.PleaseWait, true);
-		provider.getStonksService().listOfferAsync(player.getUuid(), product, type, units, pricePerUnit)
+		player.sendSystemMessage(Translations.Messages.PleaseWait, true);
+		provider.getStonksService().listOfferAsync(player.getUUID(), product, type, units, pricePerUnit)
 			.thenAcceptAsync(offer -> {
-				player.sendMessage(offer.getType() == OfferType.BUY
+				player.sendSystemMessage(offer.getType() == OfferType.BUY
 					? Translations.Messages.PlacedBuyOffer(units, product, totalPrice, pricePerUnit)
 					: Translations.Messages.PlacedSellOffer(units, product, totalPrice, pricePerUnit),
 					true);
 
 				StonksFabric.getPlatform(player).getSounds().playOfferPlacedSound(player);
-			}, player.getCommandSource().getServer())
+			}, player.createCommandSourceStack().getServer())
 			.exceptionallyAsync(error -> {
-				player.sendMessage(Translations.Messages.ErrorRefunding, true);
+				player.sendSystemMessage(Translations.Messages.ErrorRefunding, true);
 				if (type == OfferType.BUY) adapter.accountDeposit(player, totalPrice);
 				else adapter.addUnitsTo(player, product, units);
 				error.printStackTrace();
 				return null;
-			}, player.getCommandSource().getServer());
+			}, player.createCommandSourceStack().getServer());
 	}
 
 	public static void sendOfferFilledMessage(MinecraftServer server, Offer filledOffer) {
-		var player = server.getPlayerManager().getPlayer(filledOffer.getOffererId());
+		var player = server.getPlayerList().getPlayer(filledOffer.getOffererId());
 		if (player == null) return;
-		player.sendMessage(filledOffer.getType() == OfferType.BUY
+		player.sendSystemMessage(filledOffer.getType() == OfferType.BUY
 			? Translations.Messages.BuyOfferFilled(filledOffer)
 			: Translations.Messages.SellOfferFilled(filledOffer));
 		StonksFabric.getPlatform(server).getSounds().playOfferFilledSound(player);

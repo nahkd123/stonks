@@ -28,10 +28,10 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import nahara.common.configurations.Config;
-import net.minecraft.command.argument.ItemStackArgumentType;
-import net.minecraft.item.Item;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
+import net.minecraft.world.item.Item;
 import stonks.fabric.menu.product.input.OfferCustomPriceInput;
 
 /**
@@ -60,9 +60,9 @@ public class PlatformConfig {
 
 			try {
 				var id = splits.get()[0];
-				var registry = CommandManager.createRegistryAccess(server.getRegistryManager());
-				var parsed = ItemStackArgumentType.itemStack(registry).parse(new StringReader(splits.get()[1]));
-				categoryIcons.put(id, parsed.getItem());
+				var context = Commands.createValidationContext(server.reloadableRegistries().lookup());
+				var parsed = ItemArgument.item(context).parse(new StringReader(splits.get()[1]));
+				categoryIcons.put(id, parsed.item().value());
 			} catch (CommandSyntaxException e) {
 				StonksFabric.LOGGER.warn("PlatformConfig: Failed to parse {}", splits.get()[1]);
 			}

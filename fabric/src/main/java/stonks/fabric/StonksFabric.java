@@ -35,13 +35,14 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import stonks.core.product.Product;
 import stonks.core.service.LocalStonksService;
 import stonks.core.service.memory.StonksMemoryService;
@@ -150,8 +151,8 @@ public class StonksFabric {
 		return (StonksFabricPlatform) server;
 	}
 
-	public static StonksFabricPlatform getPlatform(ServerPlayerEntity player) {
-		return getPlatform(player.getCommandSource().getServer()); // FIXME ?
+	public static StonksFabricPlatform getPlatform(ServerPlayer player) {
+		return getPlatform(player.createCommandSourceStack().getServer()); // FIXME ?
 	}
 
 	public static ItemStack getDisplayStack(StonksFabricAdapter adapter, Product product) {
@@ -159,8 +160,8 @@ public class StonksFabric {
 
 		if (out == null) {
 			out = new ItemStack(Items.BARRIER);
-			out.set(DataComponentTypes.ITEM_NAME, Text.literal(product.getProductName() + " (Invaild display)")
-				.styled(s -> s.withColor(Formatting.RED)));
+			out.set(DataComponents.ITEM_NAME, Component.literal(product.getProductName() + " (Invaild display)")
+				.withStyle(s -> s.withColor(ChatFormatting.RED)));
 		}
 
 		return out;

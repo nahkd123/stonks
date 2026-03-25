@@ -21,12 +21,11 @@
  */
 package stonks.fabric.adapter.provided;
 
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardCriterion.RenderType;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import stonks.core.product.Product;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
@@ -41,19 +40,19 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 
 	public Scoreboard getScoreboard() { return scoreboard; }
 
-	public ScoreboardObjective getObjective(Product product) {
+	public Objective getObjective(Product product) {
 		var str = product.getProductConstructionData();
 		if (!str.startsWith(PREFIX)) return null;
 
 		var objectiveName = str.substring(PREFIX.length());
-		var objective = scoreboard.getNullableObjective(objectiveName);
+		var objective = scoreboard.getObjective(objectiveName);
 
 		if (objective == null) {
 			return scoreboard.addObjective(
 				objectiveName,
-				ScoreboardCriterion.DUMMY,
-				Text.literal(objectiveName),
-				RenderType.INTEGER,
+				ObjectiveCriteria.DUMMY,
+				Component.literal(objectiveName),
+				ObjectiveCriteria.RenderType.INTEGER,
 				false,
 				null);
 		} else {
@@ -62,25 +61,25 @@ public class ScoreboardUnitAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
+	public int getUnits(ServerPlayer player, Product product) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.getUnits(player, product);
-		return scoreboard.getOrCreateScore(player, obj).getScore();
+		return scoreboard.getOrCreatePlayerScore(player, obj).get();
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	public boolean addUnitsTo(ServerPlayer player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
-		scoreboard.getOrCreateScore(player, obj).incrementScore(amount);
+		scoreboard.getOrCreatePlayerScore(player, obj).add(amount);
 		return true;
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	public boolean removeUnitsFrom(ServerPlayer player, Product product, int amount) {
 		var obj = getObjective(product);
 		if (obj == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
-		scoreboard.getOrCreateScore(player, obj).incrementScore(-amount);
+		scoreboard.getOrCreatePlayerScore(player, obj).add(-amount);
 		return true;
 	}
 

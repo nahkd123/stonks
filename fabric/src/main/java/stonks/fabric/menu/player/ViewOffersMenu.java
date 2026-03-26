@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
 import stonks.core.caching.FutureCache;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
@@ -46,10 +46,10 @@ public class ViewOffersMenu extends StackedMenu {
 	private int page = 0;
 	private int maxPages = 1;
 
-	public ViewOffersMenu(StackedMenu previous, ServerPlayerEntity player) {
-		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
+	public ViewOffersMenu(StackedMenu previous, ServerPlayer player) {
+		super(previous, MenuType.GENERIC_9x6, player, false);
 		setTitle(Translations.Menus.ViewOffers.ViewOffers);
-		offersCache = StonksFabric.getPlatform(player).getStonksCache().getOffers(player.getUuid());
+		offersCache = StonksFabric.getPlatform(player).getStonksCache().getOffers(player.getUUID());
 
 		setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, WaitableGuiElement.ANIMATED_LOADING);
 		placePagesNavigations();
@@ -67,7 +67,7 @@ public class ViewOffersMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page, 64), 1))
 				.setName(Translations.Icons.PreviousPage)
 				.addLoreLine(Translations.Icons.PreviousPage$0(page, maxPages))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (page <= 0 || isUpdating) return;
 					page--;
 					placeOffers(loadedOffers);
@@ -78,7 +78,7 @@ public class ViewOffersMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(page + 2, 64), 1))
 				.setName(Translations.Icons.NextPage)
 				.addLoreLine(Translations.Icons.NextPage$0(page, maxPages))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (page >= (maxPages - 1) || isUpdating) return;
 					page++;
 					placeOffers(loadedOffers);
@@ -137,13 +137,13 @@ public class ViewOffersMenu extends StackedMenu {
 
 			var offer = offers.get(offerIndex);
 			setSlot(getWidth() + i, createOfferButton(player, offer)
-				.addLoreLine(Text.empty())
+				.addLoreLine(Component.empty())
 				.addLoreLine(Translations.Menus.ViewOffers.Offer$ClickToOpen)
-				.setCallback((index, type, action, gui) -> new OfferInfoMenu(this, player, offer).open()));
+				.setCallback((_, _, _, _) -> new OfferInfoMenu(this, player, offer).open()));
 		}
 	}
 
-	public static GuiElementBuilder createOfferButton(ServerPlayerEntity player, Offer offer) {
+	public static GuiElementBuilder createOfferButton(ServerPlayer player, Offer offer) {
 		return GuiElementBuilder.from(StonksFabric
 			.getPlatform(player)
 			.getStonksAdapter()
@@ -152,10 +152,10 @@ public class ViewOffersMenu extends StackedMenu {
 				? Translations.Menus.ViewOffers.Offer$Buy(offer)
 				: Translations.Menus.ViewOffers.Offer$Sell(offer))
 			.setLore(new ArrayList<>())
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.ViewOffers.Offer$Progress(offer))
 			.addLoreLine(Translations.Menus.ViewOffers.Offer$ProgressLegends)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.ViewOffers.Offer$PricePerUnit(offer))
 			.addLoreLine(Translations.Menus.ViewOffers.Offer$TotalPrice(offer));
 	}

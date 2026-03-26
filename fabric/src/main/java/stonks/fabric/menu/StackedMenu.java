@@ -22,8 +22,8 @@
 package stonks.fabric.menu;
 
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
 import stonks.fabric.StonksFabricPlatform;
 import stonks.fabric.misc.TasksHandler;
 
@@ -31,7 +31,7 @@ public abstract class StackedMenu extends SimpleGui {
 	private StackedMenu previous;
 	private TasksHandler guiTasksHandler;
 
-	public StackedMenu(StackedMenu previous, ScreenHandlerType<?> type, ServerPlayerEntity player, boolean manipulatePlayerSlots) {
+	public StackedMenu(StackedMenu previous, MenuType<?> type, ServerPlayer player, boolean manipulatePlayerSlots) {
 		super(type, player, manipulatePlayerSlots);
 		this.previous = previous;
 

@@ -128,8 +128,8 @@ public final class Translations {
 			public static final Component _InstantBuy(Product product) { return translatableWithFallback("stonks.menu.instantBuy", "Market > %s > Instant buy", product.getProductName()); }
 			public static final Component CustomAmount = translatableWithFallback("stonks.menu.instantBuy.customAmount", "\u00a7eCustom amount");
 			public static final Component CustomAmount$0 = translatableWithFallback("stonks.menu.instantBuy.customAmount.0", "\u00a77Click to specify amount");
-			public static final Component GuideComponent$0 = translatableWithFallback("stonks.menu.instantBuy.0", "\u00a78Having minimum balance is required to");
-			public static final Component GuideComponent$1 = translatableWithFallback("stonks.menu.instantBuy.1", "\u00a78avoid your buy request from failing.");
+			public static final Component GuideText$0 = translatableWithFallback("stonks.menu.instantBuy.0", "\u00a78Having minimum balance is required to");
+			public static final Component GuideText$1 = translatableWithFallback("stonks.menu.instantBuy.1", "\u00a78avoid your buy request from failing.");
 			public static final Component HoldShift = translatableWithFallback("stonks.menu.instantBuy.holdShift", "\u00a77Hold Shift to keep this menu opened");
 			public static final Component ClickToBuy = translatableWithFallback("stonks.menu.instantBuy.clickToBuy", "\u00a77Click to instantly buy");
 			public static final Component NoBuy = translatableWithFallback("stonks.menu.instantBuy.noBuy", "\u00a7cCan't instant buy");

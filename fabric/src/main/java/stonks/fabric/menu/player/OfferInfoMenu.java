@@ -22,10 +22,10 @@
 package stonks.fabric.menu.player;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
 import stonks.core.market.Offer;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
@@ -36,8 +36,8 @@ import stonks.fabric.translation.Translations;
 public class OfferInfoMenu extends StackedMenu {
 	private Offer offer;
 
-	public OfferInfoMenu(StackedMenu previous, ServerPlayerEntity player, Offer offer) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public OfferInfoMenu(StackedMenu previous, ServerPlayer player, Offer offer) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		this.offer = offer;
 		setTitle(Translations.Menus.OfferInfo._OfferInfo(offer));
 
@@ -62,17 +62,17 @@ public class OfferInfoMenu extends StackedMenu {
 
 		return new GuiElementBuilder(canClaim ? Items.GOLD_INGOT : Items.BARRIER)
 			.setName(Translations.Menus.OfferInfo.ClaimOffer)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(offer.getType() == OfferType.BUY
 				? Translations.Menus.OfferInfo.ClaimOffer$Units(unitsToClaim)
 				: tax > 0d
 					? Translations.Menus.OfferInfo.ClaimOffer$MoneyWithTax(unitsToClaim, offer, config)
 				: Translations.Menus.OfferInfo.ClaimOffer$Money(unitsToClaim, offer))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(canClaim
 				? Translations.Menus.OfferInfo.ClaimOffer$ClickToClaim
 				: Translations.Menus.OfferInfo.ClaimOffer$NoClaim)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((index, _, _, _) -> {
 				if (!canClaim) return;
 
 				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
@@ -87,7 +87,7 @@ public class OfferInfoMenu extends StackedMenu {
 						if (newOffer.isEmpty()) {
 							if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 								.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
-							else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
+							else getPlayer().sendSystemMessage(Translations.Messages.OfferClaimFailed, true);
 							StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 							StonksFabric.LOGGER.warn("Offer with ID {} no longer exists!", offer.getOfferId());
 							return;
@@ -104,15 +104,15 @@ public class OfferInfoMenu extends StackedMenu {
 
 						new OfferInfoMenu(getPrevious(), getPlayer(), newOffer.get()).open();
 						StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
-					}, player.getCommandSource().getServer())
+					}, player.createCommandSourceStack().getServer())
 					.exceptionallyAsync(error -> {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.ClaimOffer$ClaimFailed));
-						else getPlayer().sendMessage(Translations.Messages.OfferClaimFailed, true);
+						else getPlayer().sendSystemMessage(Translations.Messages.OfferClaimFailed, true);
 						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return null;
-					}, player.getCommandSource().getServer());
+					}, player.createCommandSourceStack().getServer());
 			});
 	}
 
@@ -120,9 +120,9 @@ public class OfferInfoMenu extends StackedMenu {
 		return new GuiElementBuilder(Items.RED_TERRACOTTA)
 			.setName(Translations.Menus.OfferInfo.CancelOffer)
 			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$0)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$ClickToCancel)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((index, _, _, _) -> {
 				var adapter = StonksFabric.getPlatform(getPlayer()).getStonksAdapter();
 				var service = StonksFabric.getPlatform(getPlayer()).getStonksService();
 
@@ -131,11 +131,11 @@ public class OfferInfoMenu extends StackedMenu {
 
 				var previousClaimedUnits = offer.getClaimedUnits();
 				service.cancelOfferAsync(offer.getOfferId())
-					.thenAccept(newOffer -> player.getCommandSource().getServer().execute(() -> {
+					.thenAccept(newOffer -> player.createCommandSourceStack().getServer().execute(() -> {
 						if (newOffer.isEmpty()) {
 							if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 								.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
-							else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
+							else getPlayer().sendSystemMessage(Translations.Messages.OfferCancelFailed, true);
 							StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 							StonksFabric.LOGGER.warn("Offer with ID {} no longer exists!", offer.getOfferId());
 							return;
@@ -161,14 +161,14 @@ public class OfferInfoMenu extends StackedMenu {
 
 						close();
 						StonksFabric.getPlatform(getPlayer()).getSounds().playCancelledSound(getPlayer());
-						getPlayer().sendMessage(
+						getPlayer().sendSystemMessage(
 							Translations.Messages.OfferCancelled(offer, refundUnits, refundMoney),
 							true);
 					}))
 					.exceptionally(error -> {
 						if (isOpen()) setSlot(index, new GuiElementBuilder(Items.BARRIER)
 							.setName(Translations.Menus.OfferInfo.CancelOffer$CancelFailed));
-						else getPlayer().sendMessage(Translations.Messages.OfferCancelFailed, true);
+						else getPlayer().sendSystemMessage(Translations.Messages.OfferCancelFailed, true);
 						StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 						error.printStackTrace();
 						return null;

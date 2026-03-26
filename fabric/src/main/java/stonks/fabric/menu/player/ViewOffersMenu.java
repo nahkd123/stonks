@@ -120,8 +120,18 @@ public class ViewOffersMenu extends StackedMenu {
 
 	public void placeOffers(List<Offer> offers) {
 		if (offers == null) return;
+
 		if (offers.size() == 0) {
-			setSlot((getHeight() / 2) * getWidth() + getWidth() / 2, new GuiElementBuilder(Items.BARRIER)
+			var middle = (getHeight() / 2) * getWidth() + getWidth() / 2;
+
+			for (int y = 1; y < getHeight(); y++) {
+				for (int x = 0; x < getWidth(); x++) {
+					var slot = x + y * 9;
+					if (slot != middle) clearSlot(slot);
+				}
+			}
+
+			setSlot(middle, new GuiElementBuilder(Items.BARRIER)
 				.setName(Translations.Menus.ViewOffers.NoOffers)
 				.addLoreLine(Translations.Menus.ViewOffers.NoOffers$0)
 				.addLoreLine(Translations.Menus.ViewOffers.NoOffers$1));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.OptionalLong;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import stonks.fabric.PlatformConfig;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.adapter.StonksFabricAdapter;
@@ -39,6 +39,7 @@ public class LegacyEconomy implements Economy {
 	private PlatformConfig config;
 	private DecimalFormat formatter;
 
+	@Deprecated
 	public LegacyEconomy(StonksFabricAdapter adapter, PlatformConfig config) {
 		this.adapter = adapter;
 		this.config = config;
@@ -48,27 +49,35 @@ public class LegacyEconomy implements Economy {
 		this.formatter = new DecimalFormat(template);
 	}
 
+	@Deprecated
 	@Override
-	public Identifier getEconomyId() { return Identifier.of(StonksFabric.MODID, "legacy_economy_adapter"); }
+	public Identifier getEconomyId() {
+		return Identifier.fromNamespaceAndPath(StonksFabric.MODID, "legacy_economy_adapter");
+	}
 
+	@Deprecated
 	public long doubleToRaw(double value) {
 		return (long) (value / Math.pow(10, config.decimals));
 	}
 
+	@Deprecated
 	public double rawToDouble(long raw) {
 		return raw / Math.pow(10, config.decimals);
 	}
 
+	@Deprecated
 	@Override
 	public String formatCurrency(long raw) {
 		return "$" + formatter.format(rawToDouble(raw));
 	}
 
+	@Deprecated
 	@Override
-	public Text formatAsDisplay(long raw) {
+	public Component formatAsDisplay(long raw) {
 		return Translations.currency(rawToDouble(raw));
 	}
 
+	@Deprecated
 	@Override
 	public OptionalLong tryParse(String formatted) {
 		try {
@@ -80,18 +89,21 @@ public class LegacyEconomy implements Economy {
 		}
 	}
 
+	@Deprecated
 	@Override
-	public long balanceOf(ServerPlayerEntity player) {
+	public long balanceOf(ServerPlayer player) {
 		return doubleToRaw(adapter.accountBalance(player));
 	}
 
+	@Deprecated
 	@Override
-	public boolean withdrawFrom(ServerPlayerEntity player, long raw) {
+	public boolean withdrawFrom(ServerPlayer player, long raw) {
 		return adapter.accountWithdraw(player, rawToDouble(raw));
 	}
 
+	@Deprecated
 	@Override
-	public boolean depositTo(ServerPlayerEntity player, long raw) {
+	public boolean depositTo(ServerPlayer player, long raw) {
 		return adapter.accountDeposit(player, rawToDouble(raw));
 	}
 }

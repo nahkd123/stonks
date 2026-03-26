@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,11 @@
  */
 package stonks.fabric.adapter.provided;
 
-import net.minecraft.scoreboard.ReadableScoreboardScore;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardCriterion.RenderType;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import stonks.fabric.adapter.StonksFabricAdapter;
 import stonks.fabric.provider.StonksProvidersRegistry;
 
@@ -44,15 +42,15 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 
 	public Scoreboard getScoreboard() { return scoreboard; }
 
-	public ScoreboardObjective getObjective() {
-		var objective = scoreboard.getNullableObjective(objectiveName);
+	public Objective getObjective() {
+		var objective = scoreboard.getObjective(objectiveName);
 
 		if (objective == null) {
 			return scoreboard.addObjective(
 				objectiveName,
-				ScoreboardCriterion.DUMMY,
-				Text.literal(objectiveName),
-				RenderType.INTEGER,
+				ObjectiveCriteria.DUMMY,
+				Component.literal(objectiveName),
+				ObjectiveCriteria.RenderType.INTEGER,
 				false,
 				null);
 		} else {
@@ -69,26 +67,26 @@ public class ScoreboardEconomyAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public double accountBalance(ServerPlayerEntity player) {
-		ReadableScoreboardScore scoreEntry = scoreboard.getScore(player, getObjective());
-		return scoreToMoney(scoreEntry != null ? scoreEntry.getScore() : 0);
+	public double accountBalance(ServerPlayer player) {
+		var score = scoreboard.getPlayerScoreInfo(player, getObjective());
+		return scoreToMoney(score != null ? score.value() : 0);
 	}
 
 	@Override
-	public boolean accountDeposit(ServerPlayerEntity player, double money) {
-		var score = scoreboard.getOrCreateScore(player, getObjective());
-		var bal = scoreToMoney(score.getScore());
+	public boolean accountDeposit(ServerPlayer player, double money) {
+		var score = scoreboard.getOrCreatePlayerScore(player, getObjective());
+		var bal = scoreToMoney(score.get());
 		bal += money;
-		score.setScore(moneyToScore(bal));
+		score.set(moneyToScore(bal));
 		return true;
 	}
 
 	@Override
-	public boolean accountWithdraw(ServerPlayerEntity player, double money) {
-		var score = scoreboard.getOrCreateScore(player, getObjective());
-		var bal = scoreToMoney(score.getScore());
+	public boolean accountWithdraw(ServerPlayer player, double money) {
+		var score = scoreboard.getOrCreatePlayerScore(player, getObjective());
+		var bal = scoreToMoney(score.get());
 		bal = Math.max(bal - money, 0d);
-		score.setScore(moneyToScore(bal));
+		score.set(moneyToScore(bal));
 		return true;
 	}
 

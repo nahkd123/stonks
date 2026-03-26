@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,12 @@ package stonks.fabric.misc;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.core.Holder;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * <p>
@@ -37,7 +37,7 @@ import net.minecraft.sound.SoundEvents;
  * </p>
  */
 public class StonksSounds {
-	private static record Entry(ServerPlayerEntity player, SoundEvent sound, int atTime, float volume, float pitch) {
+	private static record Entry(ServerPlayer player, SoundEvent sound, int atTime, float volume, float pitch) {
 	}
 
 	private int soundTime = 0;
@@ -71,53 +71,53 @@ public class StonksSounds {
 		soundTime++;
 	}
 
-	public void play(ServerPlayerEntity player, SoundEvent sound, int ticks, float volume, float pitch) {
+	public void play(ServerPlayer player, SoundEvent sound, int ticks, float volume, float pitch) {
 		if (ticks <= 0) {
-			var registry = RegistryEntry.of(sound);
+			var registry = Holder.direct(sound);
 			double x = player.getX(), y = player.getY(), z = player.getZ();
-			var packet = new PlaySoundS2CPacket(registry, SoundCategory.PLAYERS, x, y, z, volume, pitch, 0);
-			player.networkHandler.sendPacket(packet);
+			var packet = new ClientboundSoundPacket(registry, SoundSource.PLAYERS, x, y, z, volume, pitch, 0);
+			player.connection.send(packet);
 		} else {
 			entries.add(new Entry(player, sound, soundTime + ticks, volume, pitch));
 		}
 	}
 
-	public void play(ServerPlayerEntity player, SoundEvent sound, float volume, float pitch) {
+	public void play(ServerPlayer player, SoundEvent sound, float volume, float pitch) {
 		play(player, sound, 0, volume, pitch);
 	}
 
-	public void playClaimedSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0, 1f, 0.3f);
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 3, 1f, 0.6f);
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 6, 1f, 0.8f);
+	public void playClaimedSound(ServerPlayer player) {
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0, 1f, 0.3f);
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 3, 1f, 0.6f);
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 6, 1f, 0.8f);
 	}
 
-	public void playInstantOfferSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0, 1f, 0.3f);
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 3, 1f, 0.6f);
+	public void playInstantOfferSound(ServerPlayer player) {
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0, 1f, 0.3f);
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 3, 1f, 0.6f);
 	}
 
-	public void playOfferPlacedSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0, 1f, 1f);
+	public void playOfferPlacedSound(ServerPlayer player) {
+		play(player, SoundEvents.EXPERIENCE_ORB_PICKUP, 0, 1f, 1f);
 	}
 
-	public void playCancelledSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+	public void playCancelledSound(ServerPlayer player) {
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
 	}
 
-	public void playErrorSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 6, 1f, 1f);
+	public void playErrorSound(ServerPlayer player) {
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 6, 1f, 1f);
 	}
 
-	public void playFailedSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
+	public void playFailedSound(ServerPlayer player) {
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 0, 1f, 1f);
+		play(player, SoundEvents.NOTE_BLOCK_PLING.value(), 3, 1f, 1f);
 	}
 
-	public void playOfferFilledSound(ServerPlayerEntity player) {
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(), 0, 1f, 1f);
-		play(player, SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(), 3, 1f, 1f);
+	public void playOfferFilledSound(ServerPlayer player) {
+		play(player, SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), 0, 1f, 1f);
+		play(player, SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), 3, 1f, 1f);
 	}
 }

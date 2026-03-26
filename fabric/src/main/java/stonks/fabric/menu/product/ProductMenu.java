@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import eu.pb4.sgui.api.ClickType;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
-import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import eu.pb4.sgui.api.gui.SlotBasedGui;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import stonks.core.market.ComputedOffersList;
 import stonks.core.market.OfferType;
 import stonks.core.market.OverviewOffersList;
@@ -51,8 +51,8 @@ public class ProductMenu extends StackedMenu {
 	private Product product;
 	private CompletableFuture<ProductMarketOverview> queryTask;
 
-	public ProductMenu(StackedMenu previous, ServerPlayerEntity player, Product product) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public ProductMenu(StackedMenu previous, ServerPlayer player, Product product) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		setTitle(Translations.Menus.ProductInfo._ProductInfo(product));
 		this.product = product;
 		this.queryTask = StonksFabric.getPlatform(getPlayer()).getStonksCache().getOverview(product).get();
@@ -76,7 +76,7 @@ public class ProductMenu extends StackedMenu {
 		setSlot(5, MenuIcons.VIEW_SELF_OFFERS);
 	}
 
-	private GuiElementInterface createInstantOfferButton(OfferType type, CompletableFuture<Optional<ComputedOffersList>> computeTask) {
+	private GuiElement createInstantOfferButton(OfferType type, CompletableFuture<Optional<ComputedOffersList>> computeTask) {
 		var icon = switch (type) {
 		case BUY -> Items.DIAMOND;
 		case SELL -> Items.GOLD_INGOT;
@@ -101,7 +101,7 @@ public class ProductMenu extends StackedMenu {
 					.setName(type == OfferType.BUY
 						? Translations.Menus.ProductInfo.InstantBuy(computed)
 						: Translations.Menus.ProductInfo.InstantSell(computed))
-					.addLoreLine(Text.empty())
+					.addLoreLine(Component.empty())
 					.addLoreLine(Translations.Menus.ProductInfo.TopOfferedPrice(topPrice))
 					.addLoreLine(Translations.Menus.ProductInfo.AvgOfferedPrice(computed));
 
@@ -109,7 +109,7 @@ public class ProductMenu extends StackedMenu {
 					out.addLoreLine(Translations.Menus.ProductInfo.InstantSellTax(tax));
 
 				return out
-					.addLoreLine(Text.empty())
+					.addLoreLine(Component.empty())
 					.addLoreLine(computed.isEmpty()
 						? Translations.Menus.ProductInfo.NoOffers
 						: type == OfferType.BUY ? Translations.Menus.ProductInfo.ClickToInstantBuy
@@ -118,7 +118,7 @@ public class ProductMenu extends StackedMenu {
 			}
 
 			@Override
-			public void onSlotClick(int index, ClickType clickType, SlotActionType action, SlotGuiInterface gui, Optional<ComputedOffersList> computed, Throwable error) {
+			public void onSlotClick(int index, ClickType clickType, ContainerInput action, SlotBasedGui gui, Optional<ComputedOffersList> computed, Throwable error) {
 				if (error != null) return;
 				if (computed.isEmpty()) return;
 
@@ -132,7 +132,7 @@ public class ProductMenu extends StackedMenu {
 					var provider = StonksFabric.getPlatform(getPlayer());
 					var units = provider.getStonksAdapter().getUnits(getPlayer(), product);
 					if (units <= 0) {
-						getPlayer().sendMessage(Translations.Messages.NoUnitsToInstantSell(product),
+						getPlayer().sendSystemMessage(Translations.Messages.NoUnitsToInstantSell(product),
 							true);
 						return;
 					}
@@ -143,7 +143,7 @@ public class ProductMenu extends StackedMenu {
 		};
 	}
 
-	private GuiElementInterface createOfferButton(CompletableFuture<OverviewOffersList> list, OfferType type) {
+	private GuiElement createOfferButton(CompletableFuture<OverviewOffersList> list, OfferType type) {
 		var icon = switch (type) {
 		case BUY -> Items.DIAMOND_BLOCK;
 		case SELL -> Items.GOLD_BLOCK;
@@ -165,7 +165,7 @@ public class ProductMenu extends StackedMenu {
 					.setName(type == OfferType.BUY
 						? Translations.Menus.ProductInfo.BuyOffer
 						: Translations.Menus.ProductInfo.SellOffer)
-					.addLoreLine(Text.empty());
+					.addLoreLine(Component.empty());
 
 				if (list.getEntries().size() > 0) {
 					for (var e : list.getEntries()) { elem.addLoreLine(StonksFabricUtils.offerText(type, e)); }
@@ -174,7 +174,7 @@ public class ProductMenu extends StackedMenu {
 				}
 
 				return elem
-					.addLoreLine(Text.empty())
+					.addLoreLine(Component.empty())
 					.addLoreLine(list.getEntries().size() == 0
 						? Translations.Menus.ProductInfo.MakeOffer$NoOffers
 						: Translations.Menus.ProductInfo.MakeOffer)
@@ -182,7 +182,7 @@ public class ProductMenu extends StackedMenu {
 			}
 
 			@Override
-			public void onSlotClick(int index, ClickType clickType, SlotActionType action, SlotGuiInterface gui, OverviewOffersList success, Throwable error) {
+			public void onSlotClick(int index, ClickType clickType, ContainerInput action, SlotBasedGui gui, OverviewOffersList success, Throwable error) {
 				if (error != null) return;
 
 				try {

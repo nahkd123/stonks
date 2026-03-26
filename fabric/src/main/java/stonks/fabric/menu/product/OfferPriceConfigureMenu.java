@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,11 @@ package stonks.fabric.menu.product;
 import java.util.ArrayList;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
 import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
@@ -44,8 +44,8 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 	private int amount;
 	private ProductMarketOverview overview;
 
-	public OfferPriceConfigureMenu(StackedMenu previous, ServerPlayerEntity player, OfferType offerType, int amount, ProductMarketOverview overview) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public OfferPriceConfigureMenu(StackedMenu previous, ServerPlayer player, OfferType offerType, int amount, ProductMarketOverview overview) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		this.offerType = offerType;
 		this.amount = amount;
 		this.overview = overview;
@@ -63,8 +63,8 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.BARRIER);
 		setSlot(7, builder
 			.setCount(Math.min(Math.max(amount / 64, 1), 64))
-			.setName(Text.literal(amount + "x " + product.getProductName()) // TODO
-				.styled(s -> s.withColor(Formatting.AQUA)))
+			.setName(Component.literal(amount + "x " + product.getProductName()) // TODO
+				.withStyle(s -> s.withColor(ChatFormatting.AQUA)))
 			.setLore(new ArrayList<>()));
 
 		placeOfferButtons();
@@ -113,15 +113,15 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		setSlot(19, new GuiElementBuilder(computed.isPresent() ? Items.GOLD_INGOT : Items.BARRIER)
 			.setName(topOfferTextDelta)
 			.addLoreLine(Translations.Menus.CreateOffer.TopOfferDelta)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.TopOfferPrice(topOfferPPU))
 			.addLoreLine(Translations.Menus.CreateOffer.YourOfferPrice(topOfferDelta))
 			.addLoreLine(totalTextDelta)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(topOfferDelta.isPresent()
 				? Translations.Menus.CreateOffer.ClickForConfirmation
 				: Translations.Menus.CreateOffer.NoOfferForYou)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, _, _, _) -> {
 				if (!topOfferDelta.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferDelta.get())
 					.open();
@@ -134,14 +134,14 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 
 		setSlot(21, new GuiElementBuilder(topOfferPPU.isPresent() ? Items.GOLD_BLOCK : Items.BARRIER)
 			.setName(Translations.Menus.CreateOffer.SameAsTopOffer)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.TopOfferPrice(topOfferPPU))
 			.addLoreLine(totalTextTop)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(topOfferPPU.isPresent()
 				? Translations.Menus.CreateOffer.ClickForConfirmation
 				: Translations.Menus.CreateOffer.NoOfferForYou)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, _, _, _) -> {
 				if (!topOfferPPU.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, topOfferPPU.get())
 					.open();
@@ -154,14 +154,14 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 
 		setSlot(23, new GuiElementBuilder(averageOffer.isPresent() ? Items.CHEST : Items.BARRIER)
 			.setName(Translations.Menus.CreateOffer.AverageOfTopOffers)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.AvgOfferPrice(averageOffer))
 			.addLoreLine(totalTextAverage)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(averageOffer.isPresent()
 				? Translations.Menus.CreateOffer.ClickForConfirmation
 				: Translations.Menus.CreateOffer.NoOfferForYou)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, _, _, _) -> {
 				if (!averageOffer.isPresent()) return;
 				new OfferConfirmMenu(this, getPlayer(), getProduct(), getOfferType(), amount, averageOffer.get())
 					.open();
@@ -170,8 +170,8 @@ public class OfferPriceConfigureMenu extends StackedMenu {
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
 			.setName(Translations.Menus.CreateOffer.CustomPrice)
 			.addLoreLine(Translations.Menus.CreateOffer.CustomPrice$0)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.ClickForCustomPrice)
-			.setCallback((index, type, action, gui) -> new OfferCustomPriceInput(player, this).open()));
+			.setCallback((_, _, _, _) -> new OfferCustomPriceInput(player, this).open()));
 	}
 }

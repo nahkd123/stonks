@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,11 @@
 package stonks.fabric.menu.product;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
@@ -40,8 +40,8 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 	private double instantPricePerUnit;
 	private int amount;
 
-	public InstantBuyConfirmMenu(StackedMenu previous, ServerPlayerEntity player, Product product, int amount, double originalPricePerUnit, double instantPricePerUnit) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public InstantBuyConfirmMenu(StackedMenu previous, ServerPlayer player, Product product, int amount, double originalPricePerUnit, double instantPricePerUnit) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		this.product = product;
 		this.amount = amount;
 		this.originalPricePerUnit = originalPricePerUnit;
@@ -67,22 +67,22 @@ public class InstantBuyConfirmMenu extends StackedMenu {
 		return new GuiElementBuilder(canBuy ? icon : Items.BARRIER, Math.min(Math.max(amount / 64, 1), 64))
 			.setName(Translations.Menus.InstantBuy.Confirm)
 			.addLoreLine(Translations.Menus.InstantBuy.Confirm$0(amount, getProduct()))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.InstantBuy.AveragePrice(amount, originalPricePerUnit))
 			.addLoreLine(Translations.Menus.InstantBuy.MinimumBalance(moneyToSpend))
 			.addLoreLine(Translations.Menus.InstantBuy.GuideText$0)
 			.addLoreLine(Translations.Menus.InstantBuy.GuideText$1)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(canBuy
 				? Translations.Menus.InstantBuy.ClickToBuy
 				: Translations.Menus.InstantBuy.NoBuy)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, _, _, _) -> {
 				close();
 				var provider = StonksFabric.getPlatform(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
-					getPlayer().sendMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
+					getPlayer().sendSystemMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;
 				}

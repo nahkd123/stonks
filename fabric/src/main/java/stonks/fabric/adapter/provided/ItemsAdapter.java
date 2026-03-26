@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,12 @@ import java.util.WeakHashMap;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.ItemStackArgumentType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.adapter.StonksFabricAdapter;
@@ -40,10 +40,10 @@ import stonks.fabric.provider.StonksProvidersRegistry;
 public class ItemsAdapter implements StonksFabricAdapter {
 	private static final String PREFIX = "item ";
 	private WeakHashMap<Product, ItemStack> conversionCache = new WeakHashMap<>();
-	private CommandRegistryAccess registry;
+	private CommandBuildContext registry;
 
 	public ItemsAdapter(MinecraftServer server) {
-		registry = CommandManager.createRegistryAccess(server.getRegistryManager());
+		registry = Commands.createValidationContext(server.registryAccess());
 	}
 
 	protected ItemStack convert(Product product) {
@@ -59,8 +59,8 @@ public class ItemsAdapter implements StonksFabricAdapter {
 			str = str.substring(PREFIX.length());
 
 			try {
-				var parsed = ItemStackArgumentType.itemStack(registry).parse(new StringReader(str));
-				stack = parsed.createStack(1, false);
+				var parsed = ItemArgument.item(registry).parse(new StringReader(str));
+				stack = parsed.createItemStack(1);
 				conversionCache.put(product, stack);
 				return stack;
 			} catch (CommandSyntaxException e) {
@@ -79,16 +79,16 @@ public class ItemsAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public int getUnits(ServerPlayerEntity player, Product product) {
+	public int getUnits(ServerPlayer player, Product product) {
 		var refStack = convert(product);
 		if (refStack == null) return StonksFabricAdapter.super.getUnits(player, product);
 
 		var inv = player.getInventory();
 		var count = 0;
 
-		for (int i = 0; i < inv.size(); i++) {
-			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !ItemStack.areItemsAndComponentsEqual(refStack, stack)) continue;
+		for (int i = 0; i < inv.getContainerSize(); i++) {
+			var stack = inv.getItem(i);
+			if (stack.isEmpty() || !ItemStack.isSameItemSameComponents(refStack, stack)) continue;
 			count += stack.getCount();
 		}
 
@@ -96,7 +96,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 	}
 
 	@Override
-	public boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	public boolean addUnitsTo(ServerPlayer player, Product product, int amount) {
 		var refStack = convert(product);
 		if (refStack == null) return StonksFabricAdapter.super.addUnitsTo(player, product, amount);
 		if (amount == 0) return true;
@@ -104,29 +104,29 @@ public class ItemsAdapter implements StonksFabricAdapter {
 		var inv = player.getInventory();
 		var giveStack = refStack.copyWithCount(amount);
 
-		if (!inv.insertStack(giveStack)) {
-			var e = player.dropItem(giveStack, false);
-			e.resetPickupDelay();
-			e.setOwner(player.getUuid());
+		if (!inv.add(giveStack)) {
+			var e = player.drop(giveStack, false);
+			e.setNoPickUpDelay();
+			e.setTarget(player.getUUID());
 		}
 
 		return true;
 	}
 
 	@Override
-	public boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	public boolean removeUnitsFrom(ServerPlayer player, Product product, int amount) {
 		var refStack = convert(product);
 		if (refStack == null) return StonksFabricAdapter.super.removeUnitsFrom(player, product, amount);
 		if (amount == 0) return true;
 
 		var inv = player.getInventory();
 
-		for (int i = 0; i < inv.size(); i++) {
-			var stack = inv.getStack(i);
-			if (stack.isEmpty() || !ItemStack.areItemsAndComponentsEqual(refStack, stack)) continue;
+		for (int i = 0; i < inv.getContainerSize(); i++) {
+			var stack = inv.getItem(i);
+			if (stack.isEmpty() || !ItemStack.isSameItemSameComponents(refStack, stack)) continue;
 
 			var toTake = Math.min(amount, stack.getCount());
-			stack.decrement(toTake);
+			stack.shrink(toTake);
 			amount -= toTake;
 			if (amount == 0) return true;
 		}

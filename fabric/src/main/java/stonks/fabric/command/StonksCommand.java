@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  */
 package stonks.fabric.command;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.commands.Commands.argument;
 
 import java.net.URI;
 
@@ -33,83 +33,86 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.ChatFormatting;
 import stonks.fabric.StonksFabric;
 
 public class StonksCommand {
-	public static final LiteralArgumentBuilder<ServerCommandSource> ROOT = literal("stonks")
-		.requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+	public static final LiteralArgumentBuilder<CommandSourceStack> ROOT = literal("stonks")
+		.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 		.then(subcommand$about())
 		.then(subcommand$give())
 		.then(subcommand$inspect())
 		.then(subcommand$category());
 
-	public static LiteralArgumentBuilder<ServerCommandSource> subcommand$about() {
+	public static LiteralArgumentBuilder<CommandSourceStack> subcommand$about() {
 		var meta = FabricLoader.getInstance().getModContainer(StonksFabric.MODID).get().getMetadata();
-		var bulletPoint = Text.literal(" - ").styled(s -> s.withColor(Formatting.GRAY));
+		var bulletPoint = Component.literal(" - ").withStyle(s -> s.withColor(ChatFormatting.GRAY));
 
 		return literal("about").executes(ctx -> {
 			var src = ctx.getSource();
-			src.sendMessage(Text.empty());
-			src.sendMessage(Text.literal(" Stonks2").styled(s -> s.withColor(Formatting.AQUA))
-				.append(Text.literal(" for ").styled(s -> s.withColor(Formatting.GRAY)))
-				.append(Text.literal("Fabric").styled(s -> s.withColor(Formatting.YELLOW))));
-			src.sendMessage(Text.literal(" Version ").styled(s -> s.withColor(Formatting.GRAY))
-				.append(Text.literal(meta.getVersion().getFriendlyString()).styled(s -> s.withColor(Formatting.AQUA))));
-			src.sendMessage(Text.literal(" ")
-				.append(makeLinkBtn("GitHub", Formatting.WHITE, URI.create("https://github.com/nahkd123/stonks")))
-				.append(makeLinkBtn("Issues", Formatting.AQUA, URI.create("https://github.com/nahkd123/stonks/issues")))
-				.append(makeLinkBtn("Wiki", Formatting.YELLOW, URI.create("https://github.com/nahkd123/stonks/wiki"))));
-			src.sendMessage(Text.empty());
-			src.sendMessage(Text.literal(" Special thanks:"));
-			src.sendMessage(Text.empty()
-				.styled(s -> s.withColor(Formatting.WHITE))
+			src.sendSystemMessage(Component.empty());
+			src.sendSystemMessage(Component.literal(" Stonks2").withStyle(s -> s.withColor(ChatFormatting.AQUA))
+				.append(Component.literal(" for ").withStyle(s -> s.withColor(ChatFormatting.GRAY)))
+				.append(Component.literal("Fabric").withStyle(s -> s.withColor(ChatFormatting.YELLOW))));
+			src.sendSystemMessage(Component.literal(" Version ").withStyle(s -> s.withColor(ChatFormatting.GRAY))
+				.append(Component.literal(meta.getVersion().getFriendlyString())
+					.withStyle(s -> s.withColor(ChatFormatting.AQUA))));
+			src.sendSystemMessage(Component.literal(" ")
+				.append(makeLinkBtn("GitHub", ChatFormatting.WHITE, URI.create("https://github.com/nahkd123/stonks")))
+				.append(
+					makeLinkBtn("Issues", ChatFormatting.AQUA, URI.create("https://github.com/nahkd123/stonks/issues")))
+				.append(
+					makeLinkBtn("Wiki", ChatFormatting.YELLOW, URI.create("https://github.com/nahkd123/stonks/wiki"))));
+			src.sendSystemMessage(Component.empty());
+			src.sendSystemMessage(Component.literal(" Special thanks:"));
+			src.sendSystemMessage(Component.empty()
+				.withStyle(s -> s.withColor(ChatFormatting.WHITE))
 				.append(bulletPoint).append("The Fabric Project ")
-				.append(makeLinkBtn("Homepage", Formatting.YELLOW, URI.create("https://fabricmc.net/")))
-				.append(makeLinkBtn("GitHub", Formatting.WHITE, URI.create("https://github.com/fabricMC"))));
-			src.sendMessage(Text.empty()
-				.styled(s -> s.withColor(Formatting.WHITE))
+				.append(makeLinkBtn("Homepage", ChatFormatting.YELLOW, URI.create("https://fabricmc.net/")))
+				.append(makeLinkBtn("GitHub", ChatFormatting.WHITE, URI.create("https://github.com/fabricMC"))));
+			src.sendSystemMessage(Component.empty()
+				.withStyle(s -> s.withColor(ChatFormatting.WHITE))
 				.append(bulletPoint).append("Patbox ")
-				.append(makeLinkBtn("Homepage", Formatting.YELLOW, URI.create("https://pb4.eu/")))
-				.append(makeLinkBtn("sgui", Formatting.AQUA, URI.create("https://github.com/Patbox/sgui")))
-				.append(makeLinkBtn("Common Economy API", Formatting.AQUA,
+				.append(makeLinkBtn("Homepage", ChatFormatting.YELLOW, URI.create("https://pb4.eu/")))
+				.append(makeLinkBtn("sgui", ChatFormatting.AQUA, URI.create("https://github.com/Patbox/sgui")))
+				.append(makeLinkBtn("Common Economy API", ChatFormatting.AQUA,
 					URI.create("https://github.com/Patbox/common-economy-api"))));
-			src.sendMessage(Text.empty()
-				.styled(s -> s.withColor(Formatting.WHITE))
+			src.sendSystemMessage(Component.empty()
+				.withStyle(s -> s.withColor(ChatFormatting.WHITE))
 				.append(bulletPoint).append("You! Thanks for using my mod!"));
-			src.sendMessage(Text.empty());
+			src.sendSystemMessage(Component.empty());
 			return 1;
 		});
 	}
 
-	private static Text makeLinkBtn(String name, Formatting color, URI url) {
-		return Text.literal("[")
-			.styled(s -> s.withColor(Formatting.DARK_GRAY))
-			.append(Text.literal(name).styled(s -> s
+	private static Component makeLinkBtn(String name, ChatFormatting color, URI url) {
+		return Component.literal("[")
+			.withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY))
+			.append(Component.literal(name).withStyle(s -> s
 				.withColor(color)
 				.withClickEvent(new ClickEvent.OpenUrl(url))
-				.withHoverEvent(new HoverEvent.ShowText(Text.literal(url.toString())))))
+				.withHoverEvent(new HoverEvent.ShowText(Component.literal(url.toString())))))
 			.append("] ");
 	}
 
-	public static LiteralArgumentBuilder<ServerCommandSource> subcommand$category() {
+	public static LiteralArgumentBuilder<CommandSourceStack> subcommand$category() {
 		return literal("category")
 			.then(argument("id", StringArgumentType.string()).executes(ctx -> viewCategory(ctx)))
 			.executes(ctx -> viewAllCategories(ctx));
 	}
 
-	private static LiteralArgumentBuilder<ServerCommandSource> subcommand$give() {
+	private static LiteralArgumentBuilder<CommandSourceStack> subcommand$give() {
 		return literal("give")
-			.then(argument("players", EntityArgumentType.players())
+			.then(argument("players", EntityArgument.players())
 				.then(argument("id", StringArgumentType.string())
-					.suggests((context, builder) -> {
-						return StonksFabric.getPlatform(context.getSource().getServer())
+					.suggests((conComponent, builder) -> {
+						return StonksFabric.getPlatform(conComponent.getSource().getServer())
 							.getStonksCache()
 							.getAllCategories()
 							.thenApply(list -> {
@@ -125,27 +128,29 @@ public class StonksCommand {
 					.executes(ctx -> giveProducts(ctx, 1))));
 	}
 
-	private static LiteralArgumentBuilder<ServerCommandSource> subcommand$inspect() {
+	private static LiteralArgumentBuilder<CommandSourceStack> subcommand$inspect() {
 		return literal("inspect")
-			.then(argument("players", EntityArgumentType.players())
+			.then(argument("players", EntityArgument.players())
 				.executes(ctx -> {
-					var players = EntityArgumentType.getPlayers(ctx, "players");
+					var players = EntityArgument.getPlayers(ctx, "players");
 					var economy = StonksFabric.getPlatform(ctx.getSource().getServer()).getEconomySystem();
 
 					for (var p : players) {
-						ctx.getSource().sendMessage(Text.literal("Inspecting ").append(p.getDisplayName()).append(":"));
+						ctx.getSource()
+							.sendSystemMessage(Component.literal("Inspecting ").append(p.getDisplayName()).append(":"));
 
-						ctx.getSource().sendMessage(Text.literal(" - ")
-							.styled(s -> s.withColor(Formatting.GRAY))
-							.append(Text.literal("Account Balance: ").styled(s -> s.withColor(Formatting.WHITE)))
+						ctx.getSource().sendSystemMessage(Component.literal(" - ")
+							.withStyle(s -> s.withColor(ChatFormatting.GRAY))
+							.append(Component.literal("Account Balance: ")
+								.withStyle(s -> s.withColor(ChatFormatting.WHITE)))
 							.append(economy.formatAsDisplay(economy.balanceOf(p))));
 					}
 					return 1;
 				}));
 	}
 
-	private static int giveProducts(CommandContext<ServerCommandSource> ctx, int amount) throws CommandSyntaxException {
-		var players = EntityArgumentType.getPlayers(ctx, "players");
+	private static int giveProducts(CommandContext<CommandSourceStack> ctx, int amount) throws CommandSyntaxException {
+		var players = EntityArgument.getPlayers(ctx, "players");
 		var id = StringArgumentType.getString(ctx, "id");
 		var provider = StonksFabric.getPlatform(ctx.getSource().getServer());
 		var cache = provider.getStonksCache();
@@ -162,74 +167,74 @@ public class StonksCommand {
 					ctx.getSource().getServer().execute(() -> {
 						for (var p : players) {
 							adapter.addUnitsTo(p, product.get(), amount);
-							ctx.getSource().sendFeedback(() -> Text.literal("Gave ")
+							ctx.getSource().sendSuccess(() -> Component.literal("Gave ")
 								.append(p.getDisplayName())
 								.append(" " + amount + "x " + product.get().getProductName()), true);
 						}
 					});
 				} else {
-					ctx.getSource().sendError(Text.literal("Product not found: " + id)
-						.styled(s -> s.withColor(Formatting.RED)));
+					ctx.getSource().sendFailure(Component.literal("Product not found: " + id)
+						.withStyle(s -> s.withColor(ChatFormatting.RED)));
 				}
 			});
 		return 1;
 	}
 
-	private static int viewCategory(CommandContext<ServerCommandSource> ctx) {
+	private static int viewCategory(CommandContext<CommandSourceStack> ctx) {
 		var id = StringArgumentType.getString(ctx, "id");
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getCategoryById(id)
 			.thenAccept(category -> {
 				if (category == null) {
-					ctx.getSource().sendError(Text.literal("Unknown category with ID " + id));
+					ctx.getSource().sendFailure(Component.literal("Unknown category with ID " + id));
 					return;
 				}
 
-				ctx.getSource().sendMessage(Text.literal("Category: ")
-					.append(Text.literal(category.getCategoryName())
-						.styled(s -> s.withColor(Formatting.AQUA)))
-					.append(Text.literal(" (" + category.getCategoryId() + ")")
-						.styled(s -> s.withColor(Formatting.GRAY))));
+				ctx.getSource().sendSystemMessage(Component.literal("Category: ")
+					.append(Component.literal(category.getCategoryName())
+						.withStyle(s -> s.withColor(ChatFormatting.AQUA)))
+					.append(Component.literal(" (" + category.getCategoryId() + ")")
+						.withStyle(s -> s.withColor(ChatFormatting.GRAY))));
 
 				for (var product : category.getProducts()) {
-					ctx.getSource().sendMessage(Text.literal(" - ")
-						.styled(s -> s.withColor(Formatting.GRAY))
-						.styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text
+					ctx.getSource().sendSystemMessage(Component.literal(" - ")
+						.withStyle(s -> s.withColor(ChatFormatting.GRAY))
+						.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(Component
 							.literal("Click to fill in your chatbox")
-							.styled(s1 -> s1.withColor(Formatting.AQUA)))))
-						.styled(
+							.withStyle(s1 -> s1.withColor(ChatFormatting.AQUA)))))
+						.withStyle(
 							s -> s.withClickEvent(
 								new ClickEvent.SuggestCommand("/stonks product " + product.getProductId())))
-						.append(Text.literal(product.getProductName())
-							.styled(s -> s.withColor(Formatting.WHITE)))
-						.append(Text.literal(" (" + product.getProductId() + ")")
-							.styled(s -> s.withColor(Formatting.GRAY))));
+						.append(Component.literal(product.getProductName())
+							.withStyle(s -> s.withColor(ChatFormatting.WHITE)))
+						.append(Component.literal(" (" + product.getProductId() + ")")
+							.withStyle(s -> s.withColor(ChatFormatting.GRAY))));
 				}
 			});
 		return 1;
 	}
 
-	private static int viewAllCategories(CommandContext<ServerCommandSource> ctx) {
+	private static int viewAllCategories(CommandContext<CommandSourceStack> ctx) {
 		var cache = StonksFabric.getPlatform(ctx.getSource().getServer()).getStonksCache();
 		cache
 			.getAllCategories()
 			.thenAccept(categories -> {
-				ctx.getSource().sendMessage(Text.literal(categories.size() + " "
+				ctx.getSource().sendSystemMessage(Component.literal(categories.size() + " "
 					+ (categories.size() == 1 ? "category" : "categories") + (categories.size() > 0 ? ":" : "")));
 				for (var cat : categories) {
-					ctx.getSource().sendMessage(Text.literal(" - ")
-						.styled(s -> s.withColor(Formatting.GRAY))
-						.styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text
+					ctx.getSource().sendSystemMessage(Component.literal(" - ")
+						.withStyle(s -> s.withColor(ChatFormatting.GRAY))
+						.withStyle(s -> s.withHoverEvent(new HoverEvent.ShowText(Component
 							.literal("Click to fill in your chatbox")
-							.styled(s1 -> s1.withColor(Formatting.AQUA)))))
-						.styled(
+							.withStyle(s1 -> s1.withColor(ChatFormatting.AQUA)))))
+						.withStyle(
 							s -> s.withClickEvent(
 								new ClickEvent.SuggestCommand("/stonks category " + cat.getCategoryId())))
-						.append(Text.literal(cat.getCategoryName())
-							.styled(s -> s.withColor(Formatting.WHITE)))
-						.append(Text.literal(" (" + cat.getCategoryId() + ")")
-							.styled(s -> s.withColor(Formatting.GRAY))));
+						.append(Component.literal(cat.getCategoryName())
+							.withStyle(s -> s.withColor(ChatFormatting.WHITE)))
+						.append(Component.literal(" (" + cat.getCategoryId() + ")")
+							.withStyle(s -> s.withColor(ChatFormatting.GRAY))));
 				}
 			});
 		return 1;

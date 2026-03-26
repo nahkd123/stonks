@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.world.level.storage.LevelResource;
 import stonks.core.market.Offer;
 import stonks.core.product.Product;
 import stonks.core.service.memory.MemoryCategory;
@@ -41,7 +41,7 @@ public class IntegratedStonksService extends StonksMemoryService {
 	private Path saveFilePath;
 
 	public IntegratedStonksService(MinecraftServer server) {
-		saveFilePath = server.getSavePath(WorldSavePath.ROOT).resolve("stonks.bin");
+		saveFilePath = server.getWorldPath(LevelResource.ROOT).resolve("stonks.bin");
 	}
 
 	@Override

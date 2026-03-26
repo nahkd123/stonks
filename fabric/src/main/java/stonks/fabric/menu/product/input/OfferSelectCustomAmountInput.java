@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@
 package stonks.fabric.menu.product.input;
 
 import eu.pb4.sgui.api.gui.SignGui;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Blocks;
 import stonks.core.market.OfferType;
 import stonks.fabric.StonksFabric;
 import stonks.fabric.menu.product.OfferAmountConfigureMenu;
@@ -35,13 +35,13 @@ import stonks.fabric.translation.Translations;
 public class OfferSelectCustomAmountInput extends SignGui {
 	private OfferAmountConfigureMenu menu;
 
-	public OfferSelectCustomAmountInput(ServerPlayerEntity player, OfferAmountConfigureMenu menu) {
+	public OfferSelectCustomAmountInput(ServerPlayer player, OfferAmountConfigureMenu menu) {
 		super(player);
 		this.menu = menu;
 
 		setSignType(Blocks.ACACIA_WALL_SIGN);
 		setColor(DyeColor.BLACK);
-		setLine(0, Text.empty());
+		setLine(0, Component.empty());
 		setLine(1, Translations.SignInputs.Separator);
 		setLine(2, Translations.SignInputs.AmountInput);
 		setLine(3, menu.getOfferType() == OfferType.BUY
@@ -52,7 +52,16 @@ public class OfferSelectCustomAmountInput extends SignGui {
 	public OfferAmountConfigureMenu getMenu() { return menu; }
 
 	@Override
-	public void onClose() {
+	public void onManualClose() {
+		onClose();
+	}
+
+	@Override
+	public void onPlayerClose(boolean success) {
+		onClose();
+	}
+
+	private void onClose() {
 		var input = getLine(0).getString().trim().toLowerCase();
 		if (input.isEmpty()) {
 			getMenu().open();
@@ -70,7 +79,7 @@ public class OfferSelectCustomAmountInput extends SignGui {
 			var amount = base * mul;
 
 			if (amount <= 0) {
-				getPlayer().sendMessage(Translations.Messages.AmountAtLeastOne, true);
+				getPlayer().sendSystemMessage(Translations.Messages.AmountAtLeastOne, true);
 				StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 				return;
 			}
@@ -79,14 +88,14 @@ public class OfferSelectCustomAmountInput extends SignGui {
 				.getStonksAdapter()
 				.getUnits(getPlayer(), getMenu().getProduct());
 			if (menu.getOfferType() == OfferType.SELL && amount > currentAmount) {
-				getPlayer().sendMessage(Translations.Messages.NotEnoughItems(currentAmount, amount), true);
+				getPlayer().sendSystemMessage(Translations.Messages.NotEnoughItems(currentAmount, amount), true);
 				return;
 			}
 
 			var type = getMenu().getOfferType();
 			new OfferPriceConfigureMenu(getMenu(), getPlayer(), type, amount, getMenu().getOverview()).open();
 		} catch (NumberFormatException e) {
-			getPlayer().sendMessage(Translations.Messages.InvaildInput(input), true);
+			getPlayer().sendSystemMessage(Translations.Messages.InvaildInput(input), true);
 			StonksFabric.getPlatform(getPlayer()).getSounds().playFailedSound(getPlayer());
 		}
 	}

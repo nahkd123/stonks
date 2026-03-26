@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@ package stonks.fabric.economy;
 
 import java.util.OptionalLong;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * <p>
@@ -66,8 +66,8 @@ public interface Economy {
 	 */
 	public String formatCurrency(long raw);
 
-	default Text formatAsDisplay(long raw) {
-		return Text.literal(formatCurrency(raw)).styled(s -> s.withColor(Formatting.YELLOW));
+	default Component formatAsDisplay(long raw) {
+		return Component.literal(formatCurrency(raw)).withStyle(s -> s.withColor(ChatFormatting.YELLOW));
 	}
 
 	/**
@@ -88,7 +88,7 @@ public interface Economy {
 	 * @param player The player.
 	 * @return The raw value.
 	 */
-	public long balanceOf(ServerPlayerEntity player);
+	public long balanceOf(ServerPlayer player);
 
 	/**
 	 * <p>
@@ -99,7 +99,7 @@ public interface Economy {
 	 * @param raw    The raw value.
 	 * @return true if player have sufficient balance and transaction succeed.
 	 */
-	public boolean withdrawFrom(ServerPlayerEntity player, long raw);
+	public boolean withdrawFrom(ServerPlayer player, long raw);
 
 	/**
 	 * <p>
@@ -111,5 +111,5 @@ public interface Economy {
 	 * @return true if player have enough room in their purse and transaction
 	 *         succeed.
 	 */
-	public boolean depositTo(ServerPlayerEntity player, long raw);
+	public boolean depositTo(ServerPlayer player, long raw);
 }

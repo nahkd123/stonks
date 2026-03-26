@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@ import java.util.List;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import eu.pb4.sgui.api.gui.SlotBasedGui;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import stonks.core.caching.StonksCache;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Category;
@@ -50,8 +50,8 @@ public class MarketMainMenu extends StackedMenu {
 	private int categoriesPage = 0, categoriesMaxPages = 1;
 	private int productsPage = 0, productsMaxPage = 1;
 
-	public MarketMainMenu(StackedMenu previous, ServerPlayerEntity player) {
-		super(previous, ScreenHandlerType.GENERIC_9X6, player, false);
+	public MarketMainMenu(StackedMenu previous, ServerPlayer player) {
+		super(previous, MenuType.GENERIC_9x6, player, false);
 		setTitle(Translations.Menus.MainMenu.MainMenu);
 
 		for (int i = 0; i < getHeight() - 1; i++) {
@@ -70,7 +70,7 @@ public class MarketMainMenu extends StackedMenu {
 				categoriesMaxPages = Math.max((int) Math.ceil(categories.size() / (double) CATEGORIES_PER_PAGE), 1);
 				refresh(categories);
 				placePagesNavigations(categories);
-			}, player.getCommandSource().getServer())
+			}, player.createCommandSourceStack().getServer())
 			.exceptionallyAsync(error -> {
 				var icon = new GuiElementBuilder(Items.BARRIER)
 					.setName(Translations.Errors.Errors)
@@ -85,7 +85,7 @@ public class MarketMainMenu extends StackedMenu {
 				StonksFabric.getPlatform(getPlayer()).getSounds().playErrorSound(getPlayer());
 				error.printStackTrace();
 				return null;
-			}, player.getCommandSource().getServer());
+			}, player.createCommandSourceStack().getServer());
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class MarketMainMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.RED_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage, 64), 1))
 				.setName(Translations.Icons.ScrollUp)
 				.addLoreLine(Translations.Icons.ScrollUp$0(categoriesPage, categoriesMaxPages))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (categoriesPage <= 0 || categories == null) return;
 					categoriesPage--;
 					refresh(categories);
@@ -118,7 +118,7 @@ public class MarketMainMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage + 2, 64), 1))
 				.setName(Translations.Icons.ScrollDown)
 				.addLoreLine(Translations.Icons.ScrollDown$0(categoriesPage, categoriesMaxPages))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (categoriesPage >= (categoriesMaxPages - 1) || categories == null) return;
 					categoriesPage++;
 					refresh(categories);
@@ -131,7 +131,7 @@ public class MarketMainMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage, 64), 1))
 				.setName(Translations.Icons.PreviousPage)
 				.addLoreLine(Translations.Icons.PreviousPage$0(productsPage, productsMaxPage))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (productsPage <= 0 || categories == null) return;
 					productsPage--;
 					refresh(categories);
@@ -142,7 +142,7 @@ public class MarketMainMenu extends StackedMenu {
 			: new GuiElementBuilder(Items.ARROW, Math.max(Math.min(productsPage + 2, 64), 1))
 				.setName(Translations.Icons.NextPage)
 				.addLoreLine(Translations.Icons.NextPage$0(productsPage, productsMaxPage))
-				.setCallback((index, type, action, gui) -> {
+				.setCallback((_, _, _, _) -> {
 					if (productsPage >= (productsMaxPage - 1) || categories == null) return;
 					productsPage++;
 					refresh(categories);
@@ -167,12 +167,12 @@ public class MarketMainMenu extends StackedMenu {
 				var selected = currentCategoryIndex == selectedCategoryIndex;
 
 				var a = new GuiElementBuilder(categoryIcons.getOrDefault(category.getCategoryId(), Items.PAPER))
-					.setName(Text.literal(category.getCategoryName())
-						.styled(s -> s.withColor(Formatting.AQUA)))
+					.setName(Component.literal(category.getCategoryName())
+						.withStyle(s -> s.withColor(ChatFormatting.AQUA)))
 					.addLoreLine(selected
 						? Translations.Menus.MainMenu.Category$Selected
 						: Translations.Menus.MainMenu.Category$Unselected)
-					.setCallback((index, type, action, gui) -> {
+					.setCallback((_, _, _, _) -> {
 						selectedCategoryIndex = currentCategoryIndex;
 						productsPage = 0;
 						productsMaxPage = Math
@@ -226,18 +226,18 @@ public class MarketMainMenu extends StackedMenu {
 
 				return GuiElementBuilder.from(dispStack)
 					.setLore(new ArrayList<>()) // Clear all lore
-					.addLoreLine(Text.literal(category.getCategoryName())
-						.styled(s -> s.withColor(Formatting.DARK_GRAY).withItalic(false)))
-					.addLoreLine(Text.empty())
+					.addLoreLine(Component.literal(category.getCategoryName())
+						.withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY).withItalic(false)))
+					.addLoreLine(Component.empty())
 					.addLoreLine(Translations.Menus.MainMenu.product$instantBuy(instantBuyPrice))
 					.addLoreLine(Translations.Menus.MainMenu.product$instantSell(instantSellPrice))
-					.addLoreLine(Text.empty())
+					.addLoreLine(Component.empty())
 					.addLoreLine(Translations.Menus.MainMenu.Product$ClickToOpen)
 					.asStack();
 			}
 
 			@Override
-			public void onSlotClick(int index, ClickType type, SlotActionType action, SlotGuiInterface gui, ProductMarketOverview success, Throwable error) {
+			public void onSlotClick(int index, ClickType type, ContainerInput action, SlotBasedGui gui, ProductMarketOverview success, Throwable error) {
 				if (error != null) return;
 				new ProductMenu(MarketMainMenu.this, getPlayer(), product).open();
 			}

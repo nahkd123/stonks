@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,12 @@
 package stonks.fabric.menu.product;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import stonks.core.market.OfferType;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
@@ -41,8 +41,8 @@ public class InstantBuyMenu extends StackedMenu {
 	private double originalPricePerUnit;
 	private double instantPricePerUnit;
 
-	public InstantBuyMenu(StackedMenu previous, ServerPlayerEntity player, Product product, double originalPricePerUnit, double instantPricePerUnit) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public InstantBuyMenu(StackedMenu previous, ServerPlayer player, Product product, double originalPricePerUnit, double instantPricePerUnit) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		this.product = product;
 		this.originalPricePerUnit = originalPricePerUnit;
 		this.instantPricePerUnit = instantPricePerUnit;
@@ -67,10 +67,10 @@ public class InstantBuyMenu extends StackedMenu {
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
 			.setName(Translations.Menus.InstantBuy.CustomAmount)
-			.addLoreLine(Text.literal(product.getProductName()).styled(s -> s.withColor(Formatting.GRAY)))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.literal(product.getProductName()).withStyle(s -> s.withColor(ChatFormatting.GRAY)))
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.InstantBuy.CustomAmount$0)
-			.setCallback((index, type, action, gui) -> new OfferInstantBuyAmountInput(player, this).open()));
+			.setCallback((_, _, _, _) -> new OfferInstantBuyAmountInput(player, this).open()));
 	}
 
 	public void blockBuyButtons() {
@@ -91,23 +91,23 @@ public class InstantBuyMenu extends StackedMenu {
 
 		return new GuiElementBuilder(canBuy ? icon : Items.BARRIER, Math.min(Math.max(amount / 64, 1), 64))
 			.setName(Translations.Menus.InstantBuy.FixedAmount(amount))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.InstantBuy.AveragePrice(amount, originalPricePerUnit))
 			.addLoreLine(Translations.Menus.InstantBuy.MinimumBalance(moneyToSpend))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.InstantBuy.GuideText$0)
 			.addLoreLine(Translations.Menus.InstantBuy.GuideText$1)
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.InstantBuy.HoldShift)
 			.addLoreLine(canBuy
 				? Translations.Menus.InstantBuy.ClickToBuy
 				: Translations.Menus.InstantBuy.NoBuy)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, type, _, _) -> {
 				var provider = StonksFabric.getPlatform(getPlayer());
 				var adapter = provider.getStonksAdapter();
 
 				if (adapter.accountBalance(getPlayer()) < moneyToSpend) {
-					getPlayer().sendMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
+					getPlayer().sendSystemMessage(Translations.Messages.NoMoneyToInstantBuy(moneyToSpend), true);
 					close();
 					return;
 				}
@@ -123,14 +123,14 @@ public class InstantBuyMenu extends StackedMenu {
 					blockBuyButtons();
 					task
 						.thenAcceptAsync(
-							$ -> new InstantBuyMenu(getPrevious(), getPlayer(), getProduct(), originalPricePerUnit, instantPricePerUnit)
+							_ -> new InstantBuyMenu(getPrevious(), getPlayer(), getProduct(), originalPricePerUnit, instantPricePerUnit)
 								.open(),
-							player.getCommandSource().getServer())
+							player.createCommandSourceStack().getServer())
 						.exceptionallyAsync(error -> {
 							close();
 							error.printStackTrace();
 							return null;
-						}, player.getCommandSource().getServer());
+						}, player.createCommandSourceStack().getServer());
 				}
 			});
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,12 @@
 package stonks.fabric.menu.product;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import stonks.core.market.OfferType;
 import stonks.core.market.ProductMarketOverview;
 import stonks.core.product.Product;
@@ -42,8 +42,8 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 	private OfferType offerType;
 	private ProductMarketOverview overview;
 
-	public OfferAmountConfigureMenu(StackedMenu previous, ServerPlayerEntity player, Product product, OfferType offerType, ProductMarketOverview overview) {
-		super(previous, ScreenHandlerType.GENERIC_9X4, player, false);
+	public OfferAmountConfigureMenu(StackedMenu previous, ServerPlayer player, Product product, OfferType offerType, ProductMarketOverview overview) {
+		super(previous, MenuType.GENERIC_9x4, player, false);
 		this.product = product;
 		this.offerType = offerType;
 		this.overview = overview;
@@ -68,11 +68,11 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 
 		setSlot(25, new GuiElementBuilder(Items.DARK_OAK_SIGN)
 			.setName(Translations.Menus.CreateOffer.CustomAmount)
-			.addLoreLine(Text.literal(product.getProductName())
-				.styled(s -> s.withColor(Formatting.GRAY).withItalic(false)))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.literal(product.getProductName())
+				.withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(false)))
+			.addLoreLine(Component.empty())
 			.addLoreLine(Translations.Menus.CreateOffer.ClickForAmount)
-			.setCallback((index, type, action, gui) -> new OfferSelectCustomAmountInput(player, this).open()));
+			.setCallback((_, _, _, _) -> new OfferSelectCustomAmountInput(player, this).open()));
 	}
 
 	public Product getProduct() { return product; }
@@ -103,13 +103,13 @@ public class OfferAmountConfigureMenu extends StackedMenu {
 
 		return new GuiElementBuilder(disabled ? Items.BARRIER : icon, Math.min(Math.max(amount / 64, 1), 64))
 			.setName(buttonName)
-			.addLoreLine(Text.literal(product.getProductName())
-				.styled(s -> s.withColor(Formatting.GRAY).withItalic(false)))
-			.addLoreLine(Text.empty())
+			.addLoreLine(Component.literal(product.getProductName())
+				.withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(false)))
+			.addLoreLine(Component.empty())
 			.addLoreLine(disabled
 				? Translations.Menus.CreateOffer.NoOfferForYou
 				: Translations.Menus.CreateOffer.ClickForPrice)
-			.setCallback((index, type, action, gui) -> {
+			.setCallback((_, _, _, _) -> {
 				if (disabled) return;
 				new OfferPriceConfigureMenu(this, getPlayer(), getOfferType(), amount2, getOverview()).open();
 			});

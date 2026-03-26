@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  */
 package stonks.fabric.adapter;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
 import stonks.core.product.Product;
 import stonks.fabric.economy.Economy;
 
@@ -42,7 +42,7 @@ public interface StonksFabricAdapter {
 	 * @param product Product type.
 	 * @return Number of units. Negative value if this adapter does not support.
 	 */
-	default int getUnits(ServerPlayerEntity player, Product product) {
+	default int getUnits(ServerPlayer player, Product product) {
 		return -1;
 	}
 
@@ -58,7 +58,7 @@ public interface StonksFabricAdapter {
 	 * @implNote You can reconstruct product data by reading value from
 	 *           {@link Product#getProductConstructionData()}.
 	 */
-	default boolean addUnitsTo(ServerPlayerEntity player, Product product, int amount) {
+	default boolean addUnitsTo(ServerPlayer player, Product product, int amount) {
 		return false;
 	}
 
@@ -72,7 +72,7 @@ public interface StonksFabricAdapter {
 	 * @param amount  How many units to take.
 	 * @return true if this adapter managed to take out {@link Product} from player.
 	 */
-	default boolean removeUnitsFrom(ServerPlayerEntity player, Product product, int amount) {
+	default boolean removeUnitsFrom(ServerPlayer player, Product product, int amount) {
 		return false;
 	}
 
@@ -91,7 +91,7 @@ public interface StonksFabricAdapter {
 	 * @deprecated use {@link Economy#balanceOf(ServerPlayerEntity)}
 	 */
 	@Deprecated
-	default double accountBalance(ServerPlayerEntity player) {
+	default double accountBalance(ServerPlayer player) {
 		return -1d;
 	}
 
@@ -107,7 +107,7 @@ public interface StonksFabricAdapter {
 	 * @deprecated use {@link Economy#depositTo(ServerPlayerEntity, long)}
 	 */
 	@Deprecated
-	default boolean accountDeposit(ServerPlayerEntity player, double money) {
+	default boolean accountDeposit(ServerPlayer player, double money) {
 		return false;
 	}
 
@@ -123,7 +123,7 @@ public interface StonksFabricAdapter {
 	 * @deprecated use {@link Economy#withdrawFrom(ServerPlayerEntity, long)}
 	 */
 	@Deprecated
-	default boolean accountWithdraw(ServerPlayerEntity player, double money) {
+	default boolean accountWithdraw(ServerPlayer player, double money) {
 		return false;
 	}
 }

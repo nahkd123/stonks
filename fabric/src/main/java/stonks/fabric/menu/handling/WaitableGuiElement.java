@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,16 @@ import java.util.stream.Stream;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.AnimatedGuiElement;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
-import eu.pb4.sgui.api.gui.GuiInterface;
-import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.SlotActionType;
+import eu.pb4.sgui.api.gui.GuiLike;
+import eu.pb4.sgui.api.gui.SlotBasedGui;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import stonks.fabric.translation.Translations.Icons;
 
-public abstract class WaitableGuiElement<T> implements GuiElementInterface {
+public abstract class WaitableGuiElement<T> implements GuiElement {
 	protected static final ItemStack[] LOADING = Stream
 		.of(":..", ".:.", "..:", ".:.")
 		.map(v -> new GuiElementBuilder(Items.CLOCK)
@@ -54,7 +54,7 @@ public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 	}
 
 	@Override
-	public ItemStack getItemStackForDisplay(GuiInterface gui) {
+	public ItemStack getItemStackForDisplay(GuiLike gui) {
 		if (!task.isDone()) return LOADING[(timeTicked++ / 5) % LOADING.length].copy();
 		T success;
 		Throwable failure;
@@ -73,14 +73,14 @@ public abstract class WaitableGuiElement<T> implements GuiElementInterface {
 
 	public abstract ItemStack createStackWhenLoaded(T success, Throwable error);
 
-	public abstract void onSlotClick(int index, ClickType type, SlotActionType action, SlotGuiInterface gui, T success, Throwable error);
+	public abstract void onSlotClick(int index, ClickType type, ContainerInput action, SlotBasedGui gui, T success, Throwable error);
 
 	@Override
 	public ItemStack getItemStack() { return stack; }
 
 	@Override
 	public ClickCallback getGuiCallback() {
-		if (!task.isDone()) return GuiElementInterface.super.getGuiCallback();
+		if (!task.isDone()) return EMPTY_CALLBACK;
 		T success;
 		Throwable failure;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,16 @@ public class FutureCache<T> {
 	 */
 	public boolean shouldFetch() {
 		return fetchingTask != null || lastFetch == -1L || (System.currentTimeMillis() - lastFetch > maxCacheTime);
+	}
+
+	/**
+	 * <p>
+	 * Mark the cache as invalid, which will be fetched on next invocation of
+	 * {@link #get()}.
+	 * </p>
+	 */
+	public void invalidate() {
+		lastFetch = -1L;
 	}
 
 	/**

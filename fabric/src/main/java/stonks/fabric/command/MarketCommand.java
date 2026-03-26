@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,17 @@
  */
 package stonks.fabric.command;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import stonks.fabric.menu.MarketMainMenu;
 
 public class MarketCommand {
-	public static final LiteralArgumentBuilder<ServerCommandSource> ROOT = literal("market")
+	public static final LiteralArgumentBuilder<CommandSourceStack> ROOT = literal("market")
 		.executes(ctx -> {
-			var player = ctx.getSource().getPlayerOrThrow();
+			var player = ctx.getSource().getPlayerOrException();
 			var menu = new MarketMainMenu(null, player);
 			menu.open();
 			return 1;

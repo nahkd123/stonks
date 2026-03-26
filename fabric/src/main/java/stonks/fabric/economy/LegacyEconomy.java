@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,9 @@ public class LegacyEconomy implements Economy {
 
 	@Deprecated
 	@Override
-	public Identifier getEconomyId() { return Identifier.fromNamespaceAndPath(StonksFabric.MODID, "legacy_economy_adapter"); }
+	public Identifier getEconomyId() {
+		return Identifier.fromNamespaceAndPath(StonksFabric.MODID, "legacy_economy_adapter");
+	}
 
 	@Deprecated
 	public long doubleToRaw(double value) {

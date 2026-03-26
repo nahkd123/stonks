@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ public class OfferCustomPriceInput extends SignGui {
 	}
 
 	public OfferPriceConfigureMenu getMenu() { return menu; }
-	
+
 	@Override
 	public void onManualClose() {
 		onClose();
@@ -60,7 +60,7 @@ public class OfferCustomPriceInput extends SignGui {
 	public void onPlayerClose(boolean success) {
 		onClose();
 	}
-	
+
 	private void onClose() {
 		var input = getLine(0).getString().trim().toLowerCase();
 		if (input.isEmpty()) {

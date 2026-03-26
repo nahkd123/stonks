@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -221,11 +221,13 @@ public final class Translations {
 	// @formatter:on
 
 	public static Component units(int units) {
-		return Component.literal(Integer.toString(units)).withStyle(s -> s.withColor(ChatFormatting.AQUA).withItalic(false));
+		return Component.literal(Integer.toString(units))
+			.withStyle(s -> s.withColor(ChatFormatting.AQUA).withItalic(false));
 	}
 
 	public static Component productName(Product product) {
-		return Component.literal(product.getProductName()).withStyle(s -> s.withColor(ChatFormatting.AQUA).withItalic(false));
+		return Component.literal(product.getProductName())
+			.withStyle(s -> s.withColor(ChatFormatting.AQUA).withItalic(false));
 	}
 
 	public static Component currency(double value) {

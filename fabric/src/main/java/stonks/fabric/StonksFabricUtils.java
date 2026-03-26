@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,8 @@ public class StonksFabricUtils {
 
 	public static Optional<Component> taxText(double tax) {
 		if (tax <= 0d) return Optional.empty();
-		return Optional.of(Component.literal(TAX_FORMATTER.format(tax)).withStyle(s -> s.withColor(ChatFormatting.YELLOW)));
+		return Optional
+			.of(Component.literal(TAX_FORMATTER.format(tax)).withStyle(s -> s.withColor(ChatFormatting.YELLOW)));
 	}
 
 	public static Component offerText(OfferType type, OverviewOffer offer) {

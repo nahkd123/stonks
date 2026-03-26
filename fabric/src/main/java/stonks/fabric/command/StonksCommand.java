@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 nahkd
+ * Copyright (c) 2023-2026 nahkd
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,11 +61,14 @@ public class StonksCommand {
 				.append(Component.literal(" for ").withStyle(s -> s.withColor(ChatFormatting.GRAY)))
 				.append(Component.literal("Fabric").withStyle(s -> s.withColor(ChatFormatting.YELLOW))));
 			src.sendSystemMessage(Component.literal(" Version ").withStyle(s -> s.withColor(ChatFormatting.GRAY))
-				.append(Component.literal(meta.getVersion().getFriendlyString()).withStyle(s -> s.withColor(ChatFormatting.AQUA))));
+				.append(Component.literal(meta.getVersion().getFriendlyString())
+					.withStyle(s -> s.withColor(ChatFormatting.AQUA))));
 			src.sendSystemMessage(Component.literal(" ")
 				.append(makeLinkBtn("GitHub", ChatFormatting.WHITE, URI.create("https://github.com/nahkd123/stonks")))
-				.append(makeLinkBtn("Issues", ChatFormatting.AQUA, URI.create("https://github.com/nahkd123/stonks/issues")))
-				.append(makeLinkBtn("Wiki", ChatFormatting.YELLOW, URI.create("https://github.com/nahkd123/stonks/wiki"))));
+				.append(
+					makeLinkBtn("Issues", ChatFormatting.AQUA, URI.create("https://github.com/nahkd123/stonks/issues")))
+				.append(
+					makeLinkBtn("Wiki", ChatFormatting.YELLOW, URI.create("https://github.com/nahkd123/stonks/wiki"))));
 			src.sendSystemMessage(Component.empty());
 			src.sendSystemMessage(Component.literal(" Special thanks:"));
 			src.sendSystemMessage(Component.empty()
@@ -133,11 +136,13 @@ public class StonksCommand {
 					var economy = StonksFabric.getPlatform(ctx.getSource().getServer()).getEconomySystem();
 
 					for (var p : players) {
-						ctx.getSource().sendSystemMessage(Component.literal("Inspecting ").append(p.getDisplayName()).append(":"));
+						ctx.getSource()
+							.sendSystemMessage(Component.literal("Inspecting ").append(p.getDisplayName()).append(":"));
 
 						ctx.getSource().sendSystemMessage(Component.literal(" - ")
 							.withStyle(s -> s.withColor(ChatFormatting.GRAY))
-							.append(Component.literal("Account Balance: ").withStyle(s -> s.withColor(ChatFormatting.WHITE)))
+							.append(Component.literal("Account Balance: ")
+								.withStyle(s -> s.withColor(ChatFormatting.WHITE)))
 							.append(economy.formatAsDisplay(economy.balanceOf(p))));
 					}
 					return 1;

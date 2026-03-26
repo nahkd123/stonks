@@ -34,10 +34,12 @@ import stonks.fabric.menu.StackedMenu;
 import stonks.fabric.translation.Translations;
 
 public class OfferInfoMenu extends StackedMenu {
+	private ViewOffersMenu previous;
 	private Offer offer;
 
-	public OfferInfoMenu(StackedMenu previous, ServerPlayer player, Offer offer) {
+	public OfferInfoMenu(ViewOffersMenu previous, ServerPlayer player, Offer offer) {
 		super(previous, MenuType.GENERIC_9x4, player, false);
+		this.previous = previous;
 		this.offer = offer;
 		setTitle(Translations.Menus.OfferInfo._OfferInfo(offer));
 
@@ -102,7 +104,8 @@ public class OfferInfoMenu extends StackedMenu {
 							adapter.accountDeposit(getPlayer(), config.applyTax(delta * offer.getPricePerUnit()));
 						}
 
-						new OfferInfoMenu(getPrevious(), getPlayer(), newOffer.get()).open();
+						previous.invalidateCache(); // Force update entire list
+						new OfferInfoMenu(previous, getPlayer(), newOffer.get()).open();
 						StonksFabric.getPlatform(getPlayer()).getSounds().playClaimedSound(getPlayer());
 					}, player.createCommandSourceStack().getServer())
 					.exceptionallyAsync(error -> {

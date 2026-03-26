@@ -118,6 +118,10 @@ public class ViewOffersMenu extends StackedMenu {
 
 	public int getOffersPerPage() { return getWidth() * (getHeight() - 1); }
 
+	public void invalidateCache() {
+		offersCache.invalidate();
+	}
+
 	public void placeOffers(List<Offer> offers) {
 		if (offers == null) return;
 

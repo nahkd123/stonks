@@ -71,6 +71,16 @@ public class FutureCache<T> {
 
 	/**
 	 * <p>
+	 * Mark the cache as invalid, which will be fetched on next invocation of
+	 * {@link #get()}.
+	 * </p>
+	 */
+	public void invalidate() {
+		lastFetch = -1L;
+	}
+
+	/**
+	 * <p>
 	 * Force this cache to fetch the value. If there is already a task running, it
 	 * will return that task.
 	 * </p>

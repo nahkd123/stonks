@@ -50,9 +50,18 @@ public class OfferCustomPriceInput extends SignGui {
 	}
 
 	public OfferPriceConfigureMenu getMenu() { return menu; }
+	
+	@Override
+	public void onManualClose() {
+		onClose();
+	}
 
 	@Override
 	public void onPlayerClose(boolean success) {
+		onClose();
+	}
+	
+	private void onClose() {
 		var input = getLine(0).getString().trim().toLowerCase();
 		if (input.isEmpty()) {
 			getMenu().open();

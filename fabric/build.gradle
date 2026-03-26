@@ -4,7 +4,12 @@ plugins {
 }
 
 repositories {
-    maven { url = 'https://maven.nucleoid.xyz' }
+    maven {
+	    url = 'https://maven.nucleoid.xyz'
+	    content {
+	    	includeGroup 'eu.pb4'
+	    }
+	}
 }
 
 processResources {
@@ -16,14 +21,15 @@ processResources {
 }
 
 dependencies {
+    implementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
     minecraft "com.mojang:minecraft:$rootProject.minecraft_version"
-    api "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
     implementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_version"
     implementation include("eu.pb4:sgui:$rootProject.sgui_version")
     implementation include("eu.pb4:common-economy-api:$rootProject.common_economy_version") {
         exclude group: 'net.fabricmc'
     }
+
     api include(project(':core'))
     api include(naharaToolkit('nahara-common-tasks'))
     api include(naharaToolkit('nahara-common-configurations'))

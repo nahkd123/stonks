@@ -120,7 +120,7 @@ public class OfferInfoMenu extends StackedMenu {
 	}
 
 	public GuiElementBuilder createCancelButton() {
-		return new GuiElementBuilder(Items.RED_TERRACOTTA)
+		return new GuiElementBuilder(Items.DYED_TERRACOTTA.red())
 			.setName(Translations.Menus.OfferInfo.CancelOffer)
 			.addLoreLine(Translations.Menus.OfferInfo.CancelOffer$0)
 			.addLoreLine(Component.empty())

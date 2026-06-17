@@ -50,7 +50,7 @@ public class OfferConfirmMenu extends StackedMenu {
 				.withStyle(s -> s.withColor(ChatFormatting.AQUA)))
 			.setLore(new ArrayList<>()));
 
-		setSlot(22, new GuiElementBuilder(Items.GREEN_TERRACOTTA)
+		setSlot(22, new GuiElementBuilder(Items.DYED_TERRACOTTA.green())
 			.setName(offerType == OfferType.BUY
 				? Translations.Menus.ConfirmOffer.Buy
 				: Translations.Menus.ConfirmOffer.Sell)

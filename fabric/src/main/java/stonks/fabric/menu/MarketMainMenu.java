@@ -104,7 +104,7 @@ public class MarketMainMenu extends StackedMenu {
 		// Categories
 		setSlot(10, categories == null || categoriesPage <= 0
 			? MenuIcons.BORDER
-			: new GuiElementBuilder(Items.RED_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage, 64), 1))
+			: new GuiElementBuilder(Items.STAINED_GLASS_PANE.red(), Math.max(Math.min(categoriesPage, 64), 1))
 				.setName(Translations.Icons.ScrollUp)
 				.addLoreLine(Translations.Icons.ScrollUp$0(categoriesPage, categoriesMaxPages))
 				.setCallback((_, _, _, _) -> {
@@ -115,7 +115,7 @@ public class MarketMainMenu extends StackedMenu {
 				}));
 		setSlot(46, categories == null || categoriesPage >= (categoriesMaxPages - 1)
 			? MenuIcons.BORDER
-			: new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE, Math.max(Math.min(categoriesPage + 2, 64), 1))
+			: new GuiElementBuilder(Items.STAINED_GLASS_PANE.yellow(), Math.max(Math.min(categoriesPage + 2, 64), 1))
 				.setName(Translations.Icons.ScrollDown)
 				.addLoreLine(Translations.Icons.ScrollDown$0(categoriesPage, categoriesMaxPages))
 				.setCallback((_, _, _, _) -> {

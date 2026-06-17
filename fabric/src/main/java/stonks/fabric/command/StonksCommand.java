@@ -48,6 +48,7 @@ public class StonksCommand {
 		.then(subcommand$about())
 		.then(subcommand$give())
 		.then(subcommand$inspect())
+		.then(subcommand$parseCurrency())
 		.then(subcommand$category());
 
 	public static LiteralArgumentBuilder<CommandSourceStack> subcommand$about() {
@@ -146,6 +147,30 @@ public class StonksCommand {
 							.append(economy.formatAsDisplay(economy.balanceOf(p))));
 					}
 					return 1;
+				}));
+	}
+
+	private static LiteralArgumentBuilder<CommandSourceStack> subcommand$parseCurrency() {
+		return literal("parseCurrency")
+			.then(argument("input", StringArgumentType.string())
+				.executes(ctx -> {
+					var economy = StonksFabric.getPlatform(ctx.getSource().getServer()).getEconomySystem();
+					var input = StringArgumentType.getString(ctx, "input");
+					var parsed = economy.tryParse(input);
+
+					if (parsed.isPresent()) {
+						var raw = parsed.getAsLong();
+						var formatted = economy.formatAsDisplay(raw);
+						ctx.getSource().sendSuccess(() -> Component.empty()
+							.append("Raw value: %d".formatted(raw))
+							.append(Component.literal(" / ").withStyle(s -> s.withColor(ChatFormatting.GRAY)))
+							.append("Formatted value: ")
+							.append(formatted), false);
+						return 1;
+					} else {
+						ctx.getSource().sendFailure(Component.literal("Parse error"));
+						return 0;
+					}
 				}));
 	}
 

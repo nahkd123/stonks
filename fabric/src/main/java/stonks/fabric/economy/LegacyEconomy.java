@@ -57,7 +57,7 @@ public class LegacyEconomy implements Economy {
 
 	@Deprecated
 	public long doubleToRaw(double value) {
-		return (long) (value / Math.pow(10, config.decimals));
+		return (long) (value * Math.pow(10, config.decimals));
 	}
 
 	@Deprecated

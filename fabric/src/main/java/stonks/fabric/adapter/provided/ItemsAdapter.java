@@ -31,6 +31,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 import stonks.core.product.Product;
 import stonks.fabric.StonksFabric;
@@ -105,7 +106,7 @@ public class ItemsAdapter implements StonksFabricAdapter {
 		var giveStack = refStack.copyWithCount(amount);
 
 		if (!inv.add(giveStack)) {
-			var e = player.drop(giveStack, false);
+			var e = player.drop(giveStack, false, Prediction.SERVER_ONLY);
 			e.setNoPickUpDelay();
 			e.setTarget(player.getUUID());
 		}
